@@ -172,5 +172,6 @@ namespace FactoryDashBoard.Pages
                 e.Handled = true;
             }
         }
+        
     }
 }

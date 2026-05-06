@@ -92,10 +92,17 @@ namespace FactoryManagementSystem
 
         private void TxtAmount_TextChanged(object sender, EventArgs e)
         {
-            if (decimal.TryParse(txtAmount.Text.Replace("Rs", "").Trim(), out decimal amount))
+            string text = txtAmount.Text.Replace("Rs", "").Trim();
+
+            if (decimal.TryParse(text, out decimal amount))
             {
+                txtAmount.TextChanged -= TxtAmount_TextChanged;
+
                 txtAmount.Text = "Rs " + amount.ToString();
+
                 txtAmount.SelectionStart = txtAmount.Text.Length;
+
+                txtAmount.TextChanged += TxtAmount_TextChanged;
             }
         }
 
@@ -120,12 +127,14 @@ namespace FactoryManagementSystem
             {
                 // ✅ ID auto-generate hogi DB me (IDENTITY)
                 string query =
-                    "INSERT INTO Payments (Amount, Date) VALUES (@amount, @date)";
+                    "INSERT INTO Payments (Amount, Reason, Date) VALUES (@amount, @reason, @date)";
 
                 SqlParameter[] p =
                 {
                     new SqlParameter("@amount", amount),
+                    new SqlParameter("@reason", cmbReason.SelectedItem.ToString()),
                     new SqlParameter("@date", date)
+
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
@@ -145,13 +154,13 @@ namespace FactoryManagementSystem
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 0)
+            if (dataGridView1.CurrentRow == null)
             {
                 MessageBox.Show("Select a row to delete!");
                 return;
             }
 
-            int id = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["PaymentID"].Value);
+            int id = Convert.ToInt32(dataGridView1.CurrentRow.Cells["PaymentID"].Value);
 
             DialogResult dr = MessageBox.Show(
                 "Are you sure you want to delete this payment?",
@@ -165,8 +174,10 @@ namespace FactoryManagementSystem
 
             try
             {
-                DBHelper.ExecuteNonQuery("DELETE FROM Payments WHERE PaymentID = @id",
-                    new SqlParameter[] { new SqlParameter("@id", id) });
+                DBHelper.ExecuteNonQuery(
+                    "DELETE FROM Payments WHERE PaymentID = @id",
+                    new SqlParameter[] { new SqlParameter("@id", id) }
+                );
 
                 MessageBox.Show("Payment deleted!");
                 LoadPayments();
@@ -176,5 +187,6 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Error deleting: " + ex.Message);
             }
         }
+        
     }
 }

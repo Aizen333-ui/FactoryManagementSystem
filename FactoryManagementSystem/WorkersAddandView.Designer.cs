@@ -105,6 +105,7 @@ namespace FactoryManagementSystem
             btnRemove.MouseLeave += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseDown += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseUp += (s, e) => btnRemove.Invalidate();
+            
         }
 
         private void InitializeComponent()
@@ -157,7 +158,7 @@ namespace FactoryManagementSystem
             txtWage.TextChanged += new System.EventHandler(this.TxtWage_TextChanged);
 
             Panel btnPanel = new Panel();
-            btnPanel.Width = 800;
+            btnPanel.Width = 1200;
             btnPanel.Height = 80;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
 
@@ -244,8 +245,9 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
-            btnAdd.Location = new Point(200, 10);
-            btnRemove.Location = new Point(500, 10);
+            btnAdd.Location = new Point(300, 10);
+            btnRemove.Location = new Point(600, 10);
+           
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnRemove);
 
@@ -258,6 +260,9 @@ namespace FactoryManagementSystem
             this.dataGridView1.Height = 700;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.RowHeadersVisible = false;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.MultiSelect = false;
+            dataGridView1.ReadOnly = true;
 
             main.Controls.Add(lblTitle);
             main.Controls.Add(lblName);

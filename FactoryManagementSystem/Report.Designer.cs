@@ -167,7 +167,7 @@ namespace FactoryDashboard.Pages
             btnGenerate.ForeColor = Color.White;
             btnGenerate.FlatStyle = FlatStyle.Flat;
             btnGenerate.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btnGenerate.Size = new Size(250, 80);
+            btnGenerate.Size = new Size(260, 50);
             btnGenerate.Location = new Point(150, 120);
 
             // SEND BUTTON
@@ -176,7 +176,7 @@ namespace FactoryDashboard.Pages
             btnSendReport.ForeColor = Color.White;
             btnSendReport.FlatStyle = FlatStyle.Flat;
             btnSendReport.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            btnSendReport.Size = new Size(250, 80);
+            btnSendReport.Size = new Size(260, 60);
             btnSendReport.Location = new Point(500, 120);
 
             // GRID

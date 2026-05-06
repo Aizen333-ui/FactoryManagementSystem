@@ -16,7 +16,6 @@ namespace FactoryDashboard.Pages
         private TextBox txtQuantity;
         private DateTimePicker dateMaterial;
 
-        private Button btnSave;
         private Button btnClear;
         private Button btnRemove;
         private Label lblMessage;
@@ -32,14 +31,7 @@ namespace FactoryDashboard.Pages
         private void MakeRoundedButton(Button btn, Color color)
         {
            
-            this.btnSave.BackColor = Color.FromArgb(94, 60, 255);
-            this.btnSave.FlatStyle = FlatStyle.Flat;
-            this.btnSave.FlatAppearance.BorderSize = 0;
-            this.btnSave.ForeColor = Color.White;
-            this.btnSave.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-
-            this.btnSave.FlatAppearance.MouseOverBackColor = Color.FromArgb(114, 80, 255);
-            this.btnSave.FlatAppearance.MouseDownBackColor = Color.FromArgb(74, 40, 235);
+            
             this.btnClear.BackColor = Color.Gray;
             this.btnClear.FlatStyle = FlatStyle.Flat;
             this.btnClear.FlatAppearance.BorderSize = 0;
@@ -56,6 +48,7 @@ namespace FactoryDashboard.Pages
 
             this.btnRemove.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 60, 60);
             this.btnRemove.FlatAppearance.MouseDownBackColor = Color.FromArgb(180, 20, 20);
+           
             btn.Resize += (s, e) =>
             {
                 ApplyRoundedRegion(btn, 18);
@@ -223,48 +216,40 @@ namespace FactoryDashboard.Pages
 
             // ===== BUTTONS =====
             Panel btnPanel = new Panel();
-            btnPanel.Width = 1000;
+            btnPanel.Width = 1500;
             btnPanel.Height = 80;
             btnPanel.AutoSize = true;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
 
-            // SAVE BUTTON (purple like RawMaterial Add)
-            this.btnSave = new Button();
-            this.btnSave.Text = "Save Entry";
-            this.btnSave.Width = 250;
-            this.btnSave.Height = 80;
-            this.btnSave.FlatStyle = FlatStyle.Flat;
-            this.btnSave.ForeColor = Color.White;
-            this.btnSave.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            this.btnSave.Location = new Point(100, 10);
+           
 
 
             // CLEAR BUTTON (gray style)
             this.btnClear = new Button();
             this.btnClear.Text = "Clear";
-            this.btnClear.Width = 250;
-            this.btnClear.Height = 80;
+            this.btnClear.Width = 260;
+            this.btnClear.Height = 50;
             this.btnClear.FlatStyle = FlatStyle.Flat;
             this.btnClear.ForeColor = Color.White;
             this.btnClear.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            this.btnClear.Location = new Point(400, 10);
+            this.btnClear.Location = new Point(700, 10);
 
 
             // REMOVE BUTTON (red like RawMaterial)
             this.btnRemove = new Button();
             this.btnRemove.Text = "Remove Entry";
-            this.btnRemove.Width = 250;
-            this.btnRemove.Height = 80;
+            this.btnRemove.Width = 260;
+            this.btnRemove.Height = 50;
             this.btnRemove.FlatStyle = FlatStyle.Flat;
             this.btnRemove.ForeColor = Color.White;
             this.btnRemove.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            this.btnRemove.Location = new Point(700, 10);
+            this.btnRemove.Location = new Point(300, 10);
+
+           
 
 
-            btnPanel.Controls.Add(btnSave);
             btnPanel.Controls.Add(btnClear);
             btnPanel.Controls.Add(btnRemove);
-            MakeRoundedButton(btnSave, Color.FromArgb(94, 60, 255));
             MakeRoundedButton(btnRemove, Color.FromArgb(220, 38, 38));
             MakeRoundedButton(btnClear, Color.Gray);
 
@@ -272,16 +257,18 @@ namespace FactoryDashboard.Pages
             this.lblMessage = new Label();
             this.lblMessage.AutoSize = true;
             this.lblMessage.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            this.lblMessage.Text = "Previously Used Raw Materials:";
+            this.lblMessage.Text = "Raw Materials In Stock:";
 
             // DATA GRID VIEW
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.dataGridView.Width = 1160;
-            this.dataGridView.Height = 700;
+            this.dataGridView.Height = 500;
             this.dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView.ReadOnly = true;
-            
+            this.dataGridView.MultiSelect = false;
+            this.dataGridView.ReadOnly = true; // optional but recommended
+
 
             // ===== ADD TO MAIN =====
             main.Controls.Add(title);

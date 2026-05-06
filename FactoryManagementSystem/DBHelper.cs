@@ -3,7 +3,7 @@ using System.Data;
 
 class DBHelper
 {
-    static string conStr = "Data Source=localhost\\SQLEXPRESS04;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
+    static string conStr = "Data Source=TALHA-SOHAIL\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
 
     public static DataTable ExecuteDataTable(string query, SqlParameter[] parameters)
     {

@@ -132,6 +132,7 @@ namespace FactoryManagementSystem
             btnRemove.MouseLeave += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseDown += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseUp += (s, e) => btnRemove.Invalidate();
+              
         }
         private void InitializeComponent()
         {
@@ -216,23 +217,23 @@ namespace FactoryManagementSystem
 
             Button btnAdd = this.btnAdd = new Button();
             btnAdd.Text = "Add Material";
-            btnAdd.Width = 190;
-            btnAdd.Height = 80;
+            btnAdd.Width = 260;
+            btnAdd.Height = 50;
             btnAdd.FlatStyle = FlatStyle.Flat;
             btnAdd.FlatAppearance.BorderSize = 0;
             btnAdd.ForeColor = Color.White;
-            btnAdd.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            btnAdd.Location = new Point(400, 10);
+            btnAdd.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnAdd.Location = new Point(300, 10);
             Button btnRemove = this.btnRemove = new Button();
             btnRemove.Text = "Remove Material";
-            btnRemove.Width = 190;
-            btnRemove.Height = 80;
+            btnRemove.Width = 260;
+            btnRemove.Height = 50;
             btnRemove.FlatStyle = FlatStyle.Flat;
             btnRemove.FlatAppearance.BorderSize = 0;
             btnRemove.ForeColor = Color.White;
-            btnRemove.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnRemove.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnRemove.Location = new Point(600, 10);
-
+            
             RoundControl(btnAdd, 16);
             RoundControl(btnRemove, 16);
 
@@ -301,6 +302,7 @@ namespace FactoryManagementSystem
                     btnRemove.ForeColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
+            
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnRemove);
             // wire click handlers
@@ -328,6 +330,9 @@ namespace FactoryManagementSystem
             this.dataGridView1.Height = 500;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.RowHeadersVisible = false;
+            this.dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridView1.MultiSelect = false;
+            this.dataGridView1.ReadOnly = true; // optional but recommended
 
             // ===== ADD ALL TO MAIN =====
             // Title
@@ -357,6 +362,7 @@ namespace FactoryManagementSystem
 
             // Inventory box
             main.Controls.Add(inventoryBox);
+
 
             // Data grid
             main.Controls.Add(this.dataGridView1);

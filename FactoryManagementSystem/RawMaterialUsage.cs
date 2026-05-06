@@ -1,8 +1,9 @@
 ﻿using FactoryManagementSystem;
+using Microsoft.Data.SqlClient;
 using System;
+using System.Data;
 using System.Linq;
 using System.Windows.Forms;
-using Microsoft.Data.SqlClient;
 
 namespace FactoryDashboard.Pages
 {
@@ -12,14 +13,31 @@ namespace FactoryDashboard.Pages
         {
             InitializeComponent();
 
-            btnSave.Click += BtnSave_Click;
+            
             btnClear.Click += BtnClear_Click;
             btnRemove.Click += BtnRemove_Click;
 
             LoadMaterialOptions();
             dateMaterial.MaxDate = DateTime.Today;
+            LoadRawMaterials();
         }
+        private void LoadRawMaterials()
+        {
+            try
+            {
+                string query = @"
+            SELECT MaterialID, Name, Quantity
+            FROM RawMaterial";
 
+                DataTable dt = DBHelper.ExecuteDataTable(query, null);
+
+                dataGridView.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading materials: " + ex.Message);
+            }
+        }
         private void LoadMaterialOptions()
         {
             cmbMaterialName.Items.Clear();
@@ -27,9 +45,9 @@ namespace FactoryDashboard.Pages
             {
                 "Cement",
                 "Sand",
-                "Gravel",
+                "Crush",
                 "Steel",
-                "Bricks"
+                "Mold Oil"
             });
             cmbMaterialName.SelectedIndex = -1;
             cmbMaterialName.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -48,82 +66,11 @@ namespace FactoryDashboard.Pages
 
             return Convert.ToInt32(res);
         }
-
-        // CHECK DUPLICATE
-        private bool UsageExists(int materialId, int qty, DateTime date)
-        {
-            object res = DBHelper.ExecuteScalar(
-                "SELECT COUNT(*) FROM MaterialUsage WHERE MaterialID=@id AND QuantityUsed=@q AND Date=@d",
-                new SqlParameter[]
-                {
-                    new SqlParameter("@id", materialId),
-                    new SqlParameter("@q", qty),
-                    new SqlParameter("@d", date)
-                });
-
-            return res != null && Convert.ToInt32(res) > 0;
-        }
-
-        private void BtnSave_Click(object? sender, EventArgs e)
-        {
-            string material = cmbMaterialName.SelectedItem?.ToString();
-            string quantityText = txtQuantity.Text.Trim();
-            DateTime selectedDate = dateMaterial.Value.Date;
-
-            if (string.IsNullOrEmpty(material))
-            {
-                MessageBox.Show("Please select a Material Name");
-                cmbMaterialName.Focus();
-                return;
-            }
-
-            if (!int.TryParse(quantityText, out int quantity) || quantity <= 0)
-            {
-                MessageBox.Show("Quantity must be a positive integer");
-                txtQuantity.Focus();
-                return;
-            }
-
-            if (selectedDate > DateTime.Today)
-            {
-                MessageBox.Show("Future date not allowed");
-                return;
-            }
-
-            try
-            {
-                int materialId = GetMaterialId(material);
-
-                if (UsageExists(materialId, quantity, selectedDate))
-                {
-                    MessageBox.Show("Entry already exists for this material, quantity and date");
-                    return;
-                }
-
-                // ❌ UsageID hata diya (IDENTITY column)
-                string query =
-                    "INSERT INTO MaterialUsage (MaterialID, QuantityUsed, Date) VALUES (@mid,@q,@d)";
-
-                SqlParameter[] p =
-                {
-                    new SqlParameter("@mid", materialId),
-                    new SqlParameter("@q", quantity),
-                    new SqlParameter("@d", selectedDate)
-                };
-
-                DBHelper.ExecuteNonQuery(query, p);
-
-                MessageBox.Show("Raw Material Saved!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error saving: " + ex.Message);
-            }
-        }
-
+       
         private void BtnClear_Click(object? sender, EventArgs e)
         {
             ClearFields();
+            LoadRawMaterials();
         }
 
         private void ClearFields()
@@ -191,6 +138,7 @@ namespace FactoryDashboard.Pages
                 if (rows > 0)
                 {
                     MessageBox.Show("Raw material entry removed successfully!");
+                    LoadRawMaterials();
                 }
                 else
                 {
@@ -202,5 +150,6 @@ namespace FactoryDashboard.Pages
                 MessageBox.Show("Error removing: " + ex.Message);
             }
         }
+       
     }
 }

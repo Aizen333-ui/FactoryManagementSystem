@@ -234,7 +234,7 @@ namespace FactoryDashBoard.Pages
             btnSave.FlatStyle = FlatStyle.Flat;
             btnSave.ForeColor = Color.White;
             btnSave.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnSave.Location = new Point(200, 10);
+            btnSave.Location = new Point(300, 10);
             
             btnClear = new Button();
             btnClear.Text = "Clear";
@@ -247,9 +247,10 @@ namespace FactoryDashBoard.Pages
             btnPanel.Controls.Add(btnSave);
             btnPanel.Controls.Add(btnClear);
 
+           
+
             MakeRoundedButton(btnSave, Color.FromArgb(94, 60, 255));
             MakeRoundedButton(btnClear, Color.Gray);
-
             lblMessage = new Label();
             lblMessage.Text ="Previously Produced Materials:";
             lblMessage.Font = new Font("Segoe UI", 18F);

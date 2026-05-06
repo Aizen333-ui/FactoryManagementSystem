@@ -34,7 +34,7 @@ namespace FactoryManagementSystem
         {
             try
             {
-                string query = "SELECT WorkerID, Name, Role, Salary FROM Workers ORDER BY WorkerID DESC";
+                string query = "SELECT * FROM Workers ORDER BY WorkerID DESC";
                 DataTable dt = DBHelper.ExecuteDataTable(query, null);
                 dataGridView1.DataSource = dt;
             }
@@ -121,13 +121,25 @@ namespace FactoryManagementSystem
         // REMOVE WORKER
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 0)
+            if (dataGridView1.CurrentRow == null)
             {
                 MessageBox.Show("Select a worker to remove.");
                 return;
             }
 
-            int id = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["WorkerID"].Value);
+            int id = Convert.ToInt32(
+                dataGridView1.CurrentRow.Cells["WorkerID"].Value
+            );
+
+            DialogResult dr = MessageBox.Show(
+                "Are you sure you want to delete this worker?",
+                "Confirm",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+
+            if (dr != DialogResult.Yes)
+                return;
 
             try
             {
@@ -135,10 +147,10 @@ namespace FactoryManagementSystem
 
                 SqlParameter[] p =
                 {
-                    new SqlParameter("@id", id)
-                };
+            new SqlParameter("@id", id)
+        };
 
-                DBHelper.ExecuteNonQuery(query, p); // ✅ FIXED
+                DBHelper.ExecuteNonQuery(query, p);
 
                 MessageBox.Show("Worker removed!");
                 LoadWorkers();
@@ -148,5 +160,7 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Error removing worker: " + ex.Message);
             }
         }
+
+        
     }
 }

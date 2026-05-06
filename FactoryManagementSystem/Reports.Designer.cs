@@ -11,7 +11,7 @@ namespace FactoryManagementSystem
         private Button btnViewReport;
         private Label lblFrom;
         private Label lblTo;
-        private RichTextBox txtReport;
+        private DataGridView datagridReport;
         private Label lblTitle;
 
         protected override void Dispose(bool disposing)
@@ -94,7 +94,7 @@ namespace FactoryManagementSystem
             this.dtFrom = new DateTimePicker();
             this.dtTo = new DateTimePicker();
             this.btnViewReport = new Button();
-            this.txtReport = new RichTextBox();
+            this.datagridReport = new DataGridView();
 
             this.SuspendLayout();
 
@@ -173,12 +173,11 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnViewReport.Click += new EventHandler(this.btnViewReport_Click);
-            Panel reportBox = CreateRoundedBox(txtReport, 800);
+            Panel reportBox = CreateRoundedBox(datagridReport, 800);
             reportBox.Margin = new Padding(0, 20, 0, 20);
-            txtReport.Width = 1160;
-            txtReport.Height = 500;
-            txtReport.Font = new Font("Consolas", 11F);
-            txtReport.ReadOnly = true;
+            datagridReport.Width = 1160;
+            datagridReport.Height = 500;
+            datagridReport.ReadOnly = true;
 
             main.Controls.Add(lblTitle);
             main.Controls.Add(lblFrom);

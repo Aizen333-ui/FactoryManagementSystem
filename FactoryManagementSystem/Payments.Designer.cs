@@ -114,6 +114,7 @@ namespace FactoryManagementSystem
             btnDelete.MouseLeave += (s, e) => btnDelete.Invalidate();
             btnDelete.MouseDown += (s, e) => btnDelete.Invalidate();
             btnDelete.MouseUp += (s, e) => btnDelete.Invalidate();
+            
         }
 
         private void InitializeComponent()
@@ -187,7 +188,7 @@ namespace FactoryManagementSystem
             btnAdd.ForeColor = Color.White;
             btnAdd.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             RoundControl(btnAdd, 16);
-            btnAdd.Location = new Point(350, 10);
+            btnAdd.Location = new Point(300, 10);
 
             btnAdd.Paint += (s, e) =>
             {
@@ -233,7 +234,7 @@ namespace FactoryManagementSystem
             btnDelete.ForeColor = Color.White;
             btnDelete.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             RoundControl(btnDelete, 16);
-            btnDelete.Location = new Point(650, 10);
+            btnDelete.Location = new Point(600, 10);
 
             btnDelete.Paint += (s, e) =>
             {
@@ -266,6 +267,7 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
+           
 
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnDelete);
@@ -282,6 +284,9 @@ namespace FactoryManagementSystem
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.RowHeadersVisible = false;
+            this.dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            this.dataGridView1.MultiSelect = false;
+            this.dataGridView1.ReadOnly = true; // optional but recommended
 
             // Assemble
             main.Controls.Add(labelTitle);

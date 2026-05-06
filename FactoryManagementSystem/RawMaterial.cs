@@ -158,26 +158,33 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Error adding material: " + ex.Message);
             }
         }
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+
+            cmbName.SelectedItem = row.Cells["Name"].Value.ToString();
+            txtQty.Text = row.Cells["Quantity"].Value.ToString();
+        }
 
         // REMOVE MATERIAL
         private void BtnRemove_Click(object sender, EventArgs e)
         {
-            string material = cmbName.SelectedItem?.ToString();
-
-            if (string.IsNullOrEmpty(material))
+            if (dataGridView1.CurrentRow == null)
             {
-                MessageBox.Show("Select a material to remove.");
+                MessageBox.Show("Select a row first.");
                 return;
             }
 
-            if (!int.TryParse(txtQty.Text.Trim(), out int quantity) || quantity <= 0)
-            {
-                MessageBox.Show("Enter valid quantity.");
-                return;
-            }
+            string material = dataGridView1.CurrentRow.Cells["Name"].Value.ToString();
+
+            int quantity = Convert.ToInt32(
+                dataGridView1.CurrentRow.Cells["Quantity"].Value
+            );
 
             DialogResult dr = MessageBox.Show(
-                $"Remove {quantity} of {material}?",
+                $"Remove ALL of {material}?",
                 "Confirm",
                 MessageBoxButtons.YesNo
             );
@@ -185,34 +192,21 @@ namespace FactoryManagementSystem
             if (dr != DialogResult.Yes)
                 return;
 
-            try
+            string query = "DELETE FROM RawMaterial WHERE Name = @name";
+
+            SqlParameter[] p =
             {
-                string query =
-                    "UPDATE RawMaterial SET Quantity = Quantity - @qty " +
-                    "WHERE Name = @name AND Quantity >= @qty";
+        new SqlParameter("@name", material)
+    };
 
-                SqlParameter[] p =
-                {
-                    new SqlParameter("@qty", quantity),
-                    new SqlParameter("@name", material)
-                };
+            DBHelper.ExecuteNonQuery(query, p);
 
-                int rows = DBHelper.ExecuteNonQuery(query, p);
-
-                if (rows > 0)
-                {
-                    MessageBox.Show("Material removed!");
-                    LoadMaterials();
-                }
-                else
-                {
-                    MessageBox.Show("Not enough quantity or material not found.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error removing material: " + ex.Message);
-            }
+            MessageBox.Show("Removed successfully");
+            LoadMaterials();
+        }
+        private void BtnRefresh_Click(object sender, EventArgs e)
+        {
+            LoadMaterials();
         }
     }
 }
