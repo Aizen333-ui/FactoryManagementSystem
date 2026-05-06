@@ -3,7 +3,6 @@ using System;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace FactoryManagementSystem
 {
@@ -35,8 +34,8 @@ namespace FactoryManagementSystem
         {
             try
             {
-                string query = "SELECT WorkerID, Name, Role, Wage FROM Workers ORDER BY WorkerID DESC";
-                DataTable dt = DbHelper.ExecuteDataTable(query, null);
+                string query = "SELECT WorkerID, Name, Role, Salary FROM Workers ORDER BY WorkerID DESC";
+                DataTable dt = DBHelper.ExecuteDataTable(query, null);
                 dataGridView1.DataSource = dt;
             }
             catch (Exception ex)
@@ -95,7 +94,7 @@ namespace FactoryManagementSystem
             // INSERT INTO DATABASE
             try
             {
-                string query = "INSERT INTO Workers (Name, Role, Wage) VALUES (@Name, @Role, @Wage)";
+                string query = "INSERT INTO Workers (Name, Role, Salary) VALUES (@Name, @Role, @Wage)";
 
                 SqlParameter[] p =
                 {
@@ -104,7 +103,7 @@ namespace FactoryManagementSystem
                     new SqlParameter("@Wage", wage)
                 };
 
-                DbHelper.ExecuteNonQuery(query, p);
+                DBHelper.ExecuteNonQuery(query, p); // ✅ FIXED
 
                 MessageBox.Show("Worker added successfully!");
                 LoadWorkers();
@@ -139,7 +138,7 @@ namespace FactoryManagementSystem
                     new SqlParameter("@id", id)
                 };
 
-                DbHelper.ExecuteNonQuery(query, p);
+                DBHelper.ExecuteNonQuery(query, p); // ✅ FIXED
 
                 MessageBox.Show("Worker removed!");
                 LoadWorkers();

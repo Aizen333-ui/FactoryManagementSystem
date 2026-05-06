@@ -1,10 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FactoryManagementSystem
@@ -14,7 +10,7 @@ namespace FactoryManagementSystem
         public RawMaterial()
         {
             InitializeComponent();
-            // Ensure event handlers are attached (defensive in case designer wiring missed)
+
             this.btnAdd.Click -= btnAdd_Click;
             this.btnAdd.Click += btnAdd_Click;
 
@@ -27,15 +23,16 @@ namespace FactoryManagementSystem
             LoadMaterials();
         }
 
-
-        // ----------------------------
-        // LOAD MATERIALS INTO DATAGRID
-        // ----------------------------
+        // LOAD MATERIALS
         private void LoadMaterials()
         {
             try
             {
-                DataTable dt = DbHelper.ExecuteDataTable("SELECT * FROM RawMaterials ORDER BY MaterialID DESC");
+                DataTable dt = DBHelper.ExecuteDataTable(
+                    "SELECT * FROM RawMaterial ORDER BY MaterialID DESC",
+                    null
+                );
+
                 dataGridView1.DataSource = dt;
             }
             catch (Exception ex)
@@ -44,9 +41,7 @@ namespace FactoryManagementSystem
             }
         }
 
-        // ----------------------------
-        // GET UNIT BASED ON MATERIAL
-        // ----------------------------
+        // UNIT SET
         private string GetUnit(string materialName)
         {
             return materialName switch
@@ -62,35 +57,37 @@ namespace FactoryManagementSystem
 
         private void cmbName_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // prefer selected item but fall back to text in case events fire differently
             string selected = cmbName.SelectedItem?.ToString() ?? cmbName.Text ?? "";
             txtUnit.Text = GetUnit(selected);
         }
 
-        // ----------------------------
-        // CHECK DUPLICATE MATERIAL ID
-        // ----------------------------
+        // CHECK ID EXISTS
         private bool MaterialIdExists(string id)
         {
-            string query = "SELECT COUNT(*) FROM RawMaterials WHERE MaterialID = @id";
-            object? result = DbHelper.ExecuteScalar(query, new SqlParameter[] { new SqlParameter("@id", id) });
+            string query = "SELECT COUNT(*) FROM RawMaterial WHERE MaterialID = @id";
+
+            object result = DBHelper.ExecuteScalar(query,
+                new SqlParameter[] { new SqlParameter("@id", id) });
+
             return result != null && Convert.ToInt32(result) > 0;
         }
 
-        // Generate a new unique numeric MaterialID (1..10 digits)
+        // GENERATE ID (unused)
         private string GenerateMaterialId()
         {
-            // Try to generate an ID based on max existing ID + 1
             try
             {
-                object? res = DbHelper.ExecuteScalar("SELECT MAX(CAST(MaterialID AS bigint)) FROM RawMaterials");
+                object res = DBHelper.ExecuteScalar(
+                    "SELECT MAX(CAST(MaterialID AS bigint)) FROM RawMaterial",
+                    null
+                );
+
                 long maxId = 0;
                 if (res != null && long.TryParse(res.ToString(), out long parsed))
                     maxId = parsed;
 
                 string newId = (maxId + 1).ToString();
 
-                // ensure uniqueness (in rare race) by incrementing
                 while (MaterialIdExists(newId))
                 {
                     maxId++;
@@ -101,35 +98,31 @@ namespace FactoryManagementSystem
             }
             catch
             {
-                // fallback random 6-digit
                 var rnd = new Random();
                 string alt;
+
                 do
                 {
                     alt = rnd.Next(100000, 999999).ToString();
-                } while (MaterialIdExists(alt));
+                }
+                while (MaterialIdExists(alt));
+
                 return alt;
             }
         }
 
-        // ----------------------------
         // ADD MATERIAL
-        // ----------------------------
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string name = cmbName.Text.Trim();
             string qty = txtQty.Text.Trim();
             string unit = txtUnit.Text.Trim();
-            DateTime date = dateAdded.Value;
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(qty) || string.IsNullOrEmpty(unit))
             {
                 MessageBox.Show("Please fill all fields!");
                 return;
             }
-
-            // Generate a new unique numeric MaterialID
-            string id = GenerateMaterialId();
 
             if (!decimal.TryParse(qty, out decimal quantity) || quantity <= 0)
             {
@@ -139,20 +132,20 @@ namespace FactoryManagementSystem
 
             try
             {
+                // ✅ Unit store hoga ab
                 string query =
-                    "INSERT INTO RawMaterials (MaterialID, MaterialName, Quantity, Unit, DateAdded) " +
-                    "VALUES (@id, @name, CAST(@qty AS decimal(18,0)), @unit, @date)";
+                    "INSERT INTO RawMaterial (Name, Quantity, Unit) " +
+                    "VALUES (@name, @qty, @unit)";
 
                 SqlParameter[] p =
                 {
-                new SqlParameter("@id", id),
-                new SqlParameter("@name", name),
-                new SqlParameter("@qty", quantity),
-                new SqlParameter("@unit", unit),
-                new SqlParameter("@date", date)
-            };
+                    new SqlParameter("@name", name),
+                    new SqlParameter("@qty", quantity),
+                    new SqlParameter("@unit", unit)
+                };
 
-                DbHelper.ExecuteNonQuery(query, p);
+                DBHelper.ExecuteNonQuery(query, p);
+
                 MessageBox.Show("Material added successfully!");
                 LoadMaterials();
 
@@ -166,15 +159,11 @@ namespace FactoryManagementSystem
             }
         }
 
-        // ----------------------------
-        // REMOVE MATERIAL FROM BOTH FACTORIES
-        // ----------------------------
-        // ----------------------------
-        // REMOVE MATERIAL FROM BOTH FACTORIES
-        // ----------------------------
-        private void BtnRemove_Click(object? sender, EventArgs e)
+        // REMOVE MATERIAL
+        private void BtnRemove_Click(object sender, EventArgs e)
         {
             string material = cmbName.SelectedItem?.ToString();
+
             if (string.IsNullOrEmpty(material))
             {
                 MessageBox.Show("Select a material to remove.");
@@ -183,39 +172,47 @@ namespace FactoryManagementSystem
 
             if (!int.TryParse(txtQty.Text.Trim(), out int quantity) || quantity <= 0)
             {
-                MessageBox.Show("Enter a valid quantity to remove.");
-                txtQty.Focus();
+                MessageBox.Show("Enter valid quantity.");
                 return;
             }
 
             DialogResult dr = MessageBox.Show(
-                $"Are you sure you want to remove {quantity} {GetUnit(material)} of {material} from factory?",
-                "Confirm Remove",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
+                $"Remove {quantity} of {material}?",
+                "Confirm",
+                MessageBoxButtons.YesNo
             );
 
             if (dr != DialogResult.Yes)
                 return;
 
-            // Remove from factory
-            bool removed = RawMaterialDb.RemoveQuantity(material, quantity, "Factory");
+            try
+            {
+                string query =
+                    "UPDATE RawMaterial SET Quantity = Quantity - @qty " +
+                    "WHERE Name = @name AND Quantity >= @qty";
 
-            if (removed)
-            {
-                MessageBox.Show("Raw material entry removed successfully!");
-                txtQty.Clear();
-                cmbName.SelectedIndex = -1;
+                SqlParameter[] p =
+                {
+                    new SqlParameter("@qty", quantity),
+                    new SqlParameter("@name", material)
+                };
+
+                int rows = DBHelper.ExecuteNonQuery(query, p);
+
+                if (rows > 0)
+                {
+                    MessageBox.Show("Material removed!");
+                    LoadMaterials();
+                }
+                else
+                {
+                    MessageBox.Show("Not enough quantity or material not found.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("No material was removed. Please check if it exists in the factories.");
+                MessageBox.Show("Error removing material: " + ex.Message);
             }
         }
-
-
     }
-
-
 }
-

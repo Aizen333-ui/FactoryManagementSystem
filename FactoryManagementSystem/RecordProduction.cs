@@ -2,6 +2,8 @@
 using System;
 using System.Linq;
 using System.Windows.Forms;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace FactoryDashBoard.Pages
 {
@@ -19,11 +21,13 @@ namespace FactoryDashBoard.Pages
             LoadUnitOptions();
 
             dateProduction.MaxDate = DateTime.Today;
+
+            // ✅ LOAD DATA ON START
+            LoadProduction();
         }
 
         private void LoadProductOptions()
         {
-
             cmbProductName.Items.AddRange(new object[]
             {
                 "Tuff Tile",
@@ -37,7 +41,6 @@ namespace FactoryDashBoard.Pages
 
         private void LoadUnitOptions()
         {
-
             cmbUnit.Items.AddRange(new object[]
             {
                 "Pieces",
@@ -46,9 +49,39 @@ namespace FactoryDashBoard.Pages
             cmbUnit.SelectedIndex = 0;
         }
 
+        // ✅ LOAD DATA INTO GRID
+        private void LoadProduction()
+        {
+            try
+            {
+                DataTable dt = DBHelper.ExecuteDataTable(
+                    "SELECT * FROM Production ORDER BY ProductionID DESC",
+                    null
+                );
+
+                dataGridView1.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading production: " + ex.Message);
+            }
+        }
+
+        private bool ProductionExists(string product, DateTime date)
+        {
+            string query = "SELECT COUNT(*) FROM Production WHERE ProductName=@p AND Date=@d";
+
+            object result = DBHelper.ExecuteScalar(query, new SqlParameter[]
+            {
+                new SqlParameter("@p", product),
+                new SqlParameter("@d", date)
+            });
+
+            return result != null && Convert.ToInt32(result) > 0;
+        }
+
         private void BtnSave_Click(object? sender, EventArgs e)
         {
-            // ✅ Product
             if (cmbProductName.SelectedIndex == -1)
             {
                 MessageBox.Show("Please select a product");
@@ -56,7 +89,6 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
-            // ✅ Quantity
             if (string.IsNullOrWhiteSpace(txtQuantity.Text))
             {
                 MessageBox.Show("Please enter quantity");
@@ -78,7 +110,6 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
-            // ✅ Date
             DateTime selectedDate = dateProduction.Value.Date;
             if (selectedDate > DateTime.Today)
             {
@@ -86,30 +117,37 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
-            // ✅ Duplicate Check
-            bool exists = GlobalStorage.Productions.Any(p =>
-                p.ProductName == cmbProductName.Text &&
-                p.Date.Date == selectedDate);
-
-            if (exists)
+            if (ProductionExists(cmbProductName.Text, selectedDate))
             {
                 MessageBox.Show("Production for this product already recorded for selected date.");
                 return;
             }
 
-            // ✅ Save
-            GlobalStorage.Productions.Add(new ProductionEntry
+            try
             {
-                ProductName = cmbProductName.Text,
-                Quantity = quantity,
-                Unit = cmbUnit.SelectedItem?.ToString() ?? "",
+                string query =
+                    "INSERT INTO Production (ProductName, Quantity, Date) VALUES (@p, @q, @d)";
 
-                Date = selectedDate
-            });
+                SqlParameter[] p =
+                {
+                    new SqlParameter("@p", cmbProductName.Text),
+                    new SqlParameter("@q", quantity),
+                    new SqlParameter("@d", selectedDate)
+                };
 
-            MessageBox.Show("Production record saved successfully!");
+                DBHelper.ExecuteNonQuery(query, p);
 
-            ClearFields();
+                MessageBox.Show("Production record saved successfully!");
+
+                // ✅ REFRESH GRID
+                LoadProduction();
+
+                ClearFields();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving production: " + ex.Message);
+            }
         }
 
         private void BtnClear_Click(object? sender, EventArgs e)

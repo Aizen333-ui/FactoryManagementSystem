@@ -1,22 +1,20 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+using System.Data;
 
-public static class DbHelper
+class DBHelper
 {
-    private static readonly string _conStr =
-         "@";
+    static string conStr = "Data Source=localhost\\SQLEXPRESS04;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
 
-
-    public static DataTable ExecuteDataTable(string query, SqlParameter[]? parameters = null)
+    public static DataTable ExecuteDataTable(string query, SqlParameter[] parameters)
     {
-        using (SqlConnection con = new SqlConnection(_conStr))
-        using (SqlCommand cmd = new SqlCommand(query, con))
+        using (SqlConnection con = new SqlConnection(conStr))
         {
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters);
-
-            using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+            using (SqlCommand cmd = new SqlCommand(query, con))
             {
+                if (parameters != null)
+                    cmd.Parameters.AddRange(parameters);
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 return dt;
@@ -24,32 +22,34 @@ public static class DbHelper
         }
     }
 
-
-    public static int ExecuteNonQuery(string query, SqlParameter[]? parameters = null)
+    public static int ExecuteNonQuery(string query, SqlParameter[] parameters)
     {
-        using (SqlConnection con = new SqlConnection(_conStr))
-        using (SqlCommand cmd = new SqlCommand(query, con))
+        using (SqlConnection con = new SqlConnection(conStr))
         {
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters);
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                if (parameters != null)
+                    cmd.Parameters.AddRange(parameters);
 
-            con.Open();
-            return cmd.ExecuteNonQuery();
+                con.Open();
+                return cmd.ExecuteNonQuery();
+            }
         }
     }
 
-    public static object? ExecuteScalar(string query, SqlParameter[]? parameters = null)
+    // ✅ ADD THIS METHOD (fix for your error)
+    public static object ExecuteScalar(string query, SqlParameter[] parameters)
     {
-        using (SqlConnection con = new SqlConnection(_conStr))
-        using (SqlCommand cmd = new SqlCommand(query, con))
+        using (SqlConnection con = new SqlConnection(conStr))
         {
-            if (parameters != null)
-                cmd.Parameters.AddRange(parameters);
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                if (parameters != null)
+                    cmd.Parameters.AddRange(parameters);
 
-            con.Open();
-            return cmd.ExecuteScalar();
+                con.Open();
+                return cmd.ExecuteScalar();
+            }
         }
     }
-
-
 }
