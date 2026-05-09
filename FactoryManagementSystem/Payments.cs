@@ -1,19 +1,19 @@
-﻿using System;
-using System.Data;
-using System.Text.RegularExpressions;
+﻿using System.Data;
 using Microsoft.Data.SqlClient;
-using System.Windows.Forms;
 
 namespace FactoryManagementSystem
 {
     public partial class Payments : UserControl
     {
+        // Error provider for input validation
         ErrorProvider error = new ErrorProvider();
 
+        // Constructor
         public Payments()
         {
             InitializeComponent();
 
+            // Add payment reasons to combo box
             cmbReason.Items.AddRange(new object[]
             {
                 "Cement Purchase",
@@ -27,58 +27,29 @@ namespace FactoryManagementSystem
                 "Other Expense"
             });
 
+            // Prevent manual typing in combo box
             cmbReason.DropDownStyle = ComboBoxStyle.DropDownList;
 
+            // Load payment records into DataGridView
             LoadPayments();
         }
 
-        private bool PaymentIdExists(int id)
-        {
-            object result = DBHelper.ExecuteScalar("SELECT COUNT(*) FROM Payments WHERE PaymentID = @id",
-                new SqlParameter[] { new SqlParameter("@id", id) });
-            return result != null && Convert.ToInt32(result) > 0;
-        }
-
-        private int GeneratePaymentId()
-        {
-            try
-            {
-                object res = DBHelper.ExecuteScalar("SELECT MAX(CAST(PaymentID AS bigint)) FROM Payments", null);
-                long maxId = 0;
-                if (res != null && long.TryParse(res.ToString(), out long parsed))
-                    maxId = parsed;
-
-                int newId = (int)(maxId + 1);
-
-                while (PaymentIdExists(newId))
-                {
-                    maxId++;
-                    newId = (int)(maxId + 1);
-                }
-
-                return newId;
-            }
-            catch
-            {
-                var rnd = new Random();
-                int alt;
-                do
-                {
-                    alt = rnd.Next(100000, 999999);
-                } while (PaymentIdExists(alt));
-                return alt;
-            }
-        }
-
+        // Load all payments from database
         private void LoadPayments()
         {
             try
             {
-                DataTable dt = DBHelper.ExecuteDataTable("SELECT * FROM Payments ORDER BY PaymentID DESC", null);
+                // Fetch data from database
+                DataTable dt = DBHelper.ExecuteDataTable(
+                    "SELECT * FROM Payments ORDER BY PaymentID DESC",
+                    null
+                );
 
+                // Bind data to grid
                 dataGridView1.AutoGenerateColumns = true;
                 dataGridView1.DataSource = dt;
 
+                // Format amount column with currency
                 if (dataGridView1.Columns.Contains("Amount"))
                 {
                     dataGridView1.Columns["Amount"].DefaultCellStyle.Format = "'Rs '0.00";
@@ -90,33 +61,40 @@ namespace FactoryManagementSystem
             }
         }
 
+        // Automatically format amount text with Rs prefix
         private void TxtAmount_TextChanged(object sender, EventArgs e)
         {
             string text = txtAmount.Text.Replace("Rs", "").Trim();
 
             if (decimal.TryParse(text, out decimal amount))
             {
+                // Prevent recursive event triggering
                 txtAmount.TextChanged -= TxtAmount_TextChanged;
 
                 txtAmount.Text = "Rs " + amount.ToString();
 
+                // Move cursor to end
                 txtAmount.SelectionStart = txtAmount.Text.Length;
 
+                // Reattach event
                 txtAmount.TextChanged += TxtAmount_TextChanged;
             }
         }
 
+        // Add new payment record
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string amountText = txtAmount.Text.Replace("Rs", "").Trim();
             DateTime date = datePaid.Value;
 
+            // Validate amount
             if (!decimal.TryParse(amountText, out decimal amount) || amount <= 0)
             {
                 MessageBox.Show("Enter valid amount.");
                 return;
             }
 
+            // Prevent future dates
             if (date.Date > DateTime.Today)
             {
                 MessageBox.Show("Future date not allowed.");
@@ -125,7 +103,7 @@ namespace FactoryManagementSystem
 
             try
             {
-                // ✅ ID auto-generate hogi DB me (IDENTITY)
+                // Insert payment into database
                 string query =
                     "INSERT INTO Payments (Amount, Reason, Date) VALUES (@amount, @reason, @date)";
 
@@ -134,15 +112,16 @@ namespace FactoryManagementSystem
                     new SqlParameter("@amount", amount),
                     new SqlParameter("@reason", cmbReason.SelectedItem.ToString()),
                     new SqlParameter("@date", date)
-
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
 
                 MessageBox.Show("Payment added!");
 
+                // Refresh grid
                 LoadPayments();
 
+                // Clear inputs
                 txtAmount.Clear();
                 cmbReason.SelectedIndex = -1;
             }
@@ -152,16 +131,22 @@ namespace FactoryManagementSystem
             }
         }
 
+        // Delete selected payment
         private void btnDelete_Click(object sender, EventArgs e)
         {
+            // Ensure a row is selected
             if (dataGridView1.CurrentRow == null)
             {
                 MessageBox.Show("Select a row to delete!");
                 return;
             }
 
-            int id = Convert.ToInt32(dataGridView1.CurrentRow.Cells["PaymentID"].Value);
+            // Get selected payment ID
+            int id = Convert.ToInt32(
+                dataGridView1.CurrentRow.Cells["PaymentID"].Value
+            );
 
+            // Confirmation message
             DialogResult dr = MessageBox.Show(
                 "Are you sure you want to delete this payment?",
                 "Confirm Delete",
@@ -174,12 +159,15 @@ namespace FactoryManagementSystem
 
             try
             {
+                // Delete payment from database
                 DBHelper.ExecuteNonQuery(
                     "DELETE FROM Payments WHERE PaymentID = @id",
                     new SqlParameter[] { new SqlParameter("@id", id) }
                 );
 
                 MessageBox.Show("Payment deleted!");
+
+                // Refresh grid
                 LoadPayments();
             }
             catch (Exception ex)
@@ -187,6 +175,14 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Error deleting: " + ex.Message);
             }
         }
-        
+
+        // Navigate back to dashboard home page
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            OwnerDashBoard dashboard =
+                (OwnerDashBoard)this.FindForm();
+
+            dashboard.LoadPage(new OwnerHomePage());
+        }
     }
 }

@@ -8,11 +8,13 @@ namespace FactoryManagementSystem
     public partial class OwnerDashBoard : Form
     {
         Button activeButton = null;
-        Panel card;
+        Panel card;  // Main UI container
         Panel panelBody;
         Panel panelSideMenu, panelHeader, panelMain;
-        Label lblTitle;
-        Button btnRawMaterial, btnPayments, btnManageWorkers, btnReports, btnLogout;
+        Label lblTitle;  // Header title label
+        Button btnRawMaterial, btnPayments, btnManageWorkers, btnReports, btnLogout;          // Sidebar buttons
+
+        // ===================== INITIALIZE UI COMPONENTS =====================
 
         private void InitializeComponent()
         {
@@ -85,7 +87,7 @@ namespace FactoryManagementSystem
 
             btnLogout.Font = new Font("Segoe UI Emoji", 12F, FontStyle.Bold);
 
-            // 👇 KEY PART
+           
             btnLogout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
             panelSideMenu.Resize += (s, e) =>
@@ -119,12 +121,10 @@ namespace FactoryManagementSystem
             // ================= MAIN =================
             panelMain.Dock = DockStyle.Fill;
             panelMain.BackColor = Color.FromArgb(243, 244, 246);
-            // Add padding so the card doesn't touch edges (increase right margin to make card less wide)
-            // left margin = 60, right margin = 190 (increase right padding)
+            
             panelMain.Padding = new Padding(60, 40, 450, 40);
             panelMain.Resize += (s, e) =>
             {
-                // compute card size from panelMain padding so changes in padding take effect
                 int horizMargin = panelMain.Padding.Left + panelMain.Padding.Right;
                 int vertMargin = panelMain.Padding.Top + panelMain.Padding.Bottom;
 
@@ -134,7 +134,7 @@ namespace FactoryManagementSystem
                 card.Top = panelMain.Padding.Top;
             };
             // Card panel (fills right-side area)
-            card = new Panel(); // ✅ use class-level variable
+            card = new Panel(); 
             card.Dock = DockStyle.None;
             // initial card size based on panelMain padding
             int _horiz = panelMain.Padding.Left + panelMain.Padding.Right;

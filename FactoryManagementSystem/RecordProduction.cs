@@ -1,7 +1,4 @@
-﻿using FactoryDashboard;
-using System;
-using System.Linq;
-using System.Windows.Forms;
+﻿using FactoryManagementSystem;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -9,23 +6,31 @@ namespace FactoryDashBoard.Pages
 {
     public partial class RecordProduction : UserControl
     {
+        // Constructor
         public RecordProduction()
         {
             InitializeComponent();
 
+            // Button event bindings
             btnSave.Click += BtnSave_Click;
             btnClear.Click += BtnClear_Click;
+            btnBack.Click += btnBack_Click;
+
+            // Restrict quantity input to numbers only
             txtQuantity.KeyPress += txtQuantity_KeyPress;
 
+            // Load dropdown data
             LoadProductOptions();
             LoadUnitOptions();
 
+            // Prevent future production dates
             dateProduction.MaxDate = DateTime.Today;
 
-            // ✅ LOAD DATA ON START
+            // Load existing production records
             LoadProduction();
         }
 
+        // Load product list into ComboBox
         private void LoadProductOptions()
         {
             cmbProductName.Items.AddRange(new object[]
@@ -36,9 +41,11 @@ namespace FactoryDashBoard.Pages
                 "Hollow Block",
                 "Solid Block"
             });
+
             cmbProductName.SelectedIndex = -1;
         }
 
+        // Load unit options into ComboBox
         private void LoadUnitOptions()
         {
             cmbUnit.Items.AddRange(new object[]
@@ -46,10 +53,11 @@ namespace FactoryDashBoard.Pages
                 "Pieces",
                 "Sqft"
             });
+
             cmbUnit.SelectedIndex = 0;
         }
 
-        // ✅ LOAD DATA INTO GRID
+        // Load production records into DataGridView
         private void LoadProduction()
         {
             try
@@ -67,6 +75,7 @@ namespace FactoryDashBoard.Pages
             }
         }
 
+        // Check if production already exists for same product and date
         private bool ProductionExists(string product, DateTime date)
         {
             string query = "SELECT COUNT(*) FROM Production WHERE ProductName=@p AND Date=@d";
@@ -80,8 +89,10 @@ namespace FactoryDashBoard.Pages
             return result != null && Convert.ToInt32(result) > 0;
         }
 
+        // Save production record
         private void BtnSave_Click(object? sender, EventArgs e)
         {
+            // Validate product selection
             if (cmbProductName.SelectedIndex == -1)
             {
                 MessageBox.Show("Please select a product");
@@ -89,6 +100,7 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
+            // Validate quantity input
             if (string.IsNullOrWhiteSpace(txtQuantity.Text))
             {
                 MessageBox.Show("Please enter quantity");
@@ -96,6 +108,7 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
+            // Validate numeric quantity
             if (!double.TryParse(txtQuantity.Text, out double quantity))
             {
                 MessageBox.Show("Quantity must be numeric");
@@ -103,6 +116,7 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
+            // Validate quantity range
             if (quantity <= 0 || quantity > 10000)
             {
                 MessageBox.Show("Quantity must be between 1 and 10000");
@@ -111,12 +125,15 @@ namespace FactoryDashBoard.Pages
             }
 
             DateTime selectedDate = dateProduction.Value.Date;
+
+            // Prevent future date entry
             if (selectedDate > DateTime.Today)
             {
                 MessageBox.Show("Future date not allowed");
                 return;
             }
 
+            // Prevent duplicate entries
             if (ProductionExists(cmbProductName.Text, selectedDate))
             {
                 MessageBox.Show("Production for this product already recorded for selected date.");
@@ -125,6 +142,7 @@ namespace FactoryDashBoard.Pages
 
             try
             {
+                // Insert production record
                 string query =
                     "INSERT INTO Production (ProductName, Quantity, Date) VALUES (@p, @q, @d)";
 
@@ -139,9 +157,10 @@ namespace FactoryDashBoard.Pages
 
                 MessageBox.Show("Production record saved successfully!");
 
-                // ✅ REFRESH GRID
+                // Refresh grid after insert
                 LoadProduction();
 
+                // Clear form fields
                 ClearFields();
             }
             catch (Exception ex)
@@ -150,11 +169,13 @@ namespace FactoryDashBoard.Pages
             }
         }
 
+        // Clear button click
         private void BtnClear_Click(object? sender, EventArgs e)
         {
             ClearFields();
         }
 
+        // Reset form fields
         private void ClearFields()
         {
             cmbProductName.SelectedIndex = -1;
@@ -163,6 +184,7 @@ namespace FactoryDashBoard.Pages
             dateProduction.Value = DateTime.Today;
         }
 
+        // Restrict quantity textbox to numeric input only
         private void txtQuantity_KeyPress(object? sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) &&
@@ -172,6 +194,16 @@ namespace FactoryDashBoard.Pages
                 e.Handled = true;
             }
         }
-        
+
+        // Back button → return to dashboard home page
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            var dashboard = this.FindForm() as FactoryManagementSystem.FactoryDashBoard;
+
+            if (dashboard != null)
+            {
+                dashboard.LoadPage(new FactoryHomePage());
+            }
+        }
     }
 }

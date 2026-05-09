@@ -4,6 +4,8 @@ namespace FactoryManagementSystem
 {
     partial class RawMaterial
     {
+        // ===================== COMPONENT DECLARATIONS =====================
+
         private System.ComponentModel.IContainer components = null;
 
         private System.Windows.Forms.Label label1;
@@ -23,17 +25,12 @@ namespace FactoryManagementSystem
         private System.Windows.Forms.Button btnRemove;
 
         private System.Windows.Forms.DataGridView dataGridView1;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-                components.Dispose();
-            base.Dispose(disposing);
-        }
+        private System.Windows.Forms.Button btnBack;
+        // ===================== ROUNDED INPUT BOX =====================
+        // Creates modern card-style container for inputs
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();
-            // Prefer innerControl's explicit size when provided so visual and actual control sizes match
             container.Height = (innerControl.Height > 0) ? innerControl.Height + 20 : height;
             container.Width = (innerControl.Width > 0) ? innerControl.Width + 24 : 800;
             container.BackColor = Color.White;
@@ -41,16 +38,17 @@ namespace FactoryManagementSystem
             container.Margin = new Padding(0, 0, 0, 15);
             container.Size = new Size(container.Width, container.Height + 2);
             container.AutoSize = false;
-            container.Anchor = AnchorStyles.Left;   // 👈 VERY IMPORTANT
-            // place inner control to fill the rounded container and remove its own extra margins
+            container.Anchor = AnchorStyles.Left;   
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
             innerControl.Margin = new Padding(0);
             if (innerControl is TextBox tb)
             {
                 tb.BorderStyle = BorderStyle.None;
-                tb.Multiline = true;
+                tb.Multiline = false;   
                 tb.Font = new Font("Segoe UI", 12F);
+                tb.Height = 30;
+                tb.TextAlign = HorizontalAlignment.Left;
                 tb.Margin = new Padding(0);
             }
             if (innerControl is ComboBox cb)
@@ -102,6 +100,9 @@ namespace FactoryManagementSystem
 
             return container;
         }
+        // ===================== ROUND CONTROL UTILITY =====================
+        // Applies rounded corners to buttons/controls
+
         private void RoundControl(Control ctl, int radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -132,8 +133,14 @@ namespace FactoryManagementSystem
             btnRemove.MouseLeave += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseDown += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseUp += (s, e) => btnRemove.Invalidate();
-              
+            btnBack.MouseEnter += (s, e) => btnBack.Invalidate();
+            btnBack.MouseLeave += (s, e) => btnBack.Invalidate();
+            btnBack.MouseDown += (s, e) => btnBack.Invalidate();
+            btnBack.MouseUp += (s, e) => btnBack.Invalidate();
+
         }
+        // ===================== INITIALIZE UI =====================
+
         private void InitializeComponent()
         {
             this.SuspendLayout();
@@ -233,9 +240,19 @@ namespace FactoryManagementSystem
             btnRemove.ForeColor = Color.White;
             btnRemove.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnRemove.Location = new Point(600, 10);
-            
+            Button btnBack = this.btnBack = new Button();
+            btnBack.Text = "Back";
+            btnBack.Width = 260;
+            btnBack.Height = 50;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.FlatAppearance.BorderSize = 0;
+            btnBack.ForeColor = Color.White;
+            btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnBack.Location = new Point(260, 750);
+
             RoundControl(btnAdd, 16);
             RoundControl(btnRemove, 16);
+            RoundControl(btnBack, 16);
 
             // gradient for add button
             btnAdd.Paint += (s, e) =>
@@ -302,12 +319,43 @@ namespace FactoryManagementSystem
                     btnRemove.ForeColor,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
-            
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnRemove);
             // wire click handlers
             btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             btnRemove.Click += new System.EventHandler(this.BtnRemove_Click);
+            btnBack.Click += new System.EventHandler(this.btnBack_Click);
 
             // ===== INVENTORY BOX =====
             Panel inventoryBox = new Panel();
@@ -366,6 +414,7 @@ namespace FactoryManagementSystem
 
             // Data grid
             main.Controls.Add(this.dataGridView1);
+            main.Controls.Add(btnBack);
 
             // ===== FINAL =====
             this.Controls.Add(main);

@@ -13,7 +13,7 @@ namespace FactoryManagementSystem
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Button btnLogin;
         private System.Windows.Forms.Label lblLogo;
-        
+
         private System.Windows.Forms.Label lblMessage;
 
         protected override void Dispose(bool disposing)
@@ -82,7 +82,7 @@ namespace FactoryManagementSystem
                 tb.Margin = new Padding(0);
                 container.Padding = new Padding(8, 6, 8, 6);
             }
-            
+
             container.Controls.Add(innerControl);
 
             container.Paint += (s, e) =>
@@ -190,7 +190,7 @@ namespace FactoryManagementSystem
             this.lblPass.Text = "Password";
 
             // PASS TEXTBOX
-            this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 13F); 
+            this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
             this.txtPassword.BackColor = System.Drawing.Color.White;
             this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPassword.PasswordChar = '*';

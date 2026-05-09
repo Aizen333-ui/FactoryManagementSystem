@@ -1,8 +1,4 @@
 ﻿using FactoryDashBoard.Pages;
-using System;
-using System.Windows.Forms;
-using System.Drawing.Drawing2D;
-using FactoryDashboard.Pages;
 
 namespace FactoryManagementSystem
 {
@@ -11,12 +7,16 @@ namespace FactoryManagementSystem
         public FactoryDashBoard()
         {
             InitializeComponent();
+            // Make form resizable and start in full-screen mode
+
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
         }
 
-        // --- PAGE LOAD FUNCTION ---
-        private void LoadPage(UserControl page)
+        // --- LOAD USER CONTROL INTO MAIN UI AREA ---
+        // This function dynamically loads different pages (UserControls)
+        // inside the dashboard without opening new forms
+        public void LoadPage(UserControl page)
         {
             // load into the inner white card so padding and rounded card visuals apply
             if (card == null)
@@ -38,25 +38,28 @@ namespace FactoryManagementSystem
             page.BringToFront();
         }
 
-        // --- MENU CLICK EVENTS ---
+        // --- NAVIGATION BUTTON: RECORD PRODUCTION PAGE ---
 
         private void btnRecord_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRecord);
             LoadPage(new RecordProduction());
         }
+        // --- NAVIGATION BUTTON: RAW MATERIAL PAGE ---
 
         private void btnRaw_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRaw);
             LoadPage(new RawMaterialUsage());
         }
+        // --- NAVIGATION BUTTON: REPORT PAGE ---
 
         private void btnReport_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnReport);
             LoadPage(new Report());
         }
+        // --- LOGOUT BUTTON ---
 
         private void btnLogout_Click(object sender, EventArgs e)
         {

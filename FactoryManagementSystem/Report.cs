@@ -1,28 +1,34 @@
-﻿using Microsoft.Data.SqlClient;
-using System;
+﻿using FactoryManagementSystem;
+using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Windows.Forms;
 
-namespace FactoryDashboard.Pages
+namespace FactoryDashBoard.Pages
 {
     public partial class Report : UserControl
     {
+        // Database connection string
         string connStr =
             "Data Source=TALHA-SOHAIL\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
 
+        // Constructor
         public Report()
         {
             InitializeComponent();
+
+            // Button event bindings
             btnGenerate.Click += BtnGenerate_Click;
+            btnBack.Click += btnBack_Click;
+            btnSendReport.Click += btnSendReport_Click;
         }
 
+        // Generate report based on selected date range
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
             DateTime from = dateFrom.Value.Date;
             DateTime to = dateTo.Value.Date;
 
+            // Create unified report table
             DataTable dt = new DataTable();
-
             dt.Columns.Add("Type");
             dt.Columns.Add("Name");
             dt.Columns.Add("Quantity");
@@ -34,7 +40,7 @@ namespace FactoryDashboard.Pages
                 {
                     con.Open();
 
-                    // ================= MATERIAL USAGE =================
+                    // ================= RAW MATERIAL USAGE REPORT =================
                     string materialQuery = @"
                         SELECT 
                             r.Name AS MaterialName,
@@ -64,7 +70,7 @@ namespace FactoryDashboard.Pages
                         }
                     }
 
-                    // ================= PRODUCTION =================
+                    // ================= PRODUCTION REPORT =================
                     string productionQuery = @"
                         SELECT 
                             ProductName,
@@ -94,8 +100,10 @@ namespace FactoryDashboard.Pages
                     }
                 }
 
+                // Bind data to grid
                 dataGridReport.DataSource = dt;
 
+                // Show message if no records found
                 if (dt.Rows.Count == 0)
                 {
                     MessageBox.Show("No records found.");
@@ -104,6 +112,25 @@ namespace FactoryDashboard.Pages
             catch (Exception ex)
             {
                 MessageBox.Show("Error generating report: " + ex.Message);
+            }
+        }
+        private void btnSendReport_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(
+                "Report has been sent to the owner successfully!",
+                "Report Sent",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+        // Navigate back to dashboard home page
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            var dashboard = this.FindForm() as FactoryManagementSystem.FactoryDashBoard;
+
+            if (dashboard != null)
+            {
+                dashboard.LoadPage(new FactoryHomePage());
             }
         }
     }

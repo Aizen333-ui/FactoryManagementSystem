@@ -1,16 +1,16 @@
-﻿using System;
-using System.Data;
-using System.Windows.Forms;
+﻿using System.Data;
 
 namespace FactoryManagementSystem
 {
     public partial class OwnerReportsPage : UserControl
     {
+        // ===================== CONSTRUCTOR =====================
+
         public OwnerReportsPage()
         {
             InitializeComponent();
         }
-
+        //Selected date confirmation
         private void btnViewReport_Click(object sender, EventArgs e)
         {
             DateTime fromDate = dtFrom.Value.Date;
@@ -118,7 +118,7 @@ namespace FactoryManagementSystem
                     );
                 }
 
-                // 🔥 ONLY ONE DATA SOURCE
+
                 datagridReport.DataSource = report;
                 MessageBox.Show("Report loaded!");
             }
@@ -126,6 +126,19 @@ namespace FactoryManagementSystem
             {
                 MessageBox.Show("Error fetching report: " + ex.Message);
             }
+        }
+        // BACK BUTTON - NAVIGATES TO HOME PAGE
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            OwnerDashBoard dashboard =
+                (OwnerDashBoard)this.FindForm();
+
+            dashboard.LoadPage(new OwnerHomePage());
+        }
+        private void btnSendReport_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

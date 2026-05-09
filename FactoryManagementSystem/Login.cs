@@ -1,6 +1,3 @@
-using System;
-using System.Windows.Forms;
-
 namespace FactoryManagementSystem
 {
     public partial class Login : Form
@@ -12,13 +9,15 @@ namespace FactoryManagementSystem
 
             panelLogin.Resize += (s, e) => RoundPanel(panelLogin);
         }
+        // --- LOGIN BUTTON CLICK EVENT ---
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
 
-            // EMPTY CHECK
+            // ===================== VALIDATION CHECK =====================
+            // Ensure both fields are filled before processing login
             if (username == "" || password == "")
             {
                 MessageBox.Show("Please enter username and password.", "Warning",
@@ -32,8 +31,7 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Owner logged in!", "Success",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Make sure the form name exactly matches your class:
-                // public partial class OwnerDashBoard : Form
+
                 OwnerDashBoard owner = new OwnerDashBoard();
 
                 this.Hide();
@@ -42,7 +40,7 @@ namespace FactoryManagementSystem
                 return;
             }
 
-            // ===================== FACTORY 1 LOGIN =====================
+            // ===================== FACTORY LOGIN =====================
             if (username == "factory" && password == "fpass")
             {
                 MessageBox.Show("Factory Manager logged in!", "Success",

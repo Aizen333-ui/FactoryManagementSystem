@@ -3,36 +3,37 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace FactoryDashboard.Pages
+namespace FactoryDashBoard.Pages
 {
     partial class Report
     {
         private System.ComponentModel.IContainer components = null;
+        // ================= HEADER UI =================
 
         private Panel panelHeader;
         private Label lblTitle;
         private Button btnReports;
+        // ================= MAIN CONTENT =================
 
         private Panel mainPanel;
-       
         private DataGridView dataGridReport;
+        // ================= ACTION BUTTONS =================
+
         private Button btnGenerate;
         private Button btnSendReport;
+        private Button btnBack;
+        // ================= FILTER CONTROLS =================
 
         private DateTimePicker dateFrom;
         private DateTimePicker dateTo;
         private Label lblFrom;
         private Label lblTo;
+        
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && components != null)
-                components.Dispose();
-
-            base.Dispose(disposing);
-        }
+        
         private bool isHover = false;
         private bool isDown = false;
+        // MODERN BUTTON DESIGN 
 
         private void ApplyModernButton(Button btn, Color baseColor, Color hoverColor, Color pressedColor)
         {
@@ -83,6 +84,8 @@ namespace FactoryDashboard.Pages
                 );
             };
         }
+        // ROUNDED REGION HELPER
+
         private void ApplyRoundedRegion(Button btn, int radius)
         {
             Rectangle rect = btn.ClientRectangle;
@@ -98,6 +101,8 @@ namespace FactoryDashboard.Pages
                 btn.Region = new Region(path);
             }
         }
+        // UI INITIALIZATION
+
         private void InitializeComponent()
         {
             this.panelHeader = new Panel();
@@ -112,11 +117,12 @@ namespace FactoryDashboard.Pages
             this.dateTo = new DateTimePicker();
             this.lblFrom = new Label();
             this.lblTo = new Label();
+            this.btnBack = new Button();
 
             this.SuspendLayout();
 
             // ================= HEADER =================
-            
+
             panelHeader.Dock = DockStyle.Top;
             panelHeader.Height = 60;
 
@@ -136,7 +142,7 @@ namespace FactoryDashboard.Pages
             mainPanel.Dock = DockStyle.Fill;
             mainPanel.BackColor = Color.White;
 
-            
+
 
             // FROM
             lblFrom.Text = "From:";
@@ -181,11 +187,47 @@ namespace FactoryDashboard.Pages
 
             // GRID
             dataGridReport.Location = new Point(50, 230);
-            dataGridReport.Size = new Size(1160, 1000);
+            dataGridReport.Size = new Size(1160, 500);
             dataGridReport.BackgroundColor = Color.White;
             dataGridReport.BorderStyle = BorderStyle.Fixed3D;
             dataGridReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            // BACK BUTTON
+            btnBack.Text = "Back";
+            btnBack.ForeColor = Color.White;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnBack.Size = new Size(260, 60);
+            btnBack.Location = new Point(100, 750);
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
             // ADD TO MAIN
             mainPanel.Controls.Add(lblFrom);
             mainPanel.Controls.Add(dateFrom);
@@ -194,6 +236,11 @@ namespace FactoryDashboard.Pages
             mainPanel.Controls.Add(btnGenerate);
             mainPanel.Controls.Add(btnSendReport);
             mainPanel.Controls.Add(dataGridReport);
+            // ================= APPLY STYLES =================
+
+            ApplyRoundedRegion(btnGenerate, 16);
+            ApplyRoundedRegion(btnSendReport, 16);
+            ApplyRoundedRegion(btnBack, 16);
             ApplyModernButton(btnGenerate,
             Color.FromArgb(37, 99, 235),      // base blue
             Color.FromArgb(59, 130, 246),     // hover
@@ -204,9 +251,10 @@ namespace FactoryDashboard.Pages
                 Color.FromArgb(34, 197, 94),      // hover
                 Color.FromArgb(21, 128, 61));     // pressed
             // ================= FORM =================
-            this.ClientSize = new Size(1050, 600);
+            this.ClientSize = new Size(1050, 800);
             this.Controls.Add(mainPanel);
             this.Controls.Add(panelHeader);
+            mainPanel.Controls.Add(btnBack);
             this.Text = "Report to Owner";
 
             this.ResumeLayout(false);

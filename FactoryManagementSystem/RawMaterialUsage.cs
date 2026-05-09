@@ -1,36 +1,44 @@
 ﻿using FactoryManagementSystem;
 using Microsoft.Data.SqlClient;
-using System;
 using System.Data;
-using System.Linq;
-using System.Windows.Forms;
 
-namespace FactoryDashboard.Pages
+namespace FactoryDashBoard.Pages
 {
     public partial class RawMaterialUsage : UserControl
     {
+        // Constructor
         public RawMaterialUsage()
         {
             InitializeComponent();
 
-            
+            // Attach button events
             btnClear.Click += BtnClear_Click;
             btnRemove.Click += BtnRemove_Click;
+            btnBack.Click += btnBack_Click;
 
+            // Load combo box items
             LoadMaterialOptions();
+
+            // Restrict future dates
             dateMaterial.MaxDate = DateTime.Today;
+
+            // Load raw materials into grid
             LoadRawMaterials();
         }
+
+        // Load raw material records from database
         private void LoadRawMaterials()
         {
             try
             {
                 string query = @"
-            SELECT MaterialID, Name, Quantity
-            FROM RawMaterial";
+                SELECT MaterialID, Name, Quantity
+                FROM RawMaterial";
 
+                // Execute query and store data
                 DataTable dt = DBHelper.ExecuteDataTable(query, null);
 
+                // Bind data to DataGridView
                 dataGridView.DataSource = dt;
             }
             catch (Exception ex)
@@ -38,9 +46,12 @@ namespace FactoryDashboard.Pages
                 MessageBox.Show("Error loading materials: " + ex.Message);
             }
         }
+
+        // Load material names into combo box
         private void LoadMaterialOptions()
         {
             cmbMaterialName.Items.Clear();
+
             cmbMaterialName.Items.AddRange(new object[]
             {
                 "Cement",
@@ -49,11 +60,14 @@ namespace FactoryDashboard.Pages
                 "Steel",
                 "Mold Oil"
             });
+
             cmbMaterialName.SelectedIndex = -1;
+
+            // Prevent manual typing
             cmbMaterialName.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
-        // GET MATERIAL ID FROM DB
+        // Get material ID from database using material name
         private int GetMaterialId(string name)
         {
             object res = DBHelper.ExecuteScalar(
@@ -61,18 +75,23 @@ namespace FactoryDashboard.Pages
                 new SqlParameter[] { new SqlParameter("@n", name) }
             );
 
+            // Check if material exists
             if (res == null)
                 throw new Exception("Material not found in database");
 
             return Convert.ToInt32(res);
         }
-       
+
+        // Clear all input fields
         private void BtnClear_Click(object? sender, EventArgs e)
         {
             ClearFields();
+
+            // Reload grid data
             LoadRawMaterials();
         }
 
+        // Reset controls to default state
         private void ClearFields()
         {
             cmbMaterialName.SelectedIndex = -1;
@@ -80,6 +99,7 @@ namespace FactoryDashboard.Pages
             dateMaterial.Value = DateTime.Today;
         }
 
+        // Return unit according to selected material
         private string GetUnitForMaterial(string material)
         {
             return material switch
@@ -93,16 +113,20 @@ namespace FactoryDashboard.Pages
             };
         }
 
+        // Remove quantity of selected raw material
         private void BtnRemove_Click(object? sender, EventArgs e)
         {
+            // Get selected material name
             string material = cmbMaterialName.SelectedItem?.ToString();
 
+            // Validate material selection
             if (string.IsNullOrEmpty(material))
             {
                 MessageBox.Show("Select a material to remove.");
                 return;
             }
 
+            // Validate quantity input
             if (!int.TryParse(txtQuantity.Text.Trim(), out int quantity) || quantity <= 0)
             {
                 MessageBox.Show("Enter a valid quantity to remove.");
@@ -110,6 +134,7 @@ namespace FactoryDashboard.Pages
                 return;
             }
 
+            // Confirmation message
             DialogResult dr = MessageBox.Show(
                 $"Remove {quantity} {GetUnitForMaterial(material)} of {material}?",
                 "Confirm Remove",
@@ -122,10 +147,13 @@ namespace FactoryDashboard.Pages
 
             try
             {
+                // Fetch material ID
                 int materialId = GetMaterialId(material);
 
+                // Update material quantity
                 string query =
-                    "UPDATE RawMaterial SET Quantity = Quantity - @q WHERE MaterialID=@id AND Quantity>=@q";
+                    "UPDATE RawMaterial SET Quantity = Quantity - @q " +
+                    "WHERE MaterialID=@id AND Quantity>=@q";
 
                 SqlParameter[] p =
                 {
@@ -133,11 +161,15 @@ namespace FactoryDashboard.Pages
                     new SqlParameter("@id", materialId)
                 };
 
+                // Execute update query
                 int rows = DBHelper.ExecuteNonQuery(query, p);
 
+                // Check if update succeeded
                 if (rows > 0)
                 {
                     MessageBox.Show("Raw material entry removed successfully!");
+
+                    // Refresh grid
                     LoadRawMaterials();
                 }
                 else
@@ -150,6 +182,16 @@ namespace FactoryDashboard.Pages
                 MessageBox.Show("Error removing: " + ex.Message);
             }
         }
-       
+
+        // Navigate back to dashboard home page
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            var dashboard = this.FindForm() as FactoryManagementSystem.FactoryDashBoard;
+
+            if (dashboard != null)
+            {
+                dashboard.LoadPage(new FactoryHomePage());
+            }
+        }
     }
 }

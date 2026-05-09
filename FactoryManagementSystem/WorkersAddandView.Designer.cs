@@ -7,6 +7,7 @@ namespace FactoryManagementSystem
     partial class WorkersAddandView
     {
         private System.ComponentModel.IContainer components = null;
+        // ===================== UI COMPONENTS =====================
 
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblName;
@@ -23,15 +24,9 @@ namespace FactoryManagementSystem
         private System.Windows.Forms.Label label1;
 
         private System.Windows.Forms.DataGridView dataGridView1;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-                components.Dispose();
-
-            base.Dispose(disposing);
-        }
-
+        private System.Windows.Forms.Button btnBack;
+        // CREATE ROUNDED INPUT BOX CONTAINER
+        // Used for TextBox and ComboBox styling
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();
@@ -77,6 +72,7 @@ namespace FactoryManagementSystem
             };
             return container;
         }
+        // ROUND CONTROL REGION (for buttons etc.)
 
         private void RoundControl(Control ctl, int radius)
         {
@@ -105,8 +101,13 @@ namespace FactoryManagementSystem
             btnRemove.MouseLeave += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseDown += (s, e) => btnRemove.Invalidate();
             btnRemove.MouseUp += (s, e) => btnRemove.Invalidate();
-            
+            btnBack.MouseEnter += (s, e) => btnBack.Invalidate();
+            btnBack.MouseLeave += (s, e) => btnBack.Invalidate();
+            btnBack.MouseDown += (s, e) => btnBack.Invalidate();
+            btnBack.MouseUp += (s, e) => btnBack.Invalidate();
+
         }
+        // INITIALIZE UI
 
         private void InitializeComponent()
         {
@@ -121,9 +122,11 @@ namespace FactoryManagementSystem
             this.btnRemove = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.btnBack = new System.Windows.Forms.Button();
 
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
+            // ================= MAIN LAYOUT =================
 
             FlowLayoutPanel main = new FlowLayoutPanel();
             main.Dock = DockStyle.Fill;
@@ -131,23 +134,27 @@ namespace FactoryManagementSystem
             main.WrapContents = false;
             main.AutoScroll = true;
             main.Padding = new Padding(30, 20, 30, 20);
+            // ================= TITLE =================
 
             lblTitle.Text = "Workers";
             lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
             lblTitle.AutoSize = true;
             lblTitle.Margin = new Padding(0, 0, 0, 20);
+            // ================= NAME =================
 
             lblName.Text = "Worker Name:";
             lblName.Font = new Font("Segoe UI", 14F);
             lblName.AutoSize = true;
             txtName.Width = 1000;
             txtName.Height = 30;
+            // ================= ROLE =================
 
             lblRole.Text = "Job / Role:";
             lblRole.Font = new Font("Segoe UI", 14F);
             lblRole.AutoSize = true;
             cmbRole.Width = 1000;
             cmbRole.Height = 30;
+            // ================= WAGE =================
 
             lblWage.Text = "Daily Wage (PKR):";
             lblWage.Font = new Font("Segoe UI", 14F);
@@ -156,11 +163,13 @@ namespace FactoryManagementSystem
             txtWage.Height = 30;
             txtWage.Font = new Font("Segoe UI", 14F);
             txtWage.TextChanged += new System.EventHandler(this.TxtWage_TextChanged);
+            // ================= BUTTON PANEL =================
 
             Panel btnPanel = new Panel();
             btnPanel.Width = 1200;
             btnPanel.Height = 80;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
+            // ================= ADD BUTTON =================
 
             btnAdd.Text = "Add Worker";
             btnAdd.Width = 260;
@@ -205,6 +214,7 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // ================= REMOVE BUTTON =================
 
             btnRemove.Text = "Remove Worker";
             btnRemove.Width = 260;
@@ -245,24 +255,70 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
+            // ================= BACK BUTTON =================
+
+            Button btnBack = this.btnBack = new Button();
+            btnBack.Text = "Back";
+            btnBack.Width = 260;
+            btnBack.Height = 50;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.FlatAppearance.BorderSize = 0;
+            btnBack.ForeColor = Color.White;
+            btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnBack.Location = new Point(260, 850);
             btnAdd.Location = new Point(300, 10);
             btnRemove.Location = new Point(600, 10);
-           
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }; btnBack.Click += new System.EventHandler(this.btnBack_Click);
+            RoundControl(btnBack, 16);
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnRemove);
+
+
+            // ================= LABEL =================
 
             label1.Text = "Existing Workers:";
             label1.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             label1.AutoSize = true;
 
+            // ================= GRID =================
 
             this.dataGridView1.Width = 1160;
-            this.dataGridView1.Height = 700;
+            this.dataGridView1.Height = 500;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.RowHeadersVisible = false;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.MultiSelect = false;
             dataGridView1.ReadOnly = true;
+            // ================= ADD CONTROLS =================
 
             main.Controls.Add(lblTitle);
             main.Controls.Add(lblName);
@@ -275,6 +331,8 @@ namespace FactoryManagementSystem
             main.Controls.Add(btnPanel);
             main.Controls.Add(label1);
             main.Controls.Add(this.dataGridView1);
+            main.Controls.Add(btnBack);
+
 
             this.Controls.Add(main);
             this.Size = new System.Drawing.Size(800, 700);

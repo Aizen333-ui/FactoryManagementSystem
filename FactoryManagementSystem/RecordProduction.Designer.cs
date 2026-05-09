@@ -7,22 +7,26 @@ namespace FactoryDashBoard.Pages
     partial class RecordProduction
     {
         private System.ComponentModel.IContainer components = null;
+        // ================= LABELS =================
 
         private Label lblTitle;
         private Label lblProductName;
         private Label lblQuantity;
         private Label lblUnit;
         private Label lblDate;
+        // ================= INPUT CONTROLS =================
 
         private ComboBox cmbProductName;
         private TextBox txtQuantity;
         private ComboBox cmbUnit;
         private DateTimePicker dateProduction;
+        // ================= BUTTONS =================
 
         private Button btnSave;
         private Button btnClear;
         private Label lblMessage;
         private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.Button btnBack;
 
         protected override void Dispose(bool disposing)
         {
@@ -56,6 +60,7 @@ namespace FactoryDashBoard.Pages
 
             ApplyRoundedRegion(btn, 18);
         }
+        // CUSTOM: Rounded Region for Buttons
 
         private void ApplyRoundedRegion(Button btn, int radius)
         {
@@ -235,7 +240,7 @@ namespace FactoryDashBoard.Pages
             btnSave.ForeColor = Color.White;
             btnSave.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             btnSave.Location = new Point(300, 10);
-            
+
             btnClear = new Button();
             btnClear.Text = "Clear";
             btnClear.Width = 260;
@@ -247,26 +252,66 @@ namespace FactoryDashBoard.Pages
             btnPanel.Controls.Add(btnSave);
             btnPanel.Controls.Add(btnClear);
 
-           
+            btnBack = new Button();
+            btnBack.Text = "Back";
+            btnBack.Width = 260;
+            btnBack.Height = 50;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.ForeColor = Color.White;
+            btnBack.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnBack.Location = new Point(600, 750);
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
             MakeRoundedButton(btnSave, Color.FromArgb(94, 60, 255));
             MakeRoundedButton(btnClear, Color.Gray);
+            MakeRoundedButton(btnBack, Color.White);
+
             lblMessage = new Label();
-            lblMessage.Text ="Previously Produced Materials:";
+            lblMessage.Text = "Previously Produced Materials:";
             lblMessage.Font = new Font("Segoe UI", 18F);
-            lblMessage.AutoSize = true; 
+            lblMessage.AutoSize = true;
             lblMessage.Margin = new Padding(0, 30, 0, 15);
 
             // ===== DATAGRID =====
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.dataGridView1.Width = 1160;
-            this.dataGridView1.Height = 500;
+            this.dataGridView1.Height = 300;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.RowHeadersVisible = false;
+            // ================= ADD TO UI =================
 
             main.Controls.Add(btnPanel);
             main.Controls.Add(lblMessage);
             main.Controls.Add(this.dataGridView1);
+            main.Controls.Add(btnBack);
 
             // FINAL
             this.Controls.Add(main);

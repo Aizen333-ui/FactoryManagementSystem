@@ -9,17 +9,14 @@ namespace FactoryManagementSystem
         private DateTimePicker dtFrom;
         private DateTimePicker dtTo;
         private Button btnViewReport;
+        private Button btnSendReport;
         private Label lblFrom;
         private Label lblTo;
         private DataGridView datagridReport;
         private Label lblTitle;
+        private Button btnBack;
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-                components.Dispose();
-            base.Dispose(disposing);
-        }
+       
 
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
@@ -33,10 +30,10 @@ namespace FactoryManagementSystem
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
             innerControl.Margin = new Padding(0);
-            
+
             if (innerControl is RichTextBox rt)
             {
-                rt.Font = new Font("Consolas", 10F);
+                rt.Font = new Font("Segoe", 12F);
                 rt.BorderStyle = BorderStyle.None;
             }
             container.Controls.Add(innerControl);
@@ -84,6 +81,10 @@ namespace FactoryManagementSystem
             btnViewReport.MouseLeave += (s, e) => btnViewReport.Invalidate();
             btnViewReport.MouseDown += (s, e) => btnViewReport.Invalidate();
             btnViewReport.MouseUp += (s, e) => btnViewReport.Invalidate();
+            btnBack.MouseEnter += (s, e) => btnBack.Invalidate();
+            btnBack.MouseLeave += (s, e) => btnBack.Invalidate();
+            btnBack.MouseDown += (s, e) => btnBack.Invalidate();
+            btnBack.MouseUp += (s, e) => btnBack.Invalidate();
         }
 
         private void InitializeComponent()
@@ -95,6 +96,7 @@ namespace FactoryManagementSystem
             this.dtTo = new DateTimePicker();
             this.btnViewReport = new Button();
             this.datagridReport = new DataGridView();
+            this.btnBack = new Button();
 
             this.SuspendLayout();
 
@@ -178,7 +180,46 @@ namespace FactoryManagementSystem
             datagridReport.Width = 1160;
             datagridReport.Height = 500;
             datagridReport.ReadOnly = true;
+            btnBack.Text = "Back";
+            btnBack.Width = 260;
+            btnBack.Height = 50;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.FlatAppearance.BorderSize = 0;
+            btnBack.ForeColor = Color.White;
+            btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnBack.Location = new Point(260, 850);
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+            btnBack.Click += new System.EventHandler(this.btnBack_Click);
+            RoundControl(btnBack, 16);
             main.Controls.Add(lblTitle);
             main.Controls.Add(lblFrom);
             // Date pickers displayed directly (no outer rounded boxes)
@@ -187,6 +228,7 @@ namespace FactoryManagementSystem
             main.Controls.Add(dtTo);
             main.Controls.Add(btnViewReport);
             main.Controls.Add(reportBox);
+            main.Controls.Add(btnBack);
 
             this.Controls.Add(main);
             this.Size = new Size(800, 700);

@@ -1,29 +1,33 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
 using System.Data;
-using System.Windows.Forms;
+using System.Diagnostics.Eventing.Reader;
+using System.Xml.Linq;
 
 namespace FactoryManagementSystem
 {
     public partial class RawMaterial : UserControl
     {
+        // Constructor
         public RawMaterial()
         {
             InitializeComponent();
 
+            // Attach button click events
             this.btnAdd.Click -= btnAdd_Click;
             this.btnAdd.Click += btnAdd_Click;
 
             this.btnRemove.Click -= BtnRemove_Click;
             this.btnRemove.Click += BtnRemove_Click;
 
+            // Attach combo box selection event
             this.cmbName.SelectedIndexChanged -= cmbName_SelectedIndexChanged;
             this.cmbName.SelectedIndexChanged += cmbName_SelectedIndexChanged;
 
+            // Load materials into DataGridView
             LoadMaterials();
         }
 
-        // LOAD MATERIALS
+        // Load all raw materials from database
         private void LoadMaterials()
         {
             try
@@ -33,6 +37,7 @@ namespace FactoryManagementSystem
                     null
                 );
 
+                // Bind data to grid
                 dataGridView1.DataSource = dt;
             }
             catch (Exception ex)
@@ -41,7 +46,7 @@ namespace FactoryManagementSystem
             }
         }
 
-        // UNIT SET
+        // Return unit according to material name
         private string GetUnit(string materialName)
         {
             return materialName switch
@@ -55,75 +60,31 @@ namespace FactoryManagementSystem
             };
         }
 
+        // Automatically set unit when material changes
         private void cmbName_SelectedIndexChanged(object sender, EventArgs e)
         {
             string selected = cmbName.SelectedItem?.ToString() ?? cmbName.Text ?? "";
+
             txtUnit.Text = GetUnit(selected);
         }
 
-        // CHECK ID EXISTS
-        private bool MaterialIdExists(string id)
-        {
-            string query = "SELECT COUNT(*) FROM RawMaterial WHERE MaterialID = @id";
-
-            object result = DBHelper.ExecuteScalar(query,
-                new SqlParameter[] { new SqlParameter("@id", id) });
-
-            return result != null && Convert.ToInt32(result) > 0;
-        }
-
-        // GENERATE ID (unused)
-        private string GenerateMaterialId()
-        {
-            try
-            {
-                object res = DBHelper.ExecuteScalar(
-                    "SELECT MAX(CAST(MaterialID AS bigint)) FROM RawMaterial",
-                    null
-                );
-
-                long maxId = 0;
-                if (res != null && long.TryParse(res.ToString(), out long parsed))
-                    maxId = parsed;
-
-                string newId = (maxId + 1).ToString();
-
-                while (MaterialIdExists(newId))
-                {
-                    maxId++;
-                    newId = (maxId + 1).ToString();
-                }
-
-                return newId;
-            }
-            catch
-            {
-                var rnd = new Random();
-                string alt;
-
-                do
-                {
-                    alt = rnd.Next(100000, 999999).ToString();
-                }
-                while (MaterialIdExists(alt));
-
-                return alt;
-            }
-        }
-
-        // ADD MATERIAL
+        // Add new material into database
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string name = cmbName.Text.Trim();
             string qty = txtQty.Text.Trim();
             string unit = txtUnit.Text.Trim();
 
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(qty) || string.IsNullOrEmpty(unit))
+            // Validate empty fields
+            if (string.IsNullOrEmpty(name) ||
+                string.IsNullOrEmpty(qty) ||
+                string.IsNullOrEmpty(unit))
             {
                 MessageBox.Show("Please fill all fields!");
                 return;
             }
 
+            // Validate quantity
             if (!decimal.TryParse(qty, out decimal quantity) || quantity <= 0)
             {
                 MessageBox.Show("Quantity must be a positive number.");
@@ -132,11 +93,12 @@ namespace FactoryManagementSystem
 
             try
             {
-                // ✅ Unit store hoga ab
+                // SQL insert query
                 string query =
                     "INSERT INTO RawMaterial (Name, Quantity, Unit) " +
                     "VALUES (@name, @qty, @unit)";
 
+                // SQL parameters
                 SqlParameter[] p =
                 {
                     new SqlParameter("@name", name),
@@ -144,11 +106,15 @@ namespace FactoryManagementSystem
                     new SqlParameter("@unit", unit)
                 };
 
+                // Execute insert query
                 DBHelper.ExecuteNonQuery(query, p);
 
                 MessageBox.Show("Material added successfully!");
+
+                // Refresh DataGridView
                 LoadMaterials();
 
+                // Clear input fields
                 txtQty.Clear();
                 txtUnit.Clear();
                 cmbName.SelectedIndex = -1;
@@ -158,55 +124,131 @@ namespace FactoryManagementSystem
                 MessageBox.Show("Error adding material: " + ex.Message);
             }
         }
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex < 0) return;
 
-            DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
-
-            cmbName.SelectedItem = row.Cells["Name"].Value.ToString();
-            txtQty.Text = row.Cells["Quantity"].Value.ToString();
-        }
-
-        // REMOVE MATERIAL
+        // Remove selected material from database
         private void BtnRemove_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.CurrentRow == null)
+            string name = cmbName.Text.Trim();
+            string qtyText = txtQty.Text.Trim();
+
+            // =========================
+            // CASE 1: ROW SELECTED → DELETE BY ID
+            // =========================
+            if (dataGridView1.CurrentRow != null && string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("Select a row first.");
+                int id = Convert.ToInt32(
+                    dataGridView1.CurrentRow.Cells["MaterialID"].Value
+                );
+
+                DialogResult dr = MessageBox.Show(
+                    "Delete selected material?",
+                    "Confirm",
+                    MessageBoxButtons.YesNo
+                );
+
+                if (dr != DialogResult.Yes)
+                    return;
+
+                DBHelper.ExecuteNonQuery(
+                    "DELETE FROM RawMaterial WHERE MaterialID = @id",
+                    new SqlParameter[]
+                    {
+                new SqlParameter("@id", id)
+                    }
+                );
+
+                MessageBox.Show("Deleted successfully!");
+                LoadMaterials();
                 return;
             }
 
-            string material = dataGridView1.CurrentRow.Cells["Name"].Value.ToString();
+            // =========================
+            // CASE 2: NAME + QUANTITY → REDUCE STOCK
+            // =========================
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("Enter material name.");
+                return;
+            }
 
-            int quantity = Convert.ToInt32(
-                dataGridView1.CurrentRow.Cells["Quantity"].Value
+            if (!decimal.TryParse(qtyText, out decimal removeQty) || removeQty <= 0)
+            {
+                MessageBox.Show("Enter valid quantity.");
+                return;
+            }
+
+            // Get existing stock
+            DataTable dt = DBHelper.ExecuteDataTable(
+                "SELECT MaterialID, Quantity FROM RawMaterial WHERE Name = @name",
+                new SqlParameter[]
+                {
+            new SqlParameter("@name", name)
+                }
             );
 
-            DialogResult dr = MessageBox.Show(
-                $"Remove ALL of {material}?",
+            if (dt.Rows.Count == 0)
+            {
+                MessageBox.Show("Material not found.");
+                return;
+            }
+
+            int id2 = Convert.ToInt32(dt.Rows[0]["MaterialID"]);
+            decimal currentQty = Convert.ToDecimal(dt.Rows[0]["Quantity"]);
+
+            // Check stock availability
+            if (removeQty > currentQty)
+            {
+                MessageBox.Show("Not enough stock available.");
+                return;
+            }
+
+            decimal newQty = currentQty - removeQty;
+
+            DialogResult dr2 = MessageBox.Show(
+                $"Reduce {removeQty} from {name}?",
                 "Confirm",
                 MessageBoxButtons.YesNo
             );
 
-            if (dr != DialogResult.Yes)
+            if (dr2 != DialogResult.Yes)
                 return;
 
-            string query = "DELETE FROM RawMaterial WHERE Name = @name";
-
-            SqlParameter[] p =
+            // =========================
+            // UPDATE OR DELETE IF ZERO
+            // =========================
+            if (newQty == 0)
             {
-        new SqlParameter("@name", material)
-    };
+                DBHelper.ExecuteNonQuery(
+                    "DELETE FROM RawMaterial WHERE MaterialID = @id",
+                    new SqlParameter[]
+                    {
+                new SqlParameter("@id", id2)
+                    }
+                );
+            }
+            else
+            {
+                DBHelper.ExecuteNonQuery(
+                    "UPDATE RawMaterial SET Quantity = @qty WHERE MaterialID = @id",
+                    new SqlParameter[]
+                    {
+                new SqlParameter("@qty", newQty),
+                new SqlParameter("@id", id2)
+                    }
+                );
+            }
 
-            DBHelper.ExecuteNonQuery(query, p);
-
-            MessageBox.Show("Removed successfully");
+            MessageBox.Show("Stock updated successfully!");
             LoadMaterials();
         }
-        private void BtnRefresh_Click(object sender, EventArgs e)
+
+        // Navigate back to owner dashboard home page
+        private void btnBack_Click(object sender, EventArgs e)
         {
-            LoadMaterials();
+            OwnerDashBoard dashboard =
+                (OwnerDashBoard)this.FindForm();
+
+            dashboard.LoadPage(new OwnerHomePage());
         }
     }
 }

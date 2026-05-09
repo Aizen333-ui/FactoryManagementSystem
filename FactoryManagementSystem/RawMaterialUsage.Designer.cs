@@ -1,11 +1,12 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace FactoryDashboard.Pages
+namespace FactoryDashBoard.Pages
 {
     partial class RawMaterialUsage
     {
         private System.ComponentModel.IContainer components = null;
+        // ===== UI CONTROLS =====
 
         private Label lblTitle;
         private Label lblMaterialName;
@@ -20,18 +21,13 @@ namespace FactoryDashboard.Pages
         private Button btnRemove;
         private Label lblMessage;
         private System.Windows.Forms.DataGridView dataGridView;
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && components != null)
-                components.Dispose();
-
-            base.Dispose(disposing);
-        }
+        private Button btnBack;
+        // ===== APPLY ROUNDED SHAPE TO BUTTON =====
 
         private void MakeRoundedButton(Button btn, Color color)
         {
-           
-            
+
+
             this.btnClear.BackColor = Color.Gray;
             this.btnClear.FlatStyle = FlatStyle.Flat;
             this.btnClear.FlatAppearance.BorderSize = 0;
@@ -48,7 +44,14 @@ namespace FactoryDashboard.Pages
 
             this.btnRemove.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 60, 60);
             this.btnRemove.FlatAppearance.MouseDownBackColor = Color.FromArgb(180, 20, 20);
-           
+
+
+            this.btnBack.FlatStyle = FlatStyle.Flat;
+            this.btnBack.FlatAppearance.BorderSize = 0;
+            this.btnBack.ForeColor = Color.White;
+            this.btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+
+
             btn.Resize += (s, e) =>
             {
                 ApplyRoundedRegion(btn, 18);
@@ -71,12 +74,14 @@ namespace FactoryDashboard.Pages
 
 
 
-                    
+
                 }
             };
 
             ApplyRoundedRegion(btn, 18);
         }
+        // ===== CREATE ROUNDED INPUT BOX (TEXTBOX / COMBOBOX / DATEPICKER) =====
+
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();
@@ -105,7 +110,7 @@ namespace FactoryDashboard.Pages
             {
                 cb.FlatStyle = FlatStyle.Flat;
                 cb.Font = new Font("Segoe UI", 13F);
-                cb.DropDownStyle = ComboBoxStyle.DropDownList;    
+                cb.DropDownStyle = ComboBoxStyle.DropDownList;
                 cb.Height = 30;
 
             }
@@ -144,6 +149,8 @@ namespace FactoryDashboard.Pages
 
             return container;
         }
+        // ===== APPLY ROUNDED REGION =====
+
         private void ApplyRoundedRegion(Button btn, int radius)
         {
             Rectangle rect = btn.ClientRectangle;
@@ -159,6 +166,7 @@ namespace FactoryDashboard.Pages
                 btn.Region = new Region(path);
             }
         }
+        // ===== UI INITIALIZATION =====
 
         private void InitializeComponent()
         {
@@ -221,7 +229,7 @@ namespace FactoryDashboard.Pages
             btnPanel.AutoSize = true;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
 
-           
+
 
 
             // CLEAR BUTTON (gray style)
@@ -245,13 +253,46 @@ namespace FactoryDashboard.Pages
             this.btnRemove.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             this.btnRemove.Location = new Point(300, 10);
 
-           
+            this.btnBack = new Button();
+            this.btnBack.Location = new Point(260, 750);
+            this.btnBack.Width = 260;
+            this.btnBack.Height = 50;
+            this.btnBack.Text = "Back";
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
 
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
             btnPanel.Controls.Add(btnClear);
             btnPanel.Controls.Add(btnRemove);
             MakeRoundedButton(btnRemove, Color.FromArgb(220, 38, 38));
             MakeRoundedButton(btnClear, Color.Gray);
+            MakeRoundedButton(btnBack, Color.AliceBlue);
 
             //Message Label
             this.lblMessage = new Label();
@@ -285,6 +326,7 @@ namespace FactoryDashboard.Pages
             main.Controls.Add(btnPanel);
             main.Controls.Add(lblMessage);
             main.Controls.Add(dataGridView);
+            main.Controls.Add(btnBack);
 
             // FINAL
             this.Controls.Add(main);

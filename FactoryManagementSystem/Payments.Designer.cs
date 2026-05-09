@@ -6,6 +6,8 @@ namespace FactoryManagementSystem
 {
     partial class Payments
     {
+        // ===================== COMPONENT DECLARATIONS =====================
+
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.Label labelTitle;
         private System.Windows.Forms.Label label2;
@@ -21,14 +23,9 @@ namespace FactoryManagementSystem
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.DataGridView dataGridView1;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && components != null)
-                components.Dispose();
-            base.Dispose(disposing);
-        }
-
+        private System.Windows.Forms.Button btnBack;
+        // ===================== ROUNDED INPUT CONTAINER =====================
+        // Creates styled container (card-like UI) around inputs
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();
@@ -44,8 +41,10 @@ namespace FactoryManagementSystem
             if (innerControl is TextBox tb)
             {
                 tb.BorderStyle = BorderStyle.None;
-                tb.Multiline = true;
+                tb.Multiline = false;
                 tb.Font = new Font("Segoe UI", 12F);
+                tb.Height = 30;
+                tb.TextAlign = HorizontalAlignment.Left;
                 tb.Margin = new Padding(0);
             }
             if (innerControl is ComboBox cb)
@@ -66,6 +65,8 @@ namespace FactoryManagementSystem
                 dt.BackColor = Color.White;
             }
             container.Controls.Add(innerControl);
+            // Draw custom rounded border
+
             container.Paint += (s, e) =>
             {
                 int radius = 12;
@@ -86,7 +87,8 @@ namespace FactoryManagementSystem
             };
             return container;
         }
-
+        // ===================== ROUND CONTROL UTILITY =====================
+        // Applies rounded corners to buttons/controls
         private void RoundControl(Control ctl, int radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -114,8 +116,13 @@ namespace FactoryManagementSystem
             btnDelete.MouseLeave += (s, e) => btnDelete.Invalidate();
             btnDelete.MouseDown += (s, e) => btnDelete.Invalidate();
             btnDelete.MouseUp += (s, e) => btnDelete.Invalidate();
-            
+            btnBack.MouseEnter += (s, e) => btnBack.Invalidate();
+            btnBack.MouseLeave += (s, e) => btnBack.Invalidate();
+            btnBack.MouseDown += (s, e) => btnBack.Invalidate();
+            btnBack.MouseUp += (s, e) => btnBack.Invalidate();
+
         }
+        // ===================== INITIALIZE UI =====================
 
         private void InitializeComponent()
         {
@@ -130,9 +137,11 @@ namespace FactoryManagementSystem
             this.btnDelete = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.btnBack = new System.Windows.Forms.Button();
 
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
+            // ===================== MAIN LAYOUT =====================
 
             FlowLayoutPanel main = new FlowLayoutPanel();
             main.Dock = DockStyle.Fill;
@@ -267,7 +276,48 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
-           
+            Button btnBack = this.btnBack = new Button();
+            btnBack.Text = "Back";
+            btnBack.Width = 260;
+            btnBack.Height = 50;
+            btnBack.FlatStyle = FlatStyle.Flat;
+            btnBack.FlatAppearance.BorderSize = 0;
+            btnBack.ForeColor = Color.White;
+            btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            btnBack.Location = new Point(260, 850);
+            btnBack.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                bool hover = btnBack.ClientRectangle.Contains(btnBack.PointToClient(Cursor.Position));
+                bool down = (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(100, 100, 100);
+                Color hoverColor = Color.FromArgb(120, 120, 120);
+                Color downColor = Color.FromArgb(70, 70, 70);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(brush, btnBack.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnBack.Text,
+                    btnBack.Font,
+                    btnBack.ClientRectangle,
+                    btnBack.ForeColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            };
+            btnBack.Click += new System.EventHandler(this.btnBack_Click);
+            RoundControl(btnBack, 16);
+
 
             btnPanel.Controls.Add(btnAdd);
             btnPanel.Controls.Add(btnDelete);
@@ -280,7 +330,7 @@ namespace FactoryManagementSystem
 
             // DataGrid
             this.dataGridView1.Width = 1160;
-            this.dataGridView1.Height = 700;
+            this.dataGridView1.Height = 500;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.RowHeadersVisible = false;
@@ -295,7 +345,6 @@ namespace FactoryManagementSystem
             main.Controls.Add(label3);
             main.Controls.Add(CreateRoundedBox(cmbReason));
             main.Controls.Add(label4);
-            // Date picker — add directly without outer rounded box
             main.Controls.Add(datePaid);
             main.Controls.Add(btnPanel);
             main.Controls.Add(label5);
@@ -303,6 +352,8 @@ namespace FactoryManagementSystem
 
             this.Controls.Add(main);
             this.Size = new System.Drawing.Size(800, 700);
+            main.Controls.Add(btnBack);
+
 
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-using System.Drawing.Drawing2D;
-namespace FactoryManagementSystem
+﻿namespace FactoryManagementSystem
 {
     public partial class OwnerDashBoard : Form
     {
@@ -12,13 +9,14 @@ namespace FactoryManagementSystem
             this.WindowState = FormWindowState.Maximized;
         }
 
-        // --- PAGE LOAD FUNCTION ---
-        private void LoadPage(UserControl page)
+        // ===================== DYNAMIC PAGE LOADER =====================
+        // Loads different UserControls into the main dashboard area (card panel)
+        public void LoadPage(UserControl page)
         {
-            // load into the inner white card so padding and rounded card visuals apply
+            // If card panel is not initialized, fallback to main panel
             if (card == null)
             {
-                // fallback to panelMain if card isn't initialized yet
+
                 panelMain.Controls.Clear();
                 page.Dock = DockStyle.Fill;
                 panelMain.Controls.Add(page);
@@ -27,7 +25,7 @@ namespace FactoryManagementSystem
             }
 
             card.Controls.Clear();
-            // ensure page respects inner spacing of the card
+
             page.Dock = DockStyle.Fill;
             page.Margin = new Padding(0);
             page.Padding = new Padding(24);
@@ -35,31 +33,36 @@ namespace FactoryManagementSystem
             page.BringToFront();
         }
 
-        // --- MENU CLICK EVENTS ---
+        // --- MENU BUTTON CLICK EVENTS ---
+        // ===================== RAW MATERIAL PAGE =====================
 
         private void btnRawMaterial_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRawMaterial);
             LoadPage(new RawMaterial());
         }
+        // ===================== PAYMENTS PAGE =====================
 
         private void btnPayments_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnPayments);
             LoadPage(new Payments());
         }
+        // ===================== WORKERS MANAGEMENT PAGE =====================
 
         private void btnManageWorkers_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnManageWorkers);
             LoadPage(new WorkersAddandView());
         }
+        // ===================== REPORTS PAGE =====================
 
         private void btnReports_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnReports);
             LoadPage(new OwnerReportsPage());
         }
+        // ===================== LOGOUT FUNCTION =====================
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
