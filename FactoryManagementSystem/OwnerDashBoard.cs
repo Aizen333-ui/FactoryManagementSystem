@@ -7,6 +7,8 @@
             InitializeComponent();
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
+            LoadPage(new OwnerDash());
+
         }
 
         // ===================== DYNAMIC PAGE LOADER =====================

@@ -178,7 +178,7 @@ namespace FactoryManagementSystem
                 (OwnerDashBoard)this.FindForm();
 
             // Navigate back to owner home page
-            dashboard.LoadPage(new OwnerHomePage());
+            dashboard.LoadPage(new OwnerDash());
         }
     }
 }

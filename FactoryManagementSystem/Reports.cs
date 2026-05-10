@@ -134,7 +134,7 @@ namespace FactoryManagementSystem
             OwnerDashBoard dashboard =
                 (OwnerDashBoard)this.FindForm();
 
-            dashboard.LoadPage(new OwnerHomePage());
+            dashboard.LoadPage(new OwnerDash());
         }
         private void btnSendReport_Click(object sender, EventArgs e)
         {

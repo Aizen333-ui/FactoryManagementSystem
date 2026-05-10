@@ -28,8 +28,7 @@ namespace FactoryManagementSystem
             // ===================== OWNER LOGIN =====================
             if (username == "owner" && password == "owner123")
             {
-                MessageBox.Show("Owner logged in!", "Success",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                
 
 
                 OwnerDashBoard owner = new OwnerDashBoard();
@@ -43,8 +42,6 @@ namespace FactoryManagementSystem
             // ===================== FACTORY LOGIN =====================
             if (username == "factory" && password == "fpass")
             {
-                MessageBox.Show("Factory Manager logged in!", "Success",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 FactoryDashBoard factory1 = new FactoryDashBoard();
 
