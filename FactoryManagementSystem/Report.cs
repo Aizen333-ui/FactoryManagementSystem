@@ -130,8 +130,10 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
+                dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+
                 dashboard.LoadPage(new FactoryDash());
             }
         }
     }
-}
+    }

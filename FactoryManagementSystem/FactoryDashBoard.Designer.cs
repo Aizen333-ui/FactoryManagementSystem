@@ -78,7 +78,9 @@ namespace FactoryManagementSystem
             btnRecord.Text = "📊 Record Production";
             btnRaw.Text = "📦 Raw Material Usage";
             btnReport.Text = "📄 Report to Owner";
-
+            btnRecord.Tag = "nav";
+            btnRaw.Tag = "nav";
+            btnReport.Tag = "nav";
             // attach click events
             btnRecord.Click += btnRecord_Click;
             btnRaw.Click += btnRaw_Click;
@@ -199,10 +201,16 @@ namespace FactoryManagementSystem
         // highlight selected button
         private void SetActiveButton(Button btn)
         {
+            // reset previous
             if (activeButton != null)
+            {
                 activeButton.BackColor = Color.Transparent;
+                activeButton.ForeColor = Color.White;
+            }
 
+            // set new active
             activeButton = btn;
+
             activeButton.BackColor = Color.White;
             activeButton.ForeColor = Color.Black;
         }

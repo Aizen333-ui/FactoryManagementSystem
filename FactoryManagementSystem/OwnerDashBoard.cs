@@ -37,7 +37,17 @@
 
         // --- MENU BUTTON CLICK EVENTS ---
         // ===================== RAW MATERIAL PAGE =====================
-
+        public void ResetSidebarSelection()
+        {
+            foreach (Control c in panelSideMenu.Controls)
+            {
+                if (c is Button btn && btn.Tag?.ToString() == "nav")
+                {
+                    btn.ForeColor = Color.White;
+                    btn.BackColor = Color.Transparent;
+                }
+            }
+        }
         private void btnRawMaterial_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnRawMaterial);

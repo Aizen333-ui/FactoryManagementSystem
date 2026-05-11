@@ -38,7 +38,17 @@ namespace FactoryManagementSystem
             card.Controls.Add(page);
             page.BringToFront();
         }
-
+        public void ResetSidebarSelection()
+        {
+            foreach (Control c in panelSideMenu.Controls)
+            {
+                if (c is Button btn && btn.Tag?.ToString() == "nav")
+                {
+                    btn.ForeColor = Color.White;
+                    btn.BackColor = Color.Transparent;
+                }
+            }
+        }
         // --- NAVIGATION BUTTON: RECORD PRODUCTION PAGE ---
 
         private void btnRecord_Click(object sender, EventArgs e)

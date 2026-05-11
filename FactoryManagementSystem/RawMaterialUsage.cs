@@ -315,6 +315,7 @@ namespace FactoryDashBoard.Pages
             {
                 MessageBox.Show("Error removing: " + ex.Message);
             }
+            LoadRawMaterials();
         }
 
         // Navigate back to dashboard home page
@@ -324,8 +325,10 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
+                dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+
                 dashboard.LoadPage(new FactoryDash());
             }
         }
     }
-}
+    }

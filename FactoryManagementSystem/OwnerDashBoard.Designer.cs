@@ -70,7 +70,10 @@ namespace FactoryManagementSystem
             btnPayments.Text = "💰 Payments";
             btnManageWorkers.Text = "👷  Manage Workers";
             btnReports.Text = "📄 Reports";
-
+            btnRawMaterial.Tag = "nav";
+            btnPayments.Tag = "nav";
+            btnManageWorkers.Tag = "nav";
+            btnReports.Tag = "nav";
             // Wire up button click events to code-behind handlers
             btnRawMaterial.Click += btnRawMaterial_Click;
             btnPayments.Click += btnPayments_Click;
@@ -165,7 +168,7 @@ namespace FactoryManagementSystem
             this.Text = "Owner Dashboard";
             this.ResumeLayout(false);
         }
-
+       
         // ================= GRADIENT SIDEBAR =================
         private void PanelSideMenu_Paint(object sender, PaintEventArgs e)
         {
@@ -180,10 +183,16 @@ namespace FactoryManagementSystem
         }
         private void SetActiveButton(Button btn)
         {
+            // reset previous
             if (activeButton != null)
+            {
                 activeButton.BackColor = Color.Transparent;
+                activeButton.ForeColor = Color.White;
+            }
 
+            // set new active
             activeButton = btn;
+
             activeButton.BackColor = Color.White;
             activeButton.ForeColor = Color.Black;
         }
