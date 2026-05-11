@@ -88,43 +88,58 @@ namespace FactoryManagementSystem
             pieChart.ChartAreas.Clear();
             pieChart.Legends.Clear();
 
-            var area = new ChartArea();
-            area.Name = "PieArea";
+            ChartArea area = new ChartArea("Main");
+            area.BackColor = Color.White;
+
             pieChart.ChartAreas.Add(area);
 
-            var legend = new Legend();
-            legend.Name = "Legend1";
-            pieChart.Legends.Add(legend);
+            Legend lg = new Legend();
+            lg.Docking = Docking.Bottom;
+            lg.Font = new Font("Segoe UI", 9F);
 
-            Series series = new Series();
-            series.Name = "Materials";
-            series.ChartType = SeriesChartType.Pie;
-            series.ChartArea = "PieArea";
-            series.Legend = "Legend1";
+            pieChart.Legends.Add(lg);
+
+            Series s = new Series("Materials");
+
+            s.ChartType = SeriesChartType.Pie;
+
+            s.IsValueShownAsLabel = true;
+
+            s.LabelFormat = "0.##'%'";
+            s.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
 
             DataTable dt = DBHelper.ExecuteDataTable(@"
-        SELECT 
-            UPPER(LTRIM(RTRIM(MaterialName))) AS MaterialName,
-            SUM(QuantityUsed) AS TotalUsed
-        FROM MaterialUsage
-        GROUP BY UPPER(LTRIM(RTRIM(MaterialName)))
+                 SELECT 
+                    MaterialName,
+                    SUM(QuantityUsed) AS TotalUsed
+                FROM MaterialUsage
+                WHERE 
+                    MONTH(Date) = MONTH(GETDATE())
+                    AND YEAR(Date) = YEAR(GETDATE())
+                GROUP BY MaterialName
     ", null);
 
-            if (dt.Rows.Count == 0)
+            double grandTotal = 0;
+
+            foreach (DataRow r in dt.Rows)
             {
-                MessageBox.Show("No data for Pie Chart");
-                return;
+                grandTotal += Convert.ToDouble(r["TotalUsed"]);
             }
 
-            foreach (DataRow row in dt.Rows)
+            foreach (DataRow r in dt.Rows)
             {
-                series.Points.AddXY(row["MaterialName"], row["TotalUsed"]);
+                string material = r["MaterialName"].ToString();
+
+                double used =
+                    Convert.ToDouble(r["TotalUsed"]);
+
+                double percent =
+                    (used / grandTotal) * 100;
+
+                s.Points.AddXY(material, percent);
             }
 
-            pieChart.Series.Add(series);
-
-            pieChart.Dock = DockStyle.Fill;
-            pieChart.Refresh();
+            pieChart.Series.Add(s);
         }
 
         // =========================================================
@@ -135,60 +150,70 @@ namespace FactoryManagementSystem
         {
             barChart.Series.Clear();
             barChart.ChartAreas.Clear();
+            barChart.Legends.Clear();
             barChart.Titles.Clear();
 
             ChartArea area = new ChartArea("MainArea");
-            area.AxisX.Interval = 1;
-            area.AxisX.LabelStyle.Angle = -30;
-            area.AxisX.MajorGrid.Enabled = false;
-            area.AxisY.MajorGrid.LineColor = Color.LightGray;
+
+            area.BackColor = Color.White;
 
             barChart.ChartAreas.Add(area);
 
+            Legend lg = new Legend();
+
+            lg.Docking = Docking.Bottom;
+            lg.Font = new Font("Segoe UI", 9F);
+
+            barChart.Legends.Add(lg);
+
             Series series = new Series("Expenses");
-            series.ChartType = SeriesChartType.Column;
 
-            // 🔥 CRITICAL FIXES (these are what you're missing)
-            series.XValueType = ChartValueType.String;
-            series.IsXValueIndexed = false;
-
-            // 🔥 THIS PREVENTS STACKING BEHAVIOR
-            series["PointWidth"] = "0.6";
-            series["DrawSideBySide"] = "true";
+            series.ChartType = SeriesChartType.Pie;
 
             series.IsValueShownAsLabel = true;
-            series.ChartArea = "MainArea";
+
+            series.LabelFormat = "0.##'%'";
+
+            series.Font =
+                new Font("Segoe UI", 9F, FontStyle.Bold);
 
             DataTable dt = DBHelper.ExecuteDataTable(@"
         SELECT 
             UPPER(LTRIM(RTRIM(Reason))) AS Reason,
             SUM(Amount) AS TotalAmount
         FROM Payments
+        WHERE 
+            MONTH(Date) = MONTH(GETDATE())
+            AND YEAR(Date) = YEAR(GETDATE())
         GROUP BY UPPER(LTRIM(RTRIM(Reason)))
     ", null);
 
-            if (dt.Rows.Count == 0)
+            double grandTotal = 0;
+
+            foreach (DataRow row in dt.Rows)
             {
-                MessageBox.Show("No data for Bar Chart");
-                return;
+                grandTotal +=
+                    Convert.ToDouble(row["TotalAmount"]);
             }
 
             foreach (DataRow row in dt.Rows)
             {
-                string reason = row["Reason"].ToString().Trim();
-                decimal amount = Convert.ToDecimal(row["TotalAmount"]);
+                string reason =
+                    row["Reason"].ToString();
 
-                // 🔥 IMPORTANT FIX #2 (force unique X keys)
-                DataPoint dp = new DataPoint();
-                dp.AxisLabel = reason;
-                dp.YValues = new double[] { (double)amount };
+                double amount =
+                    Convert.ToDouble(row["TotalAmount"]);
 
-                series.Points.Add(dp);
+                double percent =
+                    (amount / grandTotal) * 100;
+
+                series.Points.AddXY(reason, percent);
             }
 
             barChart.Series.Add(series);
 
             barChart.Dock = DockStyle.Fill;
+
             barChart.Refresh();
         }
 

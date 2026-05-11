@@ -237,36 +237,43 @@ namespace FactoryManagementSystem
 
             workersCategoryPanel = CreateLargePanel();
             workersCategoryPanel.Size = new Size(1350, 300);
-            workersCategoryPanel.Padding = new Padding(30, 25, 30, 25);
+            workersCategoryPanel.Padding = new Padding(20);
             workersCategoryPanel.Margin = new Padding(20, 30, 20, 30);
-            workersCategoryPanel.BackColor = Color.White;
 
-            // ================= TITLE =================
+            // INNER LAYOUT
+            FlowLayoutPanel wrapper = new FlowLayoutPanel();
+            wrapper.Dock = DockStyle.Fill;
+            wrapper.FlowDirection = FlowDirection.TopDown;
+            wrapper.WrapContents = false;
+            wrapper.AutoScroll = false;
+
+            // TITLE (NO PADDING, NO MARGIN HACKS)
             Label workerTitle = new Label();
             workerTitle.Text = "Worker Categories";
             workerTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
             workerTitle.AutoSize = true;
-            workerTitle.Margin = new Padding(0, 0, 0, 25); // pushes grid DOWN
-            workerTitle.Padding = new Padding(20, 20, 0, 0); 
+            workerTitle.Margin = new Padding(5, 5, 0, 15);
 
-            // ================= GRID =================
+            // GRID
             FlowLayoutPanel workerGrid = new FlowLayoutPanel();
-            workerGrid.Dock = DockStyle.Fill;
-            workerGrid.AutoScroll = true;
+            workerGrid.Width = 1300;
+            workerGrid.Height = 200;
             workerGrid.WrapContents = true;
             workerGrid.FlowDirection = FlowDirection.LeftToRight;
-            workerGrid.Padding = new Padding(0, 50, 0, 0);
-            workerGrid.Margin = new Padding(0);
+            workerGrid.AutoScroll = true;
 
-            // ================= ADD CARDS =================
+            // CARDS
             lblLabourers = CreateMiniStatCard(workerGrid, "Labourers");
             lblDrivers = CreateMiniStatCard(workerGrid, "Drivers");
             lblLoaders = CreateMiniStatCard(workerGrid, "Loaders");
             lblOperators = CreateMiniStatCard(workerGrid, "Machine Operators");
 
-            // ================= ORDER FIX =================
-            workersCategoryPanel.Controls.Add(workerTitle);
-            workersCategoryPanel.Controls.Add(workerGrid);
+            // ADD
+            wrapper.Controls.Add(workerTitle);
+            wrapper.Controls.Add(workerGrid);
+
+            workersCategoryPanel.Controls.Clear();
+            workersCategoryPanel.Controls.Add(wrapper);
 
             mainFlow.Controls.Add(workersCategoryPanel);
 
@@ -275,38 +282,43 @@ namespace FactoryManagementSystem
             // =====================================================
 
             materialsPanel = CreateLargePanel();
-            materialsPanel.Size = new Size(1350, 320);
-            materialsPanel.Padding = new Padding(30, 25, 30, 25);
+            materialsPanel.Size = new Size(1450, 320);
+            materialsPanel.Padding = new Padding(20);
             materialsPanel.Margin = new Padding(20, 30, 20, 30);
 
-            // ================= TITLE =================
+            // INNER LAYOUT
+            FlowLayoutPanel wrapper1 = new FlowLayoutPanel();
+            wrapper1.Dock = DockStyle.Fill;
+            wrapper1.FlowDirection = FlowDirection.TopDown;
+            wrapper1.WrapContents = false;
+
+            // TITLE
             Label materialTitle = new Label();
             materialTitle.Text = "Raw Material Stock";
             materialTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
             materialTitle.AutoSize = true;
-            materialTitle.Margin = new Padding(0, 0, 0, 25);
-            materialTitle.Padding = new Padding(20, 20, 0, 0);
+            materialTitle.Margin = new Padding(5, 5, 0, 15);
 
-
-            // ================= GRID =================
+            // GRID
             FlowLayoutPanel materialGrid = new FlowLayoutPanel();
-            materialGrid.Dock = DockStyle.Fill;
-            
+            materialGrid.Width = 1450;
+            materialGrid.Height = 220;
             materialGrid.WrapContents = false;
             materialGrid.FlowDirection = FlowDirection.LeftToRight;
-            materialGrid.Padding = new Padding(0, 50, 0, 0);
-            materialGrid.Margin = new Padding(0);
 
-            // ================= CARDS =================
+            // CARDS
             lblCement = CreateMaterialCard(materialGrid, "Cement");
             lblSand = CreateMaterialCard(materialGrid, "Sand");
             lblCrush = CreateMaterialCard(materialGrid, "Crush");
             lblSteel = CreateMaterialCard(materialGrid, "Steel");
             lblOil = CreateMaterialCard(materialGrid, "Mold Oil");
 
-            // ================= ORDER FIX =================
-            materialsPanel.Controls.Add(materialTitle);
-            materialsPanel.Controls.Add(materialGrid);
+            // ADD
+            wrapper1.Controls.Add(materialTitle);
+            wrapper1.Controls.Add(materialGrid);
+
+            materialsPanel.Controls.Clear();
+            materialsPanel.Controls.Add(wrapper1);
 
             mainFlow.Controls.Add(materialsPanel);
 
@@ -387,7 +399,7 @@ namespace FactoryManagementSystem
             outer.BackColor = Color.White;
             outer.Margin = new Padding(10, 8, 10, 16);
             outer.Padding = new Padding(2);
-            MakeRounded(outer, 18);
+
             // IMPORTANT
             outer.Resize += (s, e) =>
             {
@@ -414,9 +426,11 @@ namespace FactoryManagementSystem
                 path.CloseAllFigures();
 
                 outer.Region = new Region(path);
+
+                outer.Invalidate();
             };
 
-            // BORDER DRAWING
+            // BORDER
             outer.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -479,6 +493,7 @@ namespace FactoryManagementSystem
 
             chart.Dock = DockStyle.Fill;
             chart.Margin = new Padding(10);
+            chart.BackColor = Color.White;
 
             layout.Controls.Add(hdr, 0, 0);
             layout.Controls.Add(chart, 0, 1);
