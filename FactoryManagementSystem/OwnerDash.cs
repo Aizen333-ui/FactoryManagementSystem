@@ -1,7 +1,4 @@
-﻿using System;
-using System.Data;
-using System.Drawing;
-using System.Windows.Forms;
+﻿using System.Data;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace FactoryManagementSystem
@@ -12,9 +9,11 @@ namespace FactoryManagementSystem
         {
             InitializeComponent();
 
+            // Prevent chart controls from receiving focus (better UX)
             pieChart.TabStop = false;
             barChart.TabStop = false;
 
+            // Delay chart loading until control handle is created
             this.HandleCreated += (s, e) =>
             {
                 this.BeginInvoke(new Action(() =>
@@ -24,6 +23,7 @@ namespace FactoryManagementSystem
                 }));
             };
 
+            // Load all dashboard KPIs and summaries
             LoadWorkers();
             LoadRevenue();
             LoadProduction();
@@ -31,10 +31,7 @@ namespace FactoryManagementSystem
             LoadRawMaterialCards();
         }
 
-        // =========================================================
-        // TOTAL WORKERS
-        // =========================================================
-
+        // TOTAL WORKERS KPI
         private void LoadWorkers()
         {
             string query = "SELECT COUNT(*) FROM Workers";
@@ -46,14 +43,10 @@ namespace FactoryManagementSystem
             lblWorkers.Text = total.ToString();
         }
 
-        // =========================================================
-        // TOTAL EXPENSES / REVENUE
-        // =========================================================
-
+        // TOTAL REVENUE / EXPENSES KPI
         private void LoadRevenue()
         {
-            string query =
-                "SELECT ISNULL(SUM(Amount),0) FROM Payments";
+            string query = "SELECT ISNULL(SUM(Amount),0) FROM Payments";
 
             decimal total = Convert.ToDecimal(
                 DBHelper.ExecuteScalar(query, null)
@@ -62,10 +55,7 @@ namespace FactoryManagementSystem
             lblExpenses.Text = "Rs " + total.ToString("N0");
         }
 
-        // =========================================================
-        // TOTAL MATERIAL TYPES
-        // =========================================================
-
+        // TOTAL RAW MATERIAL / PRODUCTION KPI
         private void LoadProduction()
         {
             string query =
@@ -78,38 +68,39 @@ namespace FactoryManagementSystem
             lblProduction.Text = total.ToString();
         }
 
-        // =========================================================
-        // PIE CHART
-        // =========================================================
-
+        // PIE CHART: MATERIAL USAGE DISTRIBUTION
         private void LoadPieChart()
         {
             pieChart.Series.Clear();
             pieChart.ChartAreas.Clear();
             pieChart.Legends.Clear();
 
-            ChartArea area = new ChartArea("Main");
-            area.BackColor = Color.White;
+            ChartArea area = new ChartArea("Main")
+            {
+                BackColor = Color.White
+            };
 
             pieChart.ChartAreas.Add(area);
 
-            Legend lg = new Legend();
-            lg.Docking = Docking.Bottom;
-            lg.Font = new Font("Segoe UI", 9F);
+            Legend lg = new Legend
+            {
+                Docking = Docking.Bottom,
+                Font = new Font("Segoe UI", 9F)
+            };
 
             pieChart.Legends.Add(lg);
 
-            Series s = new Series("Materials");
+            Series s = new Series("Materials")
+            {
+                ChartType = SeriesChartType.Pie,
+                IsValueShownAsLabel = true,
+                LabelFormat = "0.##'%'",
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
 
-            s.ChartType = SeriesChartType.Pie;
-
-            s.IsValueShownAsLabel = true;
-
-            s.LabelFormat = "0.##'%'";
-            s.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-
+            // Fetch monthly material usage
             DataTable dt = DBHelper.ExecuteDataTable(@"
-                 SELECT 
+                SELECT 
                     MaterialName,
                     SUM(QuantityUsed) AS TotalUsed
                 FROM MaterialUsage
@@ -117,24 +108,22 @@ namespace FactoryManagementSystem
                     MONTH(Date) = MONTH(GETDATE())
                     AND YEAR(Date) = YEAR(GETDATE())
                 GROUP BY MaterialName
-    ", null);
+            ", null);
 
             double grandTotal = 0;
 
+            // Calculate total usage for percentage conversion
             foreach (DataRow r in dt.Rows)
             {
                 grandTotal += Convert.ToDouble(r["TotalUsed"]);
             }
 
+            // Add data points as percentages
             foreach (DataRow r in dt.Rows)
             {
                 string material = r["MaterialName"].ToString();
-
-                double used =
-                    Convert.ToDouble(r["TotalUsed"]);
-
-                double percent =
-                    (used / grandTotal) * 100;
+                double used = Convert.ToDouble(r["TotalUsed"]);
+                double percent = (used / grandTotal) * 100;
 
                 s.Points.AddXY(material, percent);
             }
@@ -142,10 +131,7 @@ namespace FactoryManagementSystem
             pieChart.Series.Add(s);
         }
 
-        // =========================================================
-        // BAR CHART
-        // =========================================================
-
+        // EXPENSE DISTRIBUTION CHART (Monthly)
         private void LoadExpenseChart()
         {
             barChart.Series.Clear();
@@ -153,59 +139,55 @@ namespace FactoryManagementSystem
             barChart.Legends.Clear();
             barChart.Titles.Clear();
 
-            ChartArea area = new ChartArea("MainArea");
-
-            area.BackColor = Color.White;
+            ChartArea area = new ChartArea("MainArea")
+            {
+                BackColor = Color.White
+            };
 
             barChart.ChartAreas.Add(area);
 
-            Legend lg = new Legend();
-
-            lg.Docking = Docking.Bottom;
-            lg.Font = new Font("Segoe UI", 9F);
+            Legend lg = new Legend
+            {
+                Docking = Docking.Bottom,
+                Font = new Font("Segoe UI", 9F)
+            };
 
             barChart.Legends.Add(lg);
 
-            Series series = new Series("Expenses");
+            Series series = new Series("Expenses")
+            {
+                ChartType = SeriesChartType.Pie, // (Note: still pie-style distribution)
+                IsValueShownAsLabel = true,
+                LabelFormat = "0.##'%'",
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+            };
 
-            series.ChartType = SeriesChartType.Pie;
-
-            series.IsValueShownAsLabel = true;
-
-            series.LabelFormat = "0.##'%'";
-
-            series.Font =
-                new Font("Segoe UI", 9F, FontStyle.Bold);
-
+            // Fetch payments grouped by reason
             DataTable dt = DBHelper.ExecuteDataTable(@"
-        SELECT 
-            UPPER(LTRIM(RTRIM(Reason))) AS Reason,
-            SUM(Amount) AS TotalAmount
-        FROM Payments
-        WHERE 
-            MONTH(Date) = MONTH(GETDATE())
-            AND YEAR(Date) = YEAR(GETDATE())
-        GROUP BY UPPER(LTRIM(RTRIM(Reason)))
-    ", null);
+                SELECT 
+                    UPPER(LTRIM(RTRIM(Reason))) AS Reason,
+                    SUM(Amount) AS TotalAmount
+                FROM Payments
+                WHERE 
+                    MONTH(Date) = MONTH(GETDATE())
+                    AND YEAR(Date) = YEAR(GETDATE())
+                GROUP BY UPPER(LTRIM(RTRIM(Reason)))
+            ", null);
 
             double grandTotal = 0;
 
+            // Calculate total expenses
             foreach (DataRow row in dt.Rows)
             {
-                grandTotal +=
-                    Convert.ToDouble(row["TotalAmount"]);
+                grandTotal += Convert.ToDouble(row["TotalAmount"]);
             }
 
+            // Convert each category into percentage
             foreach (DataRow row in dt.Rows)
             {
-                string reason =
-                    row["Reason"].ToString();
-
-                double amount =
-                    Convert.ToDouble(row["TotalAmount"]);
-
-                double percent =
-                    (amount / grandTotal) * 100;
+                string reason = row["Reason"].ToString();
+                double amount = Convert.ToDouble(row["TotalAmount"]);
+                double percent = (amount / grandTotal) * 100;
 
                 series.Points.AddXY(reason, percent);
             }
@@ -213,14 +195,10 @@ namespace FactoryManagementSystem
             barChart.Series.Add(series);
 
             barChart.Dock = DockStyle.Fill;
-
             barChart.Refresh();
         }
 
-        // =========================================================
-        // WORKER CATEGORY DATA
-        // =========================================================
-
+        // WORKER CATEGORY COUNTS
         private void LoadWorkerCategoryData()
         {
             LoadWorkerCount(lblLabourers, "Labor");
@@ -229,10 +207,10 @@ namespace FactoryManagementSystem
             LoadWorkerCount(lblOperators, "Machine Operator");
         }
 
+        // Generic method to get worker count by role
         private void LoadWorkerCount(Label lbl, string role)
         {
-            string query =
-                "SELECT COUNT(*) FROM Workers WHERE Role=@role";
+            string query = "SELECT COUNT(*) FROM Workers WHERE Role=@role";
 
             var parameters = new Microsoft.Data.SqlClient.SqlParameter[]
             {
@@ -246,10 +224,7 @@ namespace FactoryManagementSystem
             lbl.Text = count.ToString();
         }
 
-        // =========================================================
-        // RAW MATERIAL STOCK CARDS
-        // =========================================================
-
+        // RAW MATERIAL STOCK COUNTS
         private void LoadRawMaterialCards()
         {
             LoadMaterial(lblCement, "Cement");
@@ -259,14 +234,13 @@ namespace FactoryManagementSystem
             LoadMaterial(lblOil, "Mold Oil");
         }
 
+        // Generic method to fetch stock of a material
         private void LoadMaterial(Label lbl, string material)
         {
             string query = @"
                 SELECT ISNULL(SUM(Quantity),0)
                 FROM RawMaterial
-                WHERE UPPER(LTRIM(RTRIM(Name)))
-                =
-                UPPER(LTRIM(RTRIM(@name)))
+                WHERE UPPER(LTRIM(RTRIM(Name))) = UPPER(LTRIM(RTRIM(@name)))
             ";
 
             var parameters = new Microsoft.Data.SqlClient.SqlParameter[]
@@ -280,6 +254,5 @@ namespace FactoryManagementSystem
 
             lbl.Text = qty.ToString();
         }
-        
     }
 }
