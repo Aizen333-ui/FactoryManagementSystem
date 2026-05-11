@@ -12,14 +12,21 @@ namespace FactoryManagementSystem
         {
             InitializeComponent();
 
-            // LOAD DATABASE DATA
+            pieChart.TabStop = false;
+            barChart.TabStop = false;
+
+            this.HandleCreated += (s, e) =>
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    LoadPieChart();
+                    LoadExpenseChart();
+                }));
+            };
+
             LoadWorkers();
             LoadRevenue();
             LoadProduction();
-
-            LoadPieChart();
-            LoadMaterialUsageChart();
-
             LoadWorkerCategoryData();
             LoadRawMaterialCards();
         }
@@ -62,7 +69,7 @@ namespace FactoryManagementSystem
         private void LoadProduction()
         {
             string query =
-                "SELECT COUNT(DISTINCT MaterialName) FROM MaterialUsage";
+                "SELECT ISNULL(SUM(Quantity), 0) AS TotalRawMaterial FROM RawMaterial;";
 
             int total = Convert.ToInt32(
                 DBHelper.ExecuteScalar(query, null)
@@ -81,81 +88,108 @@ namespace FactoryManagementSystem
             pieChart.ChartAreas.Clear();
             pieChart.Legends.Clear();
 
-            ChartArea area = new ChartArea("PieArea");
+            var area = new ChartArea();
+            area.Name = "PieArea";
             pieChart.ChartAreas.Add(area);
 
-            Legend legend = new Legend("Legend1");
+            var legend = new Legend();
+            legend.Name = "Legend1";
             pieChart.Legends.Add(legend);
 
-            Series series = new Series("Materials");
-
+            Series series = new Series();
+            series.Name = "Materials";
             series.ChartType = SeriesChartType.Pie;
             series.ChartArea = "PieArea";
             series.Legend = "Legend1";
 
-            string query = @"
-                SELECT 
-                    UPPER(LTRIM(RTRIM(MaterialName))) AS MaterialName,
-                    SUM(QuantityUsed) AS TotalUsed
-                FROM MaterialUsage
-                GROUP BY UPPER(LTRIM(RTRIM(MaterialName)))
-            ";
+            DataTable dt = DBHelper.ExecuteDataTable(@"
+        SELECT 
+            UPPER(LTRIM(RTRIM(MaterialName))) AS MaterialName,
+            SUM(QuantityUsed) AS TotalUsed
+        FROM MaterialUsage
+        GROUP BY UPPER(LTRIM(RTRIM(MaterialName)))
+    ", null);
 
-            DataTable dt =
-                DBHelper.ExecuteDataTable(query, null);
+            if (dt.Rows.Count == 0)
+            {
+                MessageBox.Show("No data for Pie Chart");
+                return;
+            }
 
             foreach (DataRow row in dt.Rows)
             {
-                series.Points.AddXY(
-                    row["MaterialName"].ToString(),
-                    Convert.ToInt32(row["TotalUsed"])
-                );
+                series.Points.AddXY(row["MaterialName"], row["TotalUsed"]);
             }
 
             pieChart.Series.Add(series);
 
-            pieChart.Palette = ChartColorPalette.Bright;
+            pieChart.Dock = DockStyle.Fill;
+            pieChart.Refresh();
         }
 
         // =========================================================
         // BAR CHART
         // =========================================================
 
-        private void LoadMaterialUsageChart()
+        private void LoadExpenseChart()
         {
             barChart.Series.Clear();
             barChart.ChartAreas.Clear();
+            barChart.Titles.Clear();
 
-            ChartArea area = new ChartArea("BarArea");
+            ChartArea area = new ChartArea("MainArea");
+            area.AxisX.Interval = 1;
+            area.AxisX.LabelStyle.Angle = -30;
+            area.AxisX.MajorGrid.Enabled = false;
+            area.AxisY.MajorGrid.LineColor = Color.LightGray;
+
             barChart.ChartAreas.Add(area);
 
-            Series series = new Series("Usage");
-
+            Series series = new Series("Expenses");
             series.ChartType = SeriesChartType.Column;
-            series.ChartArea = "BarArea";
 
-            string query = @"
-                SELECT
-                    UPPER(LTRIM(RTRIM(MaterialName))) AS MaterialName,
-                    SUM(QuantityUsed) AS TotalUsed
-                FROM MaterialUsage
-                GROUP BY UPPER(LTRIM(RTRIM(MaterialName)))
-            ";
+            // 🔥 CRITICAL FIXES (these are what you're missing)
+            series.XValueType = ChartValueType.String;
+            series.IsXValueIndexed = false;
 
-            DataTable dt =
-                DBHelper.ExecuteDataTable(query, null);
+            // 🔥 THIS PREVENTS STACKING BEHAVIOR
+            series["PointWidth"] = "0.6";
+            series["DrawSideBySide"] = "true";
+
+            series.IsValueShownAsLabel = true;
+            series.ChartArea = "MainArea";
+
+            DataTable dt = DBHelper.ExecuteDataTable(@"
+        SELECT 
+            UPPER(LTRIM(RTRIM(Reason))) AS Reason,
+            SUM(Amount) AS TotalAmount
+        FROM Payments
+        GROUP BY UPPER(LTRIM(RTRIM(Reason)))
+    ", null);
+
+            if (dt.Rows.Count == 0)
+            {
+                MessageBox.Show("No data for Bar Chart");
+                return;
+            }
 
             foreach (DataRow row in dt.Rows)
             {
-                series.Points.AddXY(
-                    row["MaterialName"].ToString(),
-                    Convert.ToInt32(row["TotalUsed"])
-                );
+                string reason = row["Reason"].ToString().Trim();
+                decimal amount = Convert.ToDecimal(row["TotalAmount"]);
+
+                // 🔥 IMPORTANT FIX #2 (force unique X keys)
+                DataPoint dp = new DataPoint();
+                dp.AxisLabel = reason;
+                dp.YValues = new double[] { (double)amount };
+
+                series.Points.Add(dp);
             }
 
             barChart.Series.Add(series);
 
-            barChart.Palette = ChartColorPalette.Excel;
+            barChart.Dock = DockStyle.Fill;
+            barChart.Refresh();
         }
 
         // =========================================================
@@ -164,7 +198,7 @@ namespace FactoryManagementSystem
 
         private void LoadWorkerCategoryData()
         {
-            LoadWorkerCount(lblLabourers, "Labourer");
+            LoadWorkerCount(lblLabourers, "Labor");
             LoadWorkerCount(lblDrivers, "Driver");
             LoadWorkerCount(lblLoaders, "Loader");
             LoadWorkerCount(lblOperators, "Machine Operator");
@@ -203,9 +237,9 @@ namespace FactoryManagementSystem
         private void LoadMaterial(Label lbl, string material)
         {
             string query = @"
-                SELECT ISNULL(SUM(QuantityUsed),0)
-                FROM MaterialUsage
-                WHERE UPPER(LTRIM(RTRIM(MaterialName)))
+                SELECT ISNULL(SUM(Quantity),0)
+                FROM RawMaterial
+                WHERE UPPER(LTRIM(RTRIM(Name)))
                 =
                 UPPER(LTRIM(RTRIM(@name)))
             ";
@@ -221,5 +255,6 @@ namespace FactoryManagementSystem
 
             lbl.Text = qty.ToString();
         }
+        
     }
 }

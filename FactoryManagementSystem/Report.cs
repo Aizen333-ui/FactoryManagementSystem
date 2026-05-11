@@ -130,7 +130,7 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.LoadPage(new FactoryHomePage());
+                dashboard.LoadPage(new FactoryDash());
             }
         }
     }

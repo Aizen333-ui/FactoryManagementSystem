@@ -11,6 +11,7 @@ namespace FactoryManagementSystem
 
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.WindowState = FormWindowState.Maximized;
+            LoadPage(new FactoryDash());
         }
 
         // --- LOAD USER CONTROL INTO MAIN UI AREA ---

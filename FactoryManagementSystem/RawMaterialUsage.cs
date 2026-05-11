@@ -1,6 +1,7 @@
 ﻿using FactoryManagementSystem;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Collections.Generic;
 
 namespace FactoryDashBoard.Pages
 {
@@ -24,6 +25,19 @@ namespace FactoryDashBoard.Pages
 
             // Load raw materials into grid
             LoadRawMaterials();
+
+            dataGridView.SelectionChanged += (_, _) =>
+            {
+                if (dataGridView.CurrentRow is null ||
+                    dataGridView.CurrentRow.IsNewRow ||
+                    dataGridView.CurrentRow.Cells["Name"].Value is null)
+                    return;
+
+                string name = dataGridView.CurrentRow.Cells["Name"].Value.ToString()!;
+                int idx = cmbMaterialName.FindStringExact(name);
+                if (idx >= 0)
+                    cmbMaterialName.SelectedIndex = idx;
+            };
         }
 
         // Load raw material records from database
@@ -67,21 +81,6 @@ namespace FactoryDashBoard.Pages
             cmbMaterialName.DropDownStyle = ComboBoxStyle.DropDownList;
         }
 
-        // Get material ID from database using material name
-        private int GetMaterialId(string name)
-        {
-            object res = DBHelper.ExecuteScalar(
-                "SELECT MaterialID FROM RawMaterial WHERE Name = @n",
-                new SqlParameter[] { new SqlParameter("@n", name) }
-            );
-
-            // Check if material exists
-            if (res == null)
-                throw new Exception("Material not found in database");
-
-            return Convert.ToInt32(res);
-        }
-
         // Clear all input fields
         private void BtnClear_Click(object? sender, EventArgs e)
         {
@@ -106,37 +105,151 @@ namespace FactoryDashBoard.Pages
             {
                 "Cement" => "Bag",
                 "Sand" => "Ton",
-                "Gravel" => "Ton",
+                "Crush" => "Ton",
                 "Steel" => "Kg",
-                "Bricks" => "Pieces",
+                "Mold Oil" => "Litre",
                 _ => ""
             };
         }
 
-        // Remove quantity of selected raw material
+        /// <summary>
+        /// Build per-row deductions: either one grid row (by MaterialID), or spread by material name across all matching rows.
+        /// </summary>
+        private bool TryBuildDeductions(out string displayName, out List<(int MaterialId, string MaterialName, decimal Amount)> deductions, out string? errorMessage)
+        {
+            displayName = "";
+            deductions = new List<(int MaterialId, string MaterialName, decimal Amount)>();
+            errorMessage = null;
+
+            decimal? qtySpecified = null;
+            string qtyText = txtQuantity.Text.Trim();
+            if (!string.IsNullOrEmpty(qtyText))
+            {
+                if (!decimal.TryParse(qtyText, out decimal pq) || pq <= 0)
+                {
+                    errorMessage = "Enter a valid quantity to remove, or leave it blank when a grid row is selected to remove that whole line.";
+                    return false;
+                }
+                qtySpecified = pq;
+            }
+
+            DataGridViewRow? gridRow =
+                dataGridView.SelectedRows.Count > 0
+                    ? dataGridView.SelectedRows[0]
+                    : dataGridView.CurrentRow;
+
+            bool hasGridRow = gridRow is not null &&
+                !gridRow.IsNewRow &&
+                gridRow.Cells["MaterialID"].Value is object idVal &&
+                int.TryParse(idVal.ToString(), out _) &&
+                gridRow.Cells["Name"].Value != null &&
+                decimal.TryParse(gridRow.Cells["Quantity"].Value?.ToString(), out _);
+
+            if (hasGridRow && gridRow is not null)
+            {
+                int materialId = Convert.ToInt32(gridRow.Cells["MaterialID"].Value);
+                string name = gridRow.Cells["Name"].Value!.ToString()!;
+                decimal rowQty = Convert.ToDecimal(gridRow.Cells["Quantity"].Value);
+                displayName = name;
+
+                decimal toRemove = qtySpecified ?? rowQty;
+                if (toRemove <= 0)
+                {
+                    errorMessage = "Nothing to remove for this row.";
+                    return false;
+                }
+                if (toRemove > rowQty)
+                {
+                    errorMessage =
+                        $"Quantity ({toRemove}) is more than this stock line ({rowQty}). Either select a smaller amount or use the dropdown only — removal will spread across every line that uses this material.";
+                    return false;
+                }
+
+                deductions.Add((materialId, name, toRemove));
+                return true;
+            }
+
+            string materialFromCombo = cmbMaterialName.SelectedItem?.ToString() ?? "";
+
+            if (string.IsNullOrEmpty(materialFromCombo))
+            {
+                errorMessage =
+                    "Select material from the dropdown, or click a grid row — leave quantity blank to clear that row, or enter an amount.";
+                return false;
+            }
+
+            if (!qtySpecified.HasValue)
+            {
+                errorMessage = "Pick a grid row and leave quantity blank to remove that whole line, or enter how much to take from stock.";
+                return false;
+            }
+
+            displayName = materialFromCombo;
+
+            DataTable lines = DBHelper.ExecuteDataTable(
+                @"SELECT MaterialID, Name, Quantity 
+                  FROM RawMaterial 
+                  WHERE Name = @n 
+                  ORDER BY MaterialID",
+                new SqlParameter[] { new SqlParameter("@n", materialFromCombo) }
+            );
+
+            if (lines.Rows.Count == 0)
+            {
+                errorMessage = "Material not found in database.";
+                return false;
+            }
+
+            decimal remaining = qtySpecified.Value;
+            foreach (DataRow lr in lines.Rows)
+            {
+                if (remaining <= 0)
+                    break;
+
+                int mid = Convert.ToInt32(lr["MaterialID"]);
+                string lrName = lr["Name"].ToString()!;
+                decimal lineQty = Convert.ToDecimal(lr["Quantity"]);
+
+                decimal take = Math.Min(lineQty, remaining);
+                if (take > 0)
+                {
+                    deductions.Add((mid, lrName, take));
+                    remaining -= take;
+                }
+            }
+
+            if (remaining > 0)
+            {
+                decimal totalAvail = qtySpecified.Value - remaining;
+                errorMessage =
+                    $"Not enough quantity in stock ({totalAvail} available for {materialFromCombo}, you asked for {qtySpecified.Value}).";
+                deductions.Clear();
+                return false;
+            }
+
+            return true;
+        }
+
+        // Remove quantity of selected raw material (grid row and/or dropdown + quantity).
         private void BtnRemove_Click(object? sender, EventArgs e)
         {
-            // Get selected material name
-            string material = cmbMaterialName.SelectedItem?.ToString();
-
-            // Validate material selection
-            if (string.IsNullOrEmpty(material))
+            if (!TryBuildDeductions(out string material, out List<(int MaterialId, string MaterialName, decimal Amount)> deductions, out string? err))
             {
-                MessageBox.Show("Select a material to remove.");
+                MessageBox.Show(err ?? "Could not calculate removal.");
+                if (err?.Contains("quantity", StringComparison.OrdinalIgnoreCase) == true)
+                    txtQuantity.Focus();
                 return;
             }
 
-            // Validate quantity input
-            if (!int.TryParse(txtQuantity.Text.Trim(), out int quantity) || quantity <= 0)
-            {
-                MessageBox.Show("Enter a valid quantity to remove.");
-                txtQuantity.Focus();
-                return;
-            }
+            decimal total = 0;
+            foreach (var d in deductions)
+                total += d.Amount;
 
-            // Confirmation message
+            string unitLabel = GetUnitForMaterial(material);
             DialogResult dr = MessageBox.Show(
-                $"Remove {quantity} {GetUnitForMaterial(material)} of {material}?",
+                deductions.Count > 1
+                    ? $"Remove {total:N2} total {unitLabel} of {material} (across one or more stock lines)?"
+                    : $"Remove {total:N2} {unitLabel} of {material}?",
                 "Confirm Remove",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
@@ -145,37 +258,58 @@ namespace FactoryDashBoard.Pages
             if (dr != DialogResult.Yes)
                 return;
 
+            DateTime usageDate = dateMaterial.Value.Date;
+
+            const string upd =
+                @"UPDATE RawMaterial SET Quantity = Quantity - @q 
+                  WHERE MaterialID=@id AND Quantity>=@q";
+
+            const string ins =
+                @"INSERT INTO MaterialUsage (MaterialID, MaterialName, QuantityUsed, Date) 
+                  VALUES (@id, @name, @q, @d)";
+
             try
             {
-                // Fetch material ID
-                int materialId = GetMaterialId(material);
-
-                // Update material quantity
-                string query =
-                    "UPDATE RawMaterial SET Quantity = Quantity - @q " +
-                    "WHERE MaterialID=@id AND Quantity>=@q";
-
-                SqlParameter[] p =
+                using (SqlConnection con = new SqlConnection(DBHelper.ConnectionString))
                 {
-                    new SqlParameter("@q", quantity),
-                    new SqlParameter("@id", materialId)
-                };
+                    con.Open();
+                    using (SqlTransaction tr = con.BeginTransaction())
+                    {
+                        try
+                        {
+                            foreach (var d in deductions)
+                            {
+                                using (SqlCommand cmdUp = new SqlCommand(upd, con, tr))
+                                {
+                                    cmdUp.Parameters.AddWithValue("@q", d.Amount);
+                                    cmdUp.Parameters.AddWithValue("@id", d.MaterialId);
+                                    if (cmdUp.ExecuteNonQuery() != 1)
+                                        throw new InvalidOperationException("Stock changed or insufficient quantity for one of the rows.");
+                                }
 
-                // Execute update query
-                int rows = DBHelper.ExecuteNonQuery(query, p);
+                                using (SqlCommand cmdIn = new SqlCommand(ins, con, tr))
+                                {
+                                    cmdIn.Parameters.AddWithValue("@id", d.MaterialId);
+                                    cmdIn.Parameters.AddWithValue("@name", d.MaterialName);
+                                    cmdIn.Parameters.AddWithValue("@q", d.Amount);
+                                    cmdIn.Parameters.AddWithValue("@d", usageDate);
+                                    cmdIn.ExecuteNonQuery();
+                                }
+                            }
 
-                // Check if update succeeded
-                if (rows > 0)
-                {
-                    MessageBox.Show("Raw material entry removed successfully!");
-
-                    // Refresh grid
-                    LoadRawMaterials();
+                            tr.Commit();
+                        }
+                        catch
+                        {
+                            tr.Rollback();
+                            throw;
+                        }
+                    }
                 }
-                else
-                {
-                    MessageBox.Show("Material not found or insufficient quantity.");
-                }
+
+                MessageBox.Show("Raw material deduction saved and usage recorded.");
+                ClearFields();
+                LoadRawMaterials();
             }
             catch (Exception ex)
             {
@@ -190,7 +324,7 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.LoadPage(new FactoryHomePage());
+                dashboard.LoadPage(new FactoryDash());
             }
         }
     }

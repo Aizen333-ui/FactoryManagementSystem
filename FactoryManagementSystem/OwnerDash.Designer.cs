@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -54,7 +55,65 @@ namespace FactoryManagementSystem
 
         private Panel workersCategoryPanel;
         private Panel materialsPanel;
+        private void MakeRounded(Control ctl, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
 
+            path.AddArc(0, 0, radius, radius, 180, 90);
+            path.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
+            path.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
+            path.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
+
+            path.CloseAllFigures();
+
+            ctl.Region = new Region(path);
+
+            ctl.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                Rectangle rect = new Rectangle(
+                    1,
+                    1,
+                    ctl.Width - 3,
+                    ctl.Height - 3);
+
+                using (GraphicsPath borderPath = new GraphicsPath())
+                {
+                    borderPath.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                    borderPath.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                    borderPath.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                    borderPath.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+
+                    borderPath.CloseAllFigures();
+
+                    // SAME BORDER COLOR AS RAW MATERIAL
+                    using (Pen pen = new Pen(
+                        Color.FromArgb(180, 190, 210),
+                        1.5f))
+                    {
+                        e.Graphics.DrawPath(pen, borderPath);
+                    }
+                }
+            };
+
+            // Reapply on resize
+            ctl.Resize += (s, e) =>
+            {
+                GraphicsPath p = new GraphicsPath();
+
+                p.AddArc(0, 0, radius, radius, 180, 90);
+                p.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
+                p.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
+                p.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
+
+                p.CloseAllFigures();
+
+                ctl.Region = new Region(p);
+
+                ctl.Invalidate();
+            };
+        }
         // =====================================================
         // INITIALIZE
         // =====================================================
@@ -69,6 +128,7 @@ namespace FactoryManagementSystem
 
             this.BackColor = Color.FromArgb(240, 242, 247);
             this.Dock = DockStyle.Fill;
+            this.BackColor = Color.White;
 
             // =====================================================
             // MAIN FLOW
@@ -82,7 +142,7 @@ namespace FactoryManagementSystem
             mainFlow.AutoScroll = true;
             mainFlow.AutoScrollPosition = new Point(0, 0);
             mainFlow.Padding = new Padding(30, 20, 30, 20);
-            mainFlow.BackColor = Color.FromArgb(245, 246, 250);
+            mainFlow.BackColor = Color.White;
 
             this.Controls.Add(mainFlow);
 
@@ -118,6 +178,7 @@ namespace FactoryManagementSystem
             topRow.Width = 1500;
             topRow.Height = 190;
             topRow.Margin = new Padding(0, 30, 0, 20);
+            
 
 
             // =====================================================
@@ -159,7 +220,7 @@ namespace FactoryManagementSystem
             cardProduction = CreateCard();
 
             Label titleProduction = CreateCardTitle(
-                "Material Types");
+                "Total Raw Material");
 
             lblProduction = CreateBigValueLabel();
 
@@ -254,44 +315,41 @@ namespace FactoryManagementSystem
             // CHARTS ROW
             // =====================================================
 
-            FlowLayoutPanel chartsRow =
-                new FlowLayoutPanel();
-
+            TableLayoutPanel chartsRow = new TableLayoutPanel();
             chartsRow.Width = 1500;
-            chartsRow.Height = 430;
-            chartsRow.Margin = new Padding(0, 20, 0, 20);
+            chartsRow.Height = 480;
+            chartsRow.Margin = new Padding(0, 12, 0, 24);
 
-            // =====================================================
-            // PIE CHART PANEL
-            // =====================================================
+            chartsRow.Dock = DockStyle.Fill;   // ✅ IMPORTANT FIX
 
-            Panel piePanel = CreateChartPanel(
-                "Material Usage");
+            chartsRow.ColumnCount = 2;
+            chartsRow.RowCount = 1;
+
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+            chartsRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            chartsRow.BackColor = Color.White;
+            chartsRow.Padding = new Padding(10);
 
             pieChart = new Chart();
-
-            pieChart.Location = new Point(20, 60);
-            pieChart.Size = new Size(620, 300);
-            piePanel.Controls.Add(pieChart);
-
-            chartsRow.Controls.Add(piePanel);
-
-            // =====================================================
-            // BAR CHART PANEL
-            // =====================================================
-
-            Panel barPanel = CreateChartPanel(
-                "Usage Analytics");
+            Panel pieHost = CreateChartHost("Material Usage", pieChart);
 
             barChart = new Chart();
+            Panel barHost = CreateChartHost("Monthly Expenses", barChart);
 
-            barChart.Location = new Point(20, 60);
-            barChart.Size = new Size(620, 300);
-            barPanel.Controls.Add(barChart);
-
-            chartsRow.Controls.Add(barPanel);
+            chartsRow.Controls.Add(pieHost, 0, 0);
+            chartsRow.Controls.Add(barHost, 1, 0);
 
             mainFlow.Controls.Add(chartsRow);
+            MakeRounded(cardWorkers, 16);
+            MakeRounded(cardExpenses, 16);
+            MakeRounded(cardProduction, 16);
+
+            MakeRounded(workersCategoryPanel, 16);
+            MakeRounded(materialsPanel, 16);
+            this.ResumeLayout(false);
         }
 
         // =====================================================
@@ -306,7 +364,7 @@ namespace FactoryManagementSystem
             panel.BackColor = Color.FromArgb(255, 255, 255);
             panel.Margin = new Padding(10);
             panel.Padding = new Padding(10);
-
+            MakeRounded(panel, 12);
             return panel;
         }
 
@@ -317,28 +375,117 @@ namespace FactoryManagementSystem
             panel.Size = new Size(1400, 350);
             panel.BackColor = Color.White;
             panel.Padding = new Padding(20, 20, 20, 20);
+            MakeRounded(panel, 12);
             return panel;
         }
 
-        private Panel CreateChartPanel(string title)
+        private Panel CreateChartHost(string title, Chart chart)
         {
-            Panel panel = new Panel();
+            Panel outer = new Panel();
 
-            panel.Size = new Size(680, 450);
-            panel.BackColor = Color.White;
-            panel.Margin = new Padding(10);
+            outer.Dock = DockStyle.Fill;
+            outer.BackColor = Color.White;
+            outer.Margin = new Padding(10, 8, 10, 16);
+            outer.Padding = new Padding(2);
+            MakeRounded(outer, 18);
+            // IMPORTANT
+            outer.Resize += (s, e) =>
+            {
+                GraphicsPath path = new GraphicsPath();
 
-            Label lbl = new Label();
+                int radius = 18;
 
-            lbl.Text = title;
-            lbl.Font =
-                new Font("Segoe UI", 18F, FontStyle.Bold);
+                path.AddArc(0, 0, radius, radius, 180, 90);
+                path.AddArc(outer.Width - radius, 0, radius, radius, 270, 90);
+                path.AddArc(outer.Width - radius,
+                            outer.Height - radius,
+                            radius,
+                            radius,
+                            0,
+                            90);
 
-            lbl.Location = new Point(20, 20);
+                path.AddArc(0,
+                            outer.Height - radius,
+                            radius,
+                            radius,
+                            90,
+                            90);
 
-            panel.Controls.Add(lbl);
+                path.CloseAllFigures();
 
-            return panel;
+                outer.Region = new Region(path);
+            };
+
+            // BORDER DRAWING
+            outer.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                int radius = 18;
+
+                Rectangle rect = new Rectangle(
+                    1,
+                    1,
+                    outer.Width - 3,
+                    outer.Height - 3);
+
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                    path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                    path.AddArc(rect.Right - radius,
+                                rect.Bottom - radius,
+                                radius,
+                                radius,
+                                0,
+                                90);
+
+                    path.AddArc(rect.X,
+                                rect.Bottom - radius,
+                                radius,
+                                radius,
+                                90,
+                                90);
+
+                    path.CloseAllFigures();
+
+                    using (Pen pen =
+                        new Pen(Color.FromArgb(180, 190, 210), 1.5f))
+                    {
+                        e.Graphics.DrawPath(pen, path);
+                    }
+                }
+            };
+
+            TableLayoutPanel layout = new TableLayoutPanel();
+
+            layout.Dock = DockStyle.Fill;
+            layout.RowCount = 2;
+            layout.ColumnCount = 1;
+
+            layout.RowStyles.Add(
+                new RowStyle(SizeType.Absolute, 50F));
+
+            layout.RowStyles.Add(
+                new RowStyle(SizeType.Percent, 100F));
+
+            Label hdr = new Label();
+
+            hdr.Text = title;
+            hdr.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            hdr.Dock = DockStyle.Fill;
+            hdr.TextAlign = ContentAlignment.MiddleLeft;
+            hdr.Padding = new Padding(15, 0, 0, 0);
+
+            chart.Dock = DockStyle.Fill;
+            chart.Margin = new Padding(10);
+
+            layout.Controls.Add(hdr, 0, 0);
+            layout.Controls.Add(chart, 0, 1);
+
+            outer.Controls.Add(layout);
+
+            return outer;
         }
 
         private Label CreateCardTitle(string text)
@@ -352,6 +499,7 @@ namespace FactoryManagementSystem
             lbl.ForeColor = Color.Gray;
             lbl.Location = new Point(20, 20);
             lbl.AutoSize = true;
+            
 
             return lbl;
         }
@@ -383,6 +531,7 @@ namespace FactoryManagementSystem
             panel.Size = new Size(300, 100);
             panel.BackColor = Color.White;
             panel.Margin = new Padding(10);
+
             Label lblTitle = new Label();
             lblTitle.Text = title;
             lblTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
@@ -402,7 +551,7 @@ namespace FactoryManagementSystem
             panel.Controls.Add(lblValue);
 
             parent.Controls.Add(panel);
-
+            MakeRounded(panel, 12);
             return lblValue;
         }
 
@@ -441,9 +590,10 @@ namespace FactoryManagementSystem
             lblValue.Location = new Point(15, 60);
             lblValue.AutoSize = true;
 
-            
+           
 
-            
+
+            MakeRounded(panel, 12);
 
             panel.Controls.Add(lblTitle);
             panel.Controls.Add(lblValue);
@@ -452,5 +602,6 @@ namespace FactoryManagementSystem
 
             return lblValue;
         }
+
     }
 }

@@ -20,6 +20,9 @@ namespace FactoryManagementSystem
         {
             panelBody = new Panel();
             panelBody.Dock = DockStyle.Fill;
+            panelBody.BackColor = Color.White;
+            this.BackColor = Color.White;
+
             this.panelSideMenu = new Panel();
             this.panelHeader = new Panel();
             this.panelMain = new Panel();
