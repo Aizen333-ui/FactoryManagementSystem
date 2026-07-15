@@ -70,7 +70,7 @@ namespace FactoryManagementSystem
             container.Margin = new Padding(0, 0, 0, 15);
             container.Size = new Size(container.Width, container.Height + 2);
             container.AutoSize = false;
-            container.Anchor = AnchorStyles.Left;   // 👈 VERY IMPORTANT
+            container.Anchor = AnchorStyles.Left;   
             // place inner control to fill the rounded container and remove its own extra margins
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
@@ -89,7 +89,6 @@ namespace FactoryManagementSystem
             {
                 int radius = 12;
 
-                // 👇 IMPORTANT: shrink drawing area
                 Rectangle rect = new Rectangle(1, 1, container.Width - 2, container.Height - 2);
 
                 using (GraphicsPath path = new GraphicsPath())
@@ -106,7 +105,6 @@ namespace FactoryManagementSystem
                     using (SolidBrush brush = new SolidBrush(Color.White))
                         e.Graphics.FillPath(brush, path);
 
-                    // 👇 BORDER (now visible on ALL sides)
                     using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
                         e.Graphics.DrawPath(pen, path);
                 }

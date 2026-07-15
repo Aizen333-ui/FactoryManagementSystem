@@ -11,7 +11,7 @@ namespace FactoryManagementSystem
 
             // Prevent chart controls from receiving focus (better UX)
             pieChart.TabStop = false;
-            barChart.TabStop = false;
+            pieChart.TabStop = false;
 
             // Delay chart loading until control handle is created
             this.HandleCreated += (s, e) =>
@@ -134,17 +134,17 @@ namespace FactoryManagementSystem
         // EXPENSE DISTRIBUTION CHART (Monthly)
         private void LoadExpenseChart()
         {
-            barChart.Series.Clear();
-            barChart.ChartAreas.Clear();
-            barChart.Legends.Clear();
-            barChart.Titles.Clear();
+            pieChart.Series.Clear();
+            pieChart.ChartAreas.Clear();
+            pieChart.Legends.Clear();
+            pieChart.Titles.Clear();
 
             ChartArea area = new ChartArea("MainArea")
             {
                 BackColor = Color.White
             };
 
-            barChart.ChartAreas.Add(area);
+            pieChart.ChartAreas.Add(area);
 
             Legend lg = new Legend
             {
@@ -152,11 +152,11 @@ namespace FactoryManagementSystem
                 Font = new Font("Segoe UI", 9F)
             };
 
-            barChart.Legends.Add(lg);
+            pieChart.Legends.Add(lg);
 
             Series series = new Series("Expenses")
             {
-                ChartType = SeriesChartType.Pie, // (Note: still pie-style distribution)
+                ChartType = SeriesChartType.Pie, 
                 IsValueShownAsLabel = true,
                 LabelFormat = "0.##'%'",
                 Font = new Font("Segoe UI", 9F, FontStyle.Bold)
@@ -192,10 +192,10 @@ namespace FactoryManagementSystem
                 series.Points.AddXY(reason, percent);
             }
 
-            barChart.Series.Add(series);
+            pieChart.Series.Add(series);
 
-            barChart.Dock = DockStyle.Fill;
-            barChart.Refresh();
+            pieChart.Dock = DockStyle.Fill;
+            pieChart.Refresh();
         }
 
         // WORKER CATEGORY COUNTS

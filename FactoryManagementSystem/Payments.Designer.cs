@@ -15,6 +15,8 @@ namespace FactoryManagementSystem
 
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.ComboBox cmbReason;
+        private System.Windows.Forms.Label lblWorkerName;
+        private System.Windows.Forms.ComboBox cmbWorkerName;
 
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.DateTimePicker datePaid;
@@ -126,11 +128,14 @@ namespace FactoryManagementSystem
 
         private void InitializeComponent()
         {
+            
             this.labelTitle = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.txtAmount = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.cmbReason = new System.Windows.Forms.ComboBox();
+            this.lblWorkerName = new System.Windows.Forms.Label();
+            this.cmbWorkerName = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.datePaid = new System.Windows.Forms.DateTimePicker();
             this.btnAdd = new System.Windows.Forms.Button();
@@ -171,7 +176,17 @@ namespace FactoryManagementSystem
             cmbReason.Width = 1000;
             cmbReason.Height = 30;
             cmbReason.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbReason.SelectedIndexChanged += cmbReason_SelectedIndexChanged;
 
+            // Worker Name
+            lblWorkerName.Text = "Worker Name:";
+            lblWorkerName.Font = new Font("Segoe UI", 14F);
+            lblWorkerName.AutoSize = true;
+            cmbWorkerName.Width = 1000;
+            cmbWorkerName.Height = 30;
+            cmbWorkerName.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbWorkerName.Visible = false;
+            lblWorkerName.Visible = false;
             // Date
             label4.Text = "Date Paid:";
             label4.Font = new Font("Segoe UI", 14F);
@@ -276,7 +291,7 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
-            Button btnBack = this.btnBack = new Button();
+            this.btnBack = new Button();
             btnBack.Text = "Back";
             btnBack.Width = 260;
             btnBack.Height = 50;
@@ -344,6 +359,10 @@ namespace FactoryManagementSystem
             main.Controls.Add(CreateRoundedBox(txtAmount));
             main.Controls.Add(label3);
             main.Controls.Add(CreateRoundedBox(cmbReason));
+            workerNameBox = CreateRoundedBox(cmbWorkerName);
+
+            main.Controls.Add(lblWorkerName);
+            main.Controls.Add(workerNameBox);
             main.Controls.Add(label4);
             main.Controls.Add(datePaid);
             main.Controls.Add(btnPanel);
@@ -351,6 +370,9 @@ namespace FactoryManagementSystem
             main.Controls.Add(this.dataGridView1);
 
             this.Controls.Add(main);
+            lblWorkerName.Visible = false;
+            cmbWorkerName.Visible = false;
+            workerNameBox.Visible = false;
             this.Size = new System.Drawing.Size(800, 700);
             main.Controls.Add(btnBack);
 

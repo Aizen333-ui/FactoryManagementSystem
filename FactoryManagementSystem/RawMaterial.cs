@@ -71,53 +71,79 @@ namespace FactoryManagementSystem
         // Add new material into database
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            string name = cmbName.Text.Trim();
-            string qty = txtQty.Text.Trim();
-            string unit = txtUnit.Text.Trim();
-
             // Validate empty fields
-            if (string.IsNullOrEmpty(name) ||
-                string.IsNullOrEmpty(qty) ||
-                string.IsNullOrEmpty(unit))
+            if (string.IsNullOrWhiteSpace(cmbName.Text) ||
+                string.IsNullOrWhiteSpace(txtQty.Text) ||
+                string.IsNullOrWhiteSpace(txtUnit.Text) ||
+                string.IsNullOrWhiteSpace(txtUnitPrice.Text))
             {
                 MessageBox.Show("Please fill all fields!");
                 return;
             }
 
             // Validate quantity
-            if (!decimal.TryParse(qty, out decimal quantity) || quantity <= 0)
+            if (!decimal.TryParse(txtQty.Text, out decimal quantity) || quantity <= 0)
             {
                 MessageBox.Show("Quantity must be a positive number.");
                 return;
             }
 
+            // Validate unit price
+            if (!decimal.TryParse(txtUnitPrice.Text, out decimal unitPrice) || unitPrice <= 0)
+            {
+                MessageBox.Show("Unit price must be a positive number.");
+                return;
+            }
+
+            string name = cmbName.Text;
+            string unit = txtUnit.Text;
+
             try
             {
-                // SQL insert query
-                string query =
-                    "INSERT INTO RawMaterial (Name, Quantity, Unit) " +
-                    "VALUES (@name, @qty, @unit)";
+                string query = @"
+            INSERT INTO RawMaterial
+            (Name, Quantity, Unit, UnitPrice)
+            VALUES
+            (@name, @qty, @unit, @unitprice)";
 
-                // SQL parameters
                 SqlParameter[] p =
                 {
-                    new SqlParameter("@name", name),
-                    new SqlParameter("@qty", quantity),
-                    new SqlParameter("@unit", unit)
-                };
+            new SqlParameter("@name", name),
+            new SqlParameter("@qty", quantity),
+            new SqlParameter("@unit", unit),
+            new SqlParameter("@unitprice", unitPrice)
+        };
 
-                // Execute insert query
                 DBHelper.ExecuteNonQuery(query, p);
+
+                // Add payment record automatically
+                decimal totalAmount = quantity * unitPrice;
+
+                string paymentQuery = @"
+            INSERT INTO Payments
+            (Reason, Amount, Date)
+            VALUES
+            (@reason, @amount, @date)";
+
+                SqlParameter[] paymentParams =
+                {
+            new SqlParameter("@reason", name),
+            new SqlParameter("@amount", totalAmount),
+            new SqlParameter("@date", DateTime.Now)
+        };
+
+                DBHelper.ExecuteNonQuery(paymentQuery, paymentParams);
+
 
                 MessageBox.Show("Material added successfully!");
 
-                // Refresh DataGridView
                 LoadMaterials();
 
-                // Clear input fields
-                txtQty.Clear();
-                txtUnit.Clear();
+                // Clear fields
                 cmbName.SelectedIndex = -1;
+                txtQty.Clear();
+                txtUnitPrice.Clear();
+                txtUnit.Clear();
             }
             catch (Exception ex)
             {
@@ -247,7 +273,7 @@ namespace FactoryManagementSystem
         {
             OwnerDashBoard dashboard =
                 (OwnerDashBoard)this.FindForm();
-            dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+            dashboard.ResetSidebarSelection(); 
 
             dashboard.LoadPage(new OwnerDash());
         }

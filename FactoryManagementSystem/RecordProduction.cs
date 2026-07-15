@@ -74,21 +74,7 @@ namespace FactoryDashBoard.Pages
                 MessageBox.Show("Error loading production: " + ex.Message);
             }
         }
-
-        // Check if production already exists for same product and date
-        private bool ProductionExists(string product, DateTime date)
-        {
-            string query = "SELECT COUNT(*) FROM Production WHERE ProductName=@p AND Date=@d";
-
-            object result = DBHelper.ExecuteScalar(query, new SqlParameter[]
-            {
-                new SqlParameter("@p", product),
-                new SqlParameter("@d", date)
-            });
-
-            return result != null && Convert.ToInt32(result) > 0;
-        }
-
+        
         // Save production record
         private void BtnSave_Click(object? sender, EventArgs e)
         {
@@ -132,14 +118,7 @@ namespace FactoryDashBoard.Pages
                 MessageBox.Show("Future date not allowed");
                 return;
             }
-
-            // Prevent duplicate entries
-            if (ProductionExists(cmbProductName.Text, selectedDate))
-            {
-                MessageBox.Show("Production for this product already recorded for selected date.");
-                return;
-            }
-
+            
             try
             {
                 // Insert production record
@@ -202,7 +181,7 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+                dashboard.ResetSidebarSelection(); 
 
                 dashboard.LoadPage(new FactoryDash());
             }

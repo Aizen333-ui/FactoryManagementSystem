@@ -27,15 +27,7 @@ namespace FactoryDashBoard.Pages
         private Label lblMessage;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Button btnBack;
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && components != null)
-                components.Dispose();
-
-            base.Dispose(disposing);
-        }
-
+      
         // ===================== ROUND BUTTON =====================
         private void MakeRoundedButton(Button btn, Color color)
         {

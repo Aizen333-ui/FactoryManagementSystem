@@ -22,7 +22,7 @@ namespace FactoryManagementSystem
         {
             Panel container = new Panel();
             container.Height = height;
-            container.Width = 1100;   // force proper width for reports box
+            container.Width = 1100;   
             container.BackColor = Color.White;
             container.Padding = new Padding(12, 10, 14, 12);
             container.Margin = new Padding(0, 0, 0, 15);

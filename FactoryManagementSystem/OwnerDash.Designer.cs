@@ -1,407 +1,394 @@
-﻿using System.Drawing;
+﻿
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace FactoryManagementSystem
 {
-    // Owner dashboard UI showing KPIs, worker stats, materials, and charts
     partial class OwnerDash
     {
         private System.ComponentModel.IContainer components = null;
 
-        // KPI LABELS (Top summary stats)
+        // ===================== KPI LABELS =====================
         private Label lblWorkers;
         private Label lblExpenses;
         private Label lblProduction;
 
-        // WORKER CATEGORY LABELS
+        // ===================== WORKER CATEGORY LABELS =====================
         private Label lblLabourers;
         private Label lblDrivers;
         private Label lblLoaders;
         private Label lblOperators;
 
-        // MATERIAL LABELS
+        // ===================== MATERIAL LABELS =====================
         private Label lblCement;
         private Label lblSand;
         private Label lblCrush;
         private Label lblSteel;
         private Label lblOil;
 
-        // CHARTS (Visual analytics section)
+        // ===================== CHARTS =====================
         private Chart pieChart;
         private Chart barChart;
 
-        // MAIN CONTAINERS
+        // ===================== MAIN LAYOUT =====================
         private FlowLayoutPanel mainFlow;
-
         private Panel cardWorkers;
         private Panel cardExpenses;
         private Panel cardProduction;
+        private Panel workerPanel;
+        private Panel materialPanel;
+        private FlowLayoutPanel workerFlow;
+        private FlowLayoutPanel materialFlow;
+        private Label lblTitle;
+        private Label lblSub;
 
-        private Panel workersCategoryPanel;
-        private Panel materialsPanel;
-
-        // Applies rounded corners + border styling to any UI control
+        // ==========================================================
+        // ROUND CONTROL WITH BORDER
+        // ==========================================================
         private void MakeRounded(Control ctl, int radius)
         {
             GraphicsPath path = new GraphicsPath();
-
-            // Create rounded rectangle region
             path.AddArc(0, 0, radius, radius, 180, 90);
             path.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
             path.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
             path.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
-
             path.CloseAllFigures();
             ctl.Region = new Region(path);
 
-            // Custom border drawing
             ctl.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
                 Rectangle rect = new Rectangle(1, 1, ctl.Width - 3, ctl.Height - 3);
-
-                using (GraphicsPath borderPath = new GraphicsPath())
+                using (GraphicsPath border = new GraphicsPath())
                 {
-                    borderPath.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-                    borderPath.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
-                    borderPath.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
-                    borderPath.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
-
-                    borderPath.CloseAllFigures();
+                    border.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                    border.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                    border.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                    border.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+                    border.CloseAllFigures();
 
                     using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
                     {
-                        e.Graphics.DrawPath(pen, borderPath);
+                        e.Graphics.DrawPath(pen, border);
                     }
                 }
             };
 
-            // Recalculate rounded region on resize
             ctl.Resize += (s, e) =>
             {
                 GraphicsPath p = new GraphicsPath();
-
                 p.AddArc(0, 0, radius, radius, 180, 90);
                 p.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
                 p.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
                 p.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
-
                 p.CloseAllFigures();
-                ctl.Region = new Region(p);
 
+                ctl.Region = new Region(p);
                 ctl.Invalidate();
             };
         }
 
-        // INITIALIZE UI LAYOUT
+        // ==========================================================
+        // INITIALIZE UI
+        // ==========================================================
         private void InitializeComponent()
         {
             mainFlow = new FlowLayoutPanel();
-
             lblTitle = new Label();
             lblSub = new Label();
             topRow = new FlowLayoutPanel();
             chartsRow = new TableLayoutPanel();
-
             pieChart = new Chart();
+            divider = new Panel();
             barChart = new Chart();
-
-            wrapper = new FlowLayoutPanel();
-            workerTitle = new Label();
-            workerGrid = new FlowLayoutPanel();
-
-            wrapper1 = new FlowLayoutPanel();
-            materialTitle = new Label();
-            materialGrid = new FlowLayoutPanel();
-
+            workerHeader = new Label();
+            workerFlow = new FlowLayoutPanel();
+            materialHeader = new Label();
+            materialFlow = new FlowLayoutPanel();
             mainFlow.SuspendLayout();
+            chartsRow.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pieChart).BeginInit();
             ((System.ComponentModel.ISupportInitialize)barChart).BeginInit();
-            wrapper.SuspendLayout();
-            wrapper1.SuspendLayout();
             SuspendLayout();
-
-            // ===================== MAIN LAYOUT =====================
-            mainFlow.AutoScroll = true;
-            mainFlow.BackColor = Color.White;
-            mainFlow.Dock = DockStyle.Fill;
-            mainFlow.FlowDirection = FlowDirection.TopDown;
-            mainFlow.Padding = new Padding(30, 20, 30, 20);
-            mainFlow.WrapContents = false;
-
+            // 
+            // mainFlow
+            // 
             mainFlow.Controls.Add(lblTitle);
             mainFlow.Controls.Add(lblSub);
             mainFlow.Controls.Add(topRow);
             mainFlow.Controls.Add(chartsRow);
-
-            // ===================== HEADER =====================
-            lblTitle.Text = "Factory Stats";
-            lblTitle.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.Black;
-
-            lblSub.Text = "Real-time overview of factory operations";
-            lblSub.Font = new Font("Segoe UI", 11F);
-            lblSub.ForeColor = Color.Gray;
-
-            // ===================== KPI ROW =====================
-            topRow.Margin = new Padding(0, 30, 0, 20);
-            topRow.Size = new Size(1500, 190);
-
-            // ===================== CHART ROW =====================
-            chartsRow.BackColor = Color.White;
-            chartsRow.ColumnCount = 2;
-            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            chartsRow.RowCount = 1;
-            chartsRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            chartsRow.Padding = new Padding(10);
-            chartsRow.Dock = DockStyle.Fill;
-
-            // Charts initialization (data loaded in backend file)
+            mainFlow.Location = new Point(0, 0);
+            mainFlow.Name = "mainFlow";
+            mainFlow.Size = new Size(200, 100);
+            mainFlow.TabIndex = 0;
+            // 
+            // lblTitle
+            // 
+            lblTitle.Location = new Point(3, 0);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(100, 23);
+            lblTitle.TabIndex = 0;
+            // 
+            // lblSub
+            // 
+            lblSub.Location = new Point(3, 23);
+            lblSub.Name = "lblSub";
+            lblSub.Size = new Size(100, 23);
+            lblSub.TabIndex = 1;
+            // 
+            // topRow
+            // 
+            topRow.Location = new Point(3, 49);
+            topRow.Name = "topRow";
+            topRow.Size = new Size(200, 100);
+            topRow.TabIndex = 2;
+            // 
+            // chartsRow
+            // 
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48F));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 2F));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48F));
+            chartsRow.Controls.Add(divider, 1, 0);
+            chartsRow.Location = new Point(3, 155);
+            chartsRow.Name = "chartsRow";
+            chartsRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            chartsRow.Size = new Size(200, 100);
+            chartsRow.TabIndex = 3;
+            // 
+            // pieChart
+            // 
+            pieChart.Location = new Point(0, 0);
+            pieChart.Name = "pieChart";
             pieChart.Size = new Size(300, 300);
+            pieChart.TabIndex = 0;
+            // 
+            // divider
+            // 
+            divider.Location = new Point(201, 3);
+            divider.Name = "divider";
+            divider.Size = new Size(1, 94);
+            divider.TabIndex = 0;
+            // 
+            // barChart
+            // 
+            barChart.Location = new Point(0, 0);
+            barChart.Name = "barChart";
             barChart.Size = new Size(300, 300);
-
-            // ===================== WORKER SECTION WRAPPER =====================
-            wrapper.FlowDirection = FlowDirection.TopDown;
-            wrapper.WrapContents = false;
-
-            workerTitle.Text = "Worker Categories";
-            workerTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-
-            workerGrid.AutoScroll = true;
-
-            // ===================== MATERIAL SECTION WRAPPER =====================
-            wrapper1.FlowDirection = FlowDirection.TopDown;
-            wrapper1.WrapContents = false;
-
-            materialTitle.Text = "Raw Material Stock";
-            materialTitle.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-
-            materialGrid.WrapContents = false;
-
-            // FINAL ATTACH
+            barChart.TabIndex = 0;
+            // 
+            // workerHeader
+            // 
+            workerHeader.Location = new Point(0, 0);
+            workerHeader.Name = "workerHeader";
+            workerHeader.Size = new Size(100, 23);
+            workerHeader.TabIndex = 0;
+            // 
+            // workerFlow
+            // 
+            workerFlow.Location = new Point(0, 0);
+            workerFlow.Name = "workerFlow";
+            workerFlow.Size = new Size(200, 100);
+            workerFlow.TabIndex = 0;
+            // 
+            // materialHeader
+            // 
+            materialHeader.Location = new Point(0, 0);
+            materialHeader.Name = "materialHeader";
+            materialHeader.Size = new Size(100, 23);
+            materialHeader.TabIndex = 0;
+            // 
+            // materialFlow
+            // 
+            materialFlow.Location = new Point(0, 0);
+            materialFlow.Name = "materialFlow";
+            materialFlow.Size = new Size(200, 100);
+            materialFlow.TabIndex = 0;
+            // 
+            // OwnerDash
+            // 
+            BackColor = Color.White;
             Controls.Add(mainFlow);
-
             Name = "OwnerDash";
-            Size = new Size(2049, 1075);
-
+            Size = new Size(1966, 992);
             mainFlow.ResumeLayout(false);
-            mainFlow.PerformLayout();
+            chartsRow.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pieChart).EndInit();
             ((System.ComponentModel.ISupportInitialize)barChart).EndInit();
-            wrapper.ResumeLayout(false);
-            wrapper.PerformLayout();
-            wrapper1.ResumeLayout(false);
-            wrapper1.PerformLayout();
             ResumeLayout(false);
         }
 
-        // CARD HELPERS (Reusable UI blocks)
-
-        // Small KPI card
+        // =====================================================
+        // KPI CARD CREATOR
+        // =====================================================
         private Panel CreateCard()
         {
-            Panel panel = new Panel
+            Panel panel = new Panel()
             {
                 Size = new Size(450, 170),
                 BackColor = Color.White,
                 Margin = new Padding(10),
                 Padding = new Padding(10)
             };
-
-            MakeRounded(panel, 12);
+            MakeRounded(panel, 16);
             return panel;
         }
 
-        // Large dashboard section panel
         private Panel CreateLargePanel()
         {
-            Panel panel = new Panel
+            Panel panel = new Panel()
             {
-                Size = new Size(1400, 350),
+                Size = new Size(1400, 300),
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
-
-            MakeRounded(panel, 12);
             return panel;
         }
 
-        // Chart container with title + border styling
+        // =====================================================
+        // CHART CONTAINER
+        // =====================================================
         private Panel CreateChartHost(string title, Chart chart)
         {
-            Panel outer = new Panel
+            Panel outer = new Panel()
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Margin = new Padding(10, 8, 10, 16),
-                Padding = new Padding(2)
+                Margin = new Padding(10)
             };
+            MakeRounded(outer, 18);
 
-            // Reapply rounded shape on resize
-            outer.Resize += (s, e) =>
-            {
-                GraphicsPath path = new GraphicsPath();
-
-                int radius = 18;
-
-                path.AddArc(0, 0, radius, radius, 180, 90);
-                path.AddArc(outer.Width - radius, 0, radius, radius, 270, 90);
-                path.AddArc(outer.Width - radius, outer.Height - radius, radius, radius, 0, 90);
-                path.AddArc(0, outer.Height - radius, radius, radius, 90, 90);
-
-                path.CloseAllFigures();
-                outer.Region = new Region(path);
-
-                outer.Invalidate();
-            };
-
-            // Border drawing
-            outer.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                Rectangle rect = new Rectangle(1, 1, outer.Width - 3, outer.Height - 3);
-
-                using (GraphicsPath path = new GraphicsPath())
-                {
-                    path.AddArc(rect.X, rect.Y, 18, 18, 180, 90);
-                    path.AddArc(rect.Right - 18, rect.Y, 18, 18, 270, 90);
-                    path.AddArc(rect.Right - 18, rect.Bottom - 18, 18, 18, 0, 90);
-                    path.AddArc(rect.X, rect.Bottom - 18, 18, 18, 90, 90);
-
-                    path.CloseAllFigures();
-
-                    using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
-                    {
-                        e.Graphics.DrawPath(pen, path);
-                    }
-                }
-            };
-
-            // Layout: title + chart
-            TableLayoutPanel layout = new TableLayoutPanel
+            TableLayoutPanel layout = new TableLayoutPanel()
             {
                 Dock = DockStyle.Fill,
                 RowCount = 2,
                 ColumnCount = 1
             };
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-
-            Label hdr = new Label
+            Label header = new Label()
             {
                 Text = title,
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 0, 0)
+                Padding = new Padding(15, 0, 0, 0),
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             chart.Dock = DockStyle.Fill;
             chart.BackColor = Color.White;
 
-            layout.Controls.Add(hdr, 0, 0);
+            layout.Controls.Add(header, 0, 0);
             layout.Controls.Add(chart, 0, 1);
-
             outer.Controls.Add(layout);
 
             return outer;
         }
 
-        // MINI WORKER CARD FACTORY
-
-        private Label CreateMiniStatCard(
-            FlowLayoutPanel parent,
-            string title)
+        // =====================================================
+        // SMALL LABEL HELPERS
+        // =====================================================
+        private Label CreateCardTitle(string text)
         {
-            Panel panel = new Panel
+            return new Label()
+            {
+                Text = text,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.Gray,
+                Location = new Point(20, 20),
+                AutoSize = true
+            };
+        }
+
+        private Label CreateBigValueLabel()
+        {
+            return new Label()
+            {
+                Text = "0",
+                Font = new Font("Segoe UI", 28, FontStyle.Bold),
+                Location = new Point(20, 70),
+                AutoSize = true
+            };
+        }
+
+        // =====================================================
+        // WORKER CARD
+        // =====================================================
+        private Label CreateMiniStatCard(FlowLayoutPanel parent, string title)
+        {
+            Panel panel = new Panel()
             {
                 Size = new Size(300, 100),
                 BackColor = Color.White,
                 Margin = new Padding(10)
             };
 
-            Label lblTitle = new Label
+            Label name = new Label()
             {
                 Text = title,
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                Location = new Point(10, 10),
-                AutoSize = true
-            };
-
-            Label lblValue = new Label
-            {
-                Text = "0",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                Location = new Point(10, lblTitle.Bottom + 10),
-                AutoSize = true
-            };
-
-            panel.Controls.Add(lblTitle);
-            panel.Controls.Add(lblValue);
-
-            parent.Controls.Add(panel);
-
-            MakeRounded(panel, 12);
-
-            return lblValue;
-        }
-
-        // MATERIAL CARD FACTORY
-
-        private Label CreateMaterialCard(
-            FlowLayoutPanel parent,
-            string material)
-        {
-            Panel panel = new Panel
-            {
-                Size = new Size(240, 180),
-                BackColor = Color.White,
-                Margin = new Padding(15),
-                Padding = new Padding(10)
-            };
-
-            Label lblTitle = new Label
-            {
-                Text = material,
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 Location = new Point(15, 15),
                 AutoSize = true
             };
 
-            Label lblValue = new Label
+            Label value = new Label()
             {
                 Text = "0",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                Location = new Point(15, 60),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Location = new Point(15, 50),
                 AutoSize = true
             };
 
-            panel.Controls.Add(lblTitle);
-            panel.Controls.Add(lblValue);
-
+            panel.Controls.Add(name);
+            panel.Controls.Add(value);
             parent.Controls.Add(panel);
-
             MakeRounded(panel, 12);
 
-            return lblValue;
+            return value;
         }
 
-        // EXTRA UI ELEMENTS (declared at bottom for clarity)
-        private Label lblTitle;
-        private Label lblSub;
+        // =====================================================
+        // MATERIAL CARD
+        // =====================================================
+        private Label CreateMaterialCard(FlowLayoutPanel parent, string material)
+        {
+            Panel panel = new Panel()
+            {
+                Size = new Size(240, 150),
+                BackColor = Color.White,
+                Margin = new Padding(10)
+            };
+
+            Label name = new Label()
+            {
+                Text = material,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(15, 20),
+                AutoSize = true
+            };
+
+            Label value = new Label()
+            {
+                Text = "0",
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Location = new Point(15, 70),
+                AutoSize = true
+            };
+
+            panel.Controls.Add(name);
+            panel.Controls.Add(value);
+            parent.Controls.Add(panel);
+            MakeRounded(panel, 12);
+
+            return value;
+        }
+
         private FlowLayoutPanel topRow;
         private TableLayoutPanel chartsRow;
-        private FlowLayoutPanel wrapper;
-        private Label workerTitle;
-        private FlowLayoutPanel workerGrid;
-        private FlowLayoutPanel wrapper1;
-        private Label materialTitle;
-        private FlowLayoutPanel materialGrid;
+        private Panel divider;
+        private Label workerHeader;
+        private Label materialHeader;
     }
 }

@@ -112,9 +112,7 @@ namespace FactoryDashBoard.Pages
             };
         }
 
-        /// <summary>
-        /// Build per-row deductions: either one grid row (by MaterialID), or spread by material name across all matching rows.
-        /// </summary>
+       
         private bool TryBuildDeductions(out string displayName, out List<(int MaterialId, string MaterialName, decimal Amount)> deductions, out string? errorMessage)
         {
             displayName = "";
@@ -325,7 +323,7 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+                dashboard.ResetSidebarSelection(); 
 
                 dashboard.LoadPage(new FactoryDash());
             }

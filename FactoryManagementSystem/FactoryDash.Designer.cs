@@ -182,41 +182,48 @@ namespace FactoryManagementSystem
             mainFlow.Controls.Add(productionPanel);
 
             // ===================== CHART SECTION =====================
+
             TableLayoutPanel chartsRow = new TableLayoutPanel
             {
                 Width = 1500,
                 Height = 480,
-                Margin = new Padding(0, 12, 0, 24),
-                ColumnCount = 2,
+                ColumnCount = 3,
                 RowCount = 1,
                 BackColor = Color.White,
-                Padding = new Padding(10)
+                Padding = new Padding(10),
+                Margin = new Padding(0,20,0,20)
             };
 
-            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,48));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,2));
+            chartsRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,48));
+            chartsRow.RowStyles.Add(new RowStyle(SizeType.Percent,100));
 
-            chartsRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            // ================= LEFT CHART =================
 
-            // Pie chart container
             pieChart = new Chart();
-            Panel pieHost = CreateChartHost("Material Usage", pieChart);
+            Panel pieHost =CreateChartHost("Material Usage",pieChart);
 
-            // Bar chart container
+            // ================= RIGHT CHART =================
+
             barChart = new Chart();
-            Panel barHost = CreateChartHost("Monthly Production", barChart);
+            Panel barHost =CreateChartHost("Monthly Production",barChart);
 
-            chartsRow.Controls.Add(pieHost, 0, 0);
-            chartsRow.Controls.Add(barHost, 1, 0);
+            // ================= DIVIDER LINE =================
 
+            Panel divider = new Panel(){
+                Width = 2,
+                Dock = DockStyle.Fill,
+                BackColor =Color.FromArgb(180,190,210),
+                Margin =new Padding(0,20,0,20)
+            };
+
+            // ADD CONTROLS
+
+            chartsRow.Controls.Add(pieHost,0,0);
+            chartsRow.Controls.Add(divider,1,0);
+            chartsRow.Controls.Add(barHost,2,0);
             mainFlow.Controls.Add(chartsRow);
-
-            // Apply rounded styling to main UI cards
-            MakeRounded(cardProduction, 16);
-            MakeRounded(cardRawUsage, 16);
-            MakeRounded(productionPanel, 16);
-
-            this.ResumeLayout(false);
         }
 
         // ===================== BASIC CARD =====================
@@ -248,89 +255,45 @@ namespace FactoryManagementSystem
             return panel;
         }
 
-        // Applies rounded clipping region to a control (used for charts too)
-        private void ApplyRoundedRegion(Control ctl, int radius)
-        {
-            GraphicsPath path = new GraphicsPath();
-
-            path.AddArc(0, 0, radius, radius, 180, 90);
-            path.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
-            path.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
-            path.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
-
-            path.CloseAllFigures();
-
-            ctl.Region = new Region(path);
-            ctl.Invalidate();
-        }
-
         // ===================== CHART CONTAINER =====================
-        private Panel CreateChartHost(string title, Chart chart)
+
+        private Panel CreateChartHost(
+            string title,
+            Chart chart)
         {
-            Panel outer = new Panel
+
+            Panel outer = new Panel()
             {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Margin = new Padding(10, 8, 10, 16),
-                Padding = new Padding(2)
+                Dock =DockStyle.Fill,
+                BackColor =Color.White,
+                Padding =new Padding(5)
             };
 
-            // Reapply rounding on resize for smooth edges
-            outer.Resize += (s, e) => ApplyRoundedRegion(outer, 18);
-            ApplyRoundedRegion(outer, 18);
+            TableLayoutPanel layout =new TableLayoutPanel(){
+                    Dock =DockStyle.Fill,
+                    RowCount = 2,
+                    ColumnCount = 1,
+                    BackColor =
+                    Color.White
+                };
 
-            // Draw custom border
-            outer.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                layout.RowStyles.Add(new RowStyle(SizeType.Absolute,50));
+                layout.RowStyles.Add(new RowStyle(SizeType.Percent,100));
 
-                Rectangle rect = new Rectangle(1, 1, outer.Width - 3, outer.Height - 3);
+                Label header =new Label(){
+                    Text = title,
+                    Font =new Font("Segoe UI",14,FontStyle.Bold),
+                    Dock =DockStyle.Fill,
+                    TextAlign =ContentAlignment.MiddleLeft,
+                    Padding =new Padding(15,0,0,0)
+                };
 
-                using (GraphicsPath path = new GraphicsPath())
-                {
-                    path.AddArc(rect.X, rect.Y, 18, 18, 180, 90);
-                    path.AddArc(rect.Right - 18, rect.Y, 18, 18, 270, 90);
-                    path.AddArc(rect.Right - 18, rect.Bottom - 18, 18, 18, 0, 90);
-                    path.AddArc(rect.X, rect.Bottom - 18, 18, 18, 90, 90);
-
-                    path.CloseAllFigures();
-
-                    using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
-                    {
-                        e.Graphics.DrawPath(pen, path);
-                    }
-                }
-            };
-
-            // Layout: Title + Chart
-            TableLayoutPanel layout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                RowCount = 2,
-                ColumnCount = 1
-            };
-
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-
-            Label hdr = new Label
-            {
-                Text = title,
-                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(15, 0, 0, 0)
-            };
-
-            chart.Dock = DockStyle.Fill;
-            chart.BackColor = Color.White;
-
-            layout.Controls.Add(hdr, 0, 0);
-            layout.Controls.Add(chart, 0, 1);
-
-            outer.Controls.Add(layout);
-
-            return outer;
+                chart.Dock =DockStyle.Fill;
+                chart.BackColor =Color.White;
+                layout.Controls.Add(header,0,0);
+                layout.Controls.Add(chart,0,1);
+                outer.Controls.Add(layout);
+          return outer;
         }
 
         // ===================== LABEL HELPERS =====================

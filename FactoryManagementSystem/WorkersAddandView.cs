@@ -176,7 +176,7 @@ namespace FactoryManagementSystem
         {
             OwnerDashBoard dashboard =
                 (OwnerDashBoard)this.FindForm();
-            dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+            dashboard.ResetSidebarSelection(); 
 
             // Navigate back to owner home page
             dashboard.LoadPage(new OwnerDash());

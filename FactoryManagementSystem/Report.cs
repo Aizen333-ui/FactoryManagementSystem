@@ -8,7 +8,7 @@ namespace FactoryDashBoard.Pages
     {
         // Database connection string
         string connStr =
-            "Data Source=TALHA-SOHAIL\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
+            "Data Source=localhost\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
 
         // Constructor
         public Report()
@@ -130,7 +130,7 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.ResetSidebarSelection(); // 🔥 FIX ADDED
+                dashboard.ResetSidebarSelection();
 
                 dashboard.LoadPage(new FactoryDash());
             }

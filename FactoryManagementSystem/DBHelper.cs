@@ -6,7 +6,7 @@ class DBHelper
 {
     // Database connection string
     static string conStr =
-        "Data Source=TALHA-SOHAIL\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
+        "Data Source=localhost\\SQLEXPRESS;Initial Catalog=FactoryDB;Integrated Security=True;TrustServerCertificate=True";
     public static string ConnectionString => conStr;
     // Executes SELECT queries and returns result in DataTable
     public static DataTable ExecuteDataTable(string query, SqlParameter[] parameters)

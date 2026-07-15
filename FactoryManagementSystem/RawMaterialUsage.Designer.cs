@@ -197,7 +197,7 @@ namespace FactoryDashBoard.Pages
             this.cmbMaterialName.Width = 1160;
             this.cmbMaterialName.Items.AddRange(new object[]
             {
-    "Cement", "Sand", "Crush", "Steel", "Mold Oil"
+                "Cement", "Sand", "Crush", "Steel", "Mold Oil"
             });
 
             // ===== QUANTITY =====
@@ -232,7 +232,7 @@ namespace FactoryDashBoard.Pages
 
 
 
-            // CLEAR BUTTON (gray style)
+            // CLEAR BUTTON
             this.btnClear = new Button();
             this.btnClear.Text = "Clear";
             this.btnClear.Width = 260;
@@ -243,7 +243,7 @@ namespace FactoryDashBoard.Pages
             this.btnClear.Location = new Point(700, 10);
 
 
-            // REMOVE BUTTON (red like RawMaterial)
+            // REMOVE BUTTON 
             this.btnRemove = new Button();
             this.btnRemove.Text = "Remove Entry";
             this.btnRemove.Width = 260;
@@ -308,7 +308,7 @@ namespace FactoryDashBoard.Pages
             this.dataGridView.RowHeadersVisible = false;
             this.dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView.MultiSelect = false;
-            this.dataGridView.ReadOnly = true; // optional but recommended
+            this.dataGridView.ReadOnly = true; 
 
 
             // ===== ADD TO MAIN =====
@@ -321,7 +321,7 @@ namespace FactoryDashBoard.Pages
             main.Controls.Add(CreateRoundedBox(txtQuantity));
 
             main.Controls.Add(lbl3);
-            main.Controls.Add(dateMaterial); // same as RawMaterial style
+            main.Controls.Add(dateMaterial); 
 
             main.Controls.Add(btnPanel);
             main.Controls.Add(lblMessage);

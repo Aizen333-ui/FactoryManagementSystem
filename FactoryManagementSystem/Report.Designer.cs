@@ -242,14 +242,14 @@ namespace FactoryDashBoard.Pages
             ApplyRoundedRegion(btnSendReport, 16);
             ApplyRoundedRegion(btnBack, 16);
             ApplyModernButton(btnGenerate,
-            Color.FromArgb(37, 99, 235),      // base blue
-            Color.FromArgb(59, 130, 246),     // hover
-            Color.FromArgb(29, 78, 216));     // pressed
+            Color.FromArgb(37, 99, 235),      
+            Color.FromArgb(59, 130, 246),     
+            Color.FromArgb(29, 78, 216));     
 
             ApplyModernButton(btnSendReport,
-                Color.FromArgb(22, 163, 74),      // base green
-                Color.FromArgb(34, 197, 94),      // hover
-                Color.FromArgb(21, 128, 61));     // pressed
+                Color.FromArgb(22, 163, 74),      
+                Color.FromArgb(34, 197, 94),      
+                Color.FromArgb(21, 128, 61));     
             // ================= FORM =================
             this.ClientSize = new Size(1050, 800);
             this.Controls.Add(mainPanel);

@@ -17,7 +17,8 @@ namespace FactoryManagementSystem
 
         private System.Windows.Forms.Label labelUnit;
         private System.Windows.Forms.TextBox txtUnit;
-
+        private Label lblUnitPrice;
+        private TextBox txtUnitPrice;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.DateTimePicker dateAdded;
 
@@ -75,7 +76,6 @@ namespace FactoryManagementSystem
             {
                 int radius = 12;
 
-                // 👇 IMPORTANT: shrink drawing area
                 Rectangle rect = new Rectangle(1, 1, container.Width - 2, container.Height - 2);
 
                 using (GraphicsPath path = new GraphicsPath())
@@ -92,7 +92,6 @@ namespace FactoryManagementSystem
                     using (SolidBrush brush = new SolidBrush(Color.White))
                         e.Graphics.FillPath(brush, path);
 
-                    // 👇 BORDER (now visible on ALL sides)
                     using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
                         e.Graphics.DrawPath(pen, path);
                 }
@@ -151,7 +150,7 @@ namespace FactoryManagementSystem
             main.FlowDirection = FlowDirection.TopDown;
             main.WrapContents = false;
             main.AutoScroll = true;
-            main.Padding = new Padding(30, 20, 30, 100);
+            main.Padding = new Padding(30, 20, 30, 300);
 
             // ===== TITLE =====
             Label label1 = new Label();
@@ -172,7 +171,7 @@ namespace FactoryManagementSystem
             cmbName.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbName.Items.AddRange(new object[]
             {
-        "Cement", "Sand", "Crush", "Steel", "Mold Oil"
+                "Cement", "Sand", "Crush", "Steel", "Mold Oil"
             });
             cmbName.SelectedIndexChanged += new System.EventHandler(this.cmbName_SelectedIndexChanged);
             cmbName.SelectedValueChanged += new System.EventHandler(this.cmbName_SelectedIndexChanged);
@@ -201,6 +200,15 @@ namespace FactoryManagementSystem
             this.txtUnit.Height = 30;
             this.txtUnit.ReadOnly = true;
 
+            //===== UNIT PRICE =====
+            this.txtUnitPrice = new TextBox();
+            this.lblUnitPrice = new Label();
+            lblUnitPrice.Text = "Unit Price:";
+            lblUnitPrice.Font = new Font("Segoe UI", 14F);
+            lblUnitPrice.AutoSize = true;
+
+            txtUnitPrice.Width = 1000;
+            txtUnitPrice.Height = 30;
             // ===== DATE =====
             Label label4 = new Label();
             label4.Text = "Date Added:";
@@ -222,7 +230,7 @@ namespace FactoryManagementSystem
             btnPanel.AutoSize = true;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
 
-            Button btnAdd = this.btnAdd = new Button();
+            this.btnAdd = new Button();
             btnAdd.Text = "Add Material";
             btnAdd.Width = 260;
             btnAdd.Height = 50;
@@ -231,7 +239,7 @@ namespace FactoryManagementSystem
             btnAdd.ForeColor = Color.White;
             btnAdd.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnAdd.Location = new Point(300, 10);
-            Button btnRemove = this.btnRemove = new Button();
+            this.btnRemove = new Button();
             btnRemove.Text = "Remove Material";
             btnRemove.Width = 260;
             btnRemove.Height = 50;
@@ -240,7 +248,7 @@ namespace FactoryManagementSystem
             btnRemove.ForeColor = Color.White;
             btnRemove.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnRemove.Location = new Point(600, 10);
-            Button btnBack = this.btnBack = new Button();
+            this.btnBack = new Button();
             btnBack.Text = "Back";
             btnBack.Width = 260;
             btnBack.Height = 50;
@@ -375,19 +383,16 @@ namespace FactoryManagementSystem
             // ===== DATAGRID =====
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.dataGridView1.Width = 1160;
-            this.dataGridView1.Height = 500;
+            this.dataGridView1.Height = 400;
             this.dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView1.RowHeadersVisible = false;
             this.dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView1.MultiSelect = false;
-            this.dataGridView1.ReadOnly = true; // optional but recommended
+            this.dataGridView1.ReadOnly = true; 
 
             // ===== ADD ALL TO MAIN =====
             // Title
             main.Controls.Add(label1);
-
-            // Material ID (system-generated but show field)
-
 
             // Material
             main.Controls.Add(label2);
@@ -400,9 +405,12 @@ namespace FactoryManagementSystem
             main.Controls.Add(labelUnit);
             main.Controls.Add(CreateRoundedBox(txtUnit));
 
+            // Unit Price
+            main.Controls.Add(lblUnitPrice);
+            main.Controls.Add(CreateRoundedBox(txtUnitPrice));
             // Date
             main.Controls.Add(label4);
-            // Date picker displayed directly (no outer rounded box)
+            // Date picker displayed 
             main.Controls.Add(dateAdded);
 
             // Buttons
