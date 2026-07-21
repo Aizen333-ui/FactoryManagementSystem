@@ -77,6 +77,13 @@ namespace FactoryManagementSystem
             if (MessageBox.Show("You want to Logout?", "Confirm",
                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "LOGOUT",
+                    "Security",
+                    "User logged out from the system",
+                    "Success"
+                );
                 this.Close();
             }
         }

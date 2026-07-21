@@ -133,7 +133,13 @@ namespace FactoryDashBoard.Pages
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Production",
+                    $"Recorded production of {quantity} {cmbUnit.Text} for product '{cmbProductName.Text}'",
+                    "Success"
+                );
                 MessageBox.Show("Production record saved successfully!");
 
                 // Refresh grid after insert
@@ -144,6 +150,13 @@ namespace FactoryDashBoard.Pages
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Production",
+                    $"Failed to record production for '{cmbProductName.Text}'. Error: {ex.Message}",
+                    "Failed"
+                );
                 MessageBox.Show("Error saving production: " + ex.Message);
             }
         }

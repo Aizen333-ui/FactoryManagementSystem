@@ -1,8 +1,8 @@
 using System.Drawing.Drawing2D;
 
-namespace FactoryManagementSystem
+namespace FactoryManagementAdminTool
 {
-    partial class Login
+    partial class AdminLogin
     {
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.Panel panelLogin;
@@ -15,7 +15,7 @@ namespace FactoryManagementSystem
         private System.Windows.Forms.Label lblLogo;
 
         private System.Windows.Forms.Label lblMessage;
-      
+
         private void RoundPanel(Panel panel)
         {
             GraphicsPath path = new GraphicsPath();
@@ -71,7 +71,7 @@ namespace FactoryManagementSystem
             container.Margin = new Padding(0, 0, 0, 15);
             container.Size = new Size(container.Width, container.Height + 2);
             container.AutoSize = false;
-            container.Anchor = AnchorStyles.Left;   
+            container.Anchor = AnchorStyles.Left;
             // place inner control to fill the rounded container and remove its own extra margins
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
@@ -129,16 +129,18 @@ namespace FactoryManagementSystem
             this.BackColor = Color.White;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.ClientSize = new System.Drawing.Size(600, 500);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Login";
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-
+            this.WindowState = FormWindowState.Maximized;
             // PANEL (CARD)
             this.panelLogin.BackColor = Color.FromArgb(245, 247, 250);
             this.panelLogin.Size = new Size(600, 700);
-            this.panelLogin.Location = new Point(120, 80);
+            this.panelLogin.Location = new Point(
+                (this.ClientSize.Width - this.panelLogin.Width) / 2,
+                (this.ClientSize.Height - this.panelLogin.Height) / 2
+            );
 
             // LOGO
             this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 22F);
@@ -160,7 +162,7 @@ namespace FactoryManagementSystem
             this.lblMessage.ForeColor = System.Drawing.Color.Gray;
             this.lblMessage.Location = new System.Drawing.Point(150, 170);
             this.lblMessage.Size = new System.Drawing.Size(360, 30);
-            this.lblMessage.Text = "Sign in to access your dashboard";
+            this.lblMessage.Text = "Sign in to access admin dashboard";
 
             // USER LABEL
             this.lblUser.Font = new System.Drawing.Font("Segoe UI", 13F);

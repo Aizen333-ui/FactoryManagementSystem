@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="FactoryManagementAdminTool/FactoryManagementAdminTool.csproj" Id="08ae9847-ac85-4f54-af54-2f0c46eed95d" />
+  <Project Path="FactoryManagementCore/FactoryManagementCore.csproj" Id="78b02920-c637-41f8-b19a-89bca6ca17d8" />
   <Project Path="FactoryManagementSystem/FactoryManagementSystem.csproj" />
 </Solution>

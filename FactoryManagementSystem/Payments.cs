@@ -170,7 +170,13 @@ namespace FactoryManagementSystem
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Payments",
+                    $"Added payment of Rs {amount} for '{reason}'",
+                    "Success"
+                );
                 MessageBox.Show("Payment added!");
 
                 // Refresh grid
@@ -183,6 +189,13 @@ namespace FactoryManagementSystem
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Payments",
+                    $"Failed to add payment: {ex.Message}",
+                    "Failed"
+                );
                 MessageBox.Show("Error adding: " + ex.Message);
             }
         }
@@ -266,7 +279,13 @@ namespace FactoryManagementSystem
                     new SqlParameter("@id", paymentId)
                         });
 
-
+                    Logger.AddLog(
+                        Session.CurrentUser,
+                        "DELETE",
+                        "Payments",
+                        $"Deleted payment ID '{paymentId}' amount Rs {currentAmount}",
+                        "Success"
+                    );
                     MessageBox.Show("Payment deleted!");
                 }
 
@@ -307,6 +326,13 @@ namespace FactoryManagementSystem
                             {
                         new SqlParameter("@id", paymentId)
                             });
+                        Logger.AddLog(
+                            Session.CurrentUser,
+                            "DELETE",
+                            "Payments",
+                            $"Deleted full payment ID '{paymentId}' amount Rs {currentAmount}",
+                            "Success"
+                        );
                     }
                     else
                     {
@@ -322,7 +348,14 @@ namespace FactoryManagementSystem
                             });
                     }
 
-
+                    
+                    Logger.AddLog(
+                        Session.CurrentUser,
+                        "UPDATE",
+                        "Payments",
+                        $"Updated payment ID '{paymentId}' amount Rs {removeAmount}",
+                        "Success"
+                    );
                     MessageBox.Show("Payment updated!");
                 }
 
@@ -332,6 +365,14 @@ namespace FactoryManagementSystem
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                   Session.CurrentUser,
+                   "DELETE",
+                   "Payments",
+                   $"Failed to modify payment: {ex.Message}",
+                   "Failed"
+               );
+
                 MessageBox.Show(
                     "Error deleting payment: " + ex.Message);
             }

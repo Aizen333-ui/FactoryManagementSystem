@@ -1,21 +1,27 @@
 using System.Drawing.Drawing2D;
 
-namespace FactoryManagementSystem
+namespace FactoryManagementAdminTool
 {
-    partial class Login
+    public partial class FirstAdminSetup : Form
     {
-        private System.ComponentModel.IContainer components = null;
-        private System.Windows.Forms.Panel panelLogin;
-        private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblUser;
-        private System.Windows.Forms.Label lblPass;
-        private System.Windows.Forms.TextBox txtUsername;
-        private System.Windows.Forms.TextBox txtPassword;
-        private System.Windows.Forms.Button btnLogin;
-        private System.Windows.Forms.Label lblLogo;
+        private Label lblLogo;
+        private Label lblTitle;
+        private Label lblMessage;
 
-        private System.Windows.Forms.Label lblMessage;
-      
+        private Label lblName;
+        private Label lblUsername;
+        private Label lblPassword;
+        private Label lblConfirmPassword;
+
+        private TextBox txtName;
+        private TextBox txtUsername;
+        private TextBox txtPassword;
+        private TextBox txtConfirmPassword;
+
+        private Button btnCreateAdmin;
+
+        private Panel panelSetup;
+
         private void RoundPanel(Panel panel)
         {
             GraphicsPath path = new GraphicsPath();
@@ -71,7 +77,7 @@ namespace FactoryManagementSystem
             container.Margin = new Padding(0, 0, 0, 15);
             container.Size = new Size(container.Width, container.Height + 2);
             container.AutoSize = false;
-            container.Anchor = AnchorStyles.Left;   
+            container.Anchor = AnchorStyles.Left;
             // place inner control to fill the rounded container and remove its own extra margins
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
@@ -108,37 +114,41 @@ namespace FactoryManagementSystem
         }
         private void InitializeComponent()
         {
-            this.panelLogin = new System.Windows.Forms.Panel();
+            this.lblName = new System.Windows.Forms.Label();
+            this.txtName = new System.Windows.Forms.TextBox();
             this.lblTitle = new System.Windows.Forms.Label();
-            this.lblUser = new System.Windows.Forms.Label();
-            this.lblPass = new System.Windows.Forms.Label();
+            this.lblUsername = new System.Windows.Forms.Label();
+            this.lblPassword = new System.Windows.Forms.Label();
+            this.lblConfirmPassword = new System.Windows.Forms.Label();
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
-            this.btnLogin = new System.Windows.Forms.Button();
+            this.txtConfirmPassword = new System.Windows.Forms.TextBox();
+            this.btnCreateAdmin = new System.Windows.Forms.Button();
             this.lblLogo = new System.Windows.Forms.Label();
             this.lblMessage = new System.Windows.Forms.Label();
+            this.panelSetup = new System.Windows.Forms.Panel();
 
             this.SuspendLayout();
-            this.Resize += (s, e) =>
-            {
-                panelLogin.Left = (this.ClientSize.Width - panelLogin.Width) / 2;
-                panelLogin.Top = (this.ClientSize.Height - panelLogin.Height) / 2;
-            };
+            
             // FORM
             this.WindowState = FormWindowState.Maximized;
             this.BackColor = Color.White;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.ClientSize = new System.Drawing.Size(600, 500);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Login";
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+            this.Text = "Admin Setup";
+            
+
 
             // PANEL (CARD)
-            this.panelLogin.BackColor = Color.FromArgb(245, 247, 250);
-            this.panelLogin.Size = new Size(600, 700);
-            this.panelLogin.Location = new Point(120, 80);
+            this.panelSetup.BackColor = Color.FromArgb(245, 247, 250);
+            this.panelSetup.Size = new Size(600, 760);
+            this.panelSetup.Location = new Point(
+                (Screen.PrimaryScreen.Bounds.Width - this.panelSetup.Width) / 2,
+                (Screen.PrimaryScreen.Bounds.Height - this.panelSetup.Height) / 2
+            );
+
+
 
             // LOGO
             this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 22F);
@@ -152,7 +162,7 @@ namespace FactoryManagementSystem
             this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(20, 20, 20);
             this.lblTitle.Location = new System.Drawing.Point(90, 110);
             this.lblTitle.Size = new System.Drawing.Size(450, 45);
-            this.lblTitle.Text = "Welcome Back";
+            this.lblTitle.Text = "Create Administrator";
             this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             // MESSAGE
@@ -160,14 +170,33 @@ namespace FactoryManagementSystem
             this.lblMessage.ForeColor = System.Drawing.Color.Gray;
             this.lblMessage.Location = new System.Drawing.Point(150, 170);
             this.lblMessage.Size = new System.Drawing.Size(360, 30);
-            this.lblMessage.Text = "Sign in to access your dashboard";
+            this.lblMessage.Text = "Sign up to create your admin account";
+
+            //FULL NAME LABEL
+            this.lblName.Font = new System.Drawing.Font("Segoe UI", 13F);
+            this.lblName.ForeColor = System.Drawing.Color.Black;
+            this.lblName.Location = new System.Drawing.Point(70, 220);
+            this.lblName.Size = new System.Drawing.Size(200, 30);
+            this.lblName.Text = "Full Name";
+
+            
+            // FULL NAME TEXTBOX
+            this.txtName.Font = new Font("Segoe UI", 13F);
+            this.txtName.BackColor = Color.White;
+            this.txtName.BorderStyle = BorderStyle.FixedSingle;
+
+
+            Panel nameBox = CreateRoundedBox(txtName);
+            nameBox.Location = new Point(70, 260);
+            nameBox.Width = 460;
+
 
             // USER LABEL
-            this.lblUser.Font = new System.Drawing.Font("Segoe UI", 13F);
-            this.lblUser.ForeColor = System.Drawing.Color.Black;
-            this.lblUser.Location = new System.Drawing.Point(70, 240);
-            this.lblUser.Size = new System.Drawing.Size(200, 30);
-            this.lblUser.Text = "Username";
+            this.lblUsername.Font = new System.Drawing.Font("Segoe UI", 13F);
+            this.lblUsername.ForeColor = System.Drawing.Color.Black;
+            this.lblUsername.Location = new System.Drawing.Point(70, 340);
+            this.lblUsername.Size = new System.Drawing.Size(200, 30);
+            this.lblUsername.Text = "Username";
 
             // USER TEXTBOX
             this.txtUsername.Font = new System.Drawing.Font("Segoe UI", 13F);
@@ -175,50 +204,80 @@ namespace FactoryManagementSystem
             this.txtUsername.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 
             // PASS LABEL
-            this.lblPass.Font = new System.Drawing.Font("Segoe UI", 13F);
-            this.lblPass.ForeColor = System.Drawing.Color.Black;
-            this.lblPass.Location = new System.Drawing.Point(70, 370);
-            this.lblPass.Size = new System.Drawing.Size(200, 30);
-            this.lblPass.Text = "Password";
+            this.lblPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
+            this.lblPassword.ForeColor = System.Drawing.Color.Black;
+            this.lblPassword.Location = new System.Drawing.Point(70, 460);
+            this.lblPassword.Size = new System.Drawing.Size(200, 30);
+            this.lblPassword.Text = "Password";
 
             // PASS TEXTBOX
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
             this.txtPassword.BackColor = System.Drawing.Color.White;
             this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPassword.PasswordChar = '*';
+
+            //CONFIRM PASS LABEL
+            this.lblConfirmPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
+            this.lblConfirmPassword.ForeColor = System.Drawing.Color.Black;
+            this.lblConfirmPassword.Location = new System.Drawing.Point(70, 580);
+            this.lblConfirmPassword.Size = new System.Drawing.Size(200, 30);
+            this.lblConfirmPassword.Text = "Confirm Password";
+
+            //CONFIRM PASS TEXTBOX
+            this.txtConfirmPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
+            this.txtConfirmPassword.BackColor = System.Drawing.Color.White;
+            this.txtConfirmPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtConfirmPassword.PasswordChar = '*';
+
             // ===== USERNAME ROUNDED BOX =====
             Panel userBox = CreateRoundedBox(txtUsername);
-            userBox.Location = new Point(70, 290);
+            userBox.Location = new Point(70, 380);
             userBox.Width = 460;
 
             // ===== PASSWORD ROUNDED BOX =====
             Panel passBox = CreateRoundedBox(txtPassword);
-            passBox.Location = new Point(70, 410);
+            passBox.Location = new Point(70, 500);
             passBox.Width = 460;
 
-            // LOGIN BUTTON
-            this.btnLogin.BackColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLogin.FlatAppearance.BorderSize = 0;
-            this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.btnLogin.ForeColor = System.Drawing.Color.White;
-            this.btnLogin.Location = new System.Drawing.Point(180, 530);
-            this.btnLogin.Size = new System.Drawing.Size(260, 80);
-            this.btnLogin.Text = "Login";
-            this.btnLogin.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
-            RoundControl(btnLogin, 40);
+            // ===== CONFIRM PASSWORD ROUNDED BOX =====
+            Panel confirmPassBox = CreateRoundedBox(txtConfirmPassword);
+            confirmPassBox.Location = new Point(70, 620);
+            confirmPassBox.Width = 460;
+
+            // CREATE ADMIN BUTTON
+            this.btnCreateAdmin.BackColor = System.Drawing.Color.FromArgb(37, 99, 235);
+            this.btnCreateAdmin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCreateAdmin.FlatAppearance.BorderSize = 0;
+            this.btnCreateAdmin.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
+            this.btnCreateAdmin.ForeColor = System.Drawing.Color.White;
+            this.btnCreateAdmin.Location = new System.Drawing.Point(180, 650);
+            this.btnCreateAdmin.Size = new System.Drawing.Size(260, 80);
+            this.btnCreateAdmin.Text = "Create Admin";
+            this.btnCreateAdmin.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnCreateAdmin.Click += new System.EventHandler(this.btnCreateAdmin_Click);
+            RoundControl(btnCreateAdmin, 40);
 
             // ADD CONTROLS
-            this.panelLogin.Controls.Add(this.lblTitle);
-            this.panelLogin.Controls.Add(this.lblUser);
-            this.panelLogin.Controls.Add(userBox);
-            this.panelLogin.Controls.Add(this.lblPass);
-            this.panelLogin.Controls.Add(passBox);
-            this.panelLogin.Controls.Add(this.btnLogin);
-            this.panelLogin.Controls.Add(this.lblLogo);
-            this.panelLogin.Controls.Add(this.lblMessage);
-            this.Controls.Add(this.panelLogin);
+
+            this.panelSetup.Controls.Add(this.lblTitle);
+            this.panelSetup.Controls.Add(this.lblName);
+            this.panelSetup.Controls.Add(nameBox);
+
+            this.panelSetup.Controls.Add(this.lblUsername);
+            this.panelSetup.Controls.Add(userBox);
+
+            this.panelSetup.Controls.Add(this.lblPassword);
+            this.panelSetup.Controls.Add(passBox);
+
+            this.panelSetup.Controls.Add(this.lblConfirmPassword);
+            this.panelSetup.Controls.Add(confirmPassBox);
+
+            this.panelSetup.Controls.Add(this.btnCreateAdmin);
+
+            this.panelSetup.Controls.Add(this.lblLogo);
+            this.panelSetup.Controls.Add(this.lblMessage);
+
+            this.Controls.Add(this.panelSetup);
 
             this.ResumeLayout(false);
         }

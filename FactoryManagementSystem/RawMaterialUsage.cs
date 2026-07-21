@@ -306,6 +306,13 @@ namespace FactoryDashBoard.Pages
                 }
 
                 MessageBox.Show("Raw material deduction saved and usage recorded.");
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "REMOVE",
+                    "Raw Material Usage",
+                    $"Removed {total} {unitLabel} of {material} from raw material stock",
+                    "Success"
+                );
                 ClearFields();
                 LoadRawMaterials();
             }

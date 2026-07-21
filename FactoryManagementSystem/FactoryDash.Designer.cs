@@ -15,8 +15,8 @@ namespace FactoryManagementSystem
         private Label lblRawUsagePercent;
 
         // ===================== CHARTS =====================
-        private Chart pieChart;
-        private Chart barChart;
+        private Chart materialusageChart;
+        private Chart monthlyproductionChart;
 
         // ===================== MAIN CONTAINERS =====================
         private FlowLayoutPanel mainFlow;
@@ -201,28 +201,18 @@ namespace FactoryManagementSystem
 
             // ================= LEFT CHART =================
 
-            pieChart = new Chart();
-            Panel pieHost =CreateChartHost("Material Usage",pieChart);
+            materialusageChart = new Chart();
+            Panel pie1Host =CreateChartHost("Material Usage",materialusageChart);
 
             // ================= RIGHT CHART =================
 
-            barChart = new Chart();
-            Panel barHost =CreateChartHost("Monthly Production",barChart);
-
-            // ================= DIVIDER LINE =================
-
-            Panel divider = new Panel(){
-                Width = 2,
-                Dock = DockStyle.Fill,
-                BackColor =Color.FromArgb(180,190,210),
-                Margin =new Padding(0,20,0,20)
-            };
+            monthlyproductionChart = new Chart();
+            Panel pie2Host =CreateChartHost("Monthly Production",monthlyproductionChart);
 
             // ADD CONTROLS
 
-            chartsRow.Controls.Add(pieHost,0,0);
-            chartsRow.Controls.Add(divider,1,0);
-            chartsRow.Controls.Add(barHost,2,0);
+            chartsRow.Controls.Add(pie1Host,0,0);
+            chartsRow.Controls.Add(pie2Host,2,0);
             mainFlow.Controls.Add(chartsRow);
         }
 
@@ -258,42 +248,89 @@ namespace FactoryManagementSystem
         // ===================== CHART CONTAINER =====================
 
         private Panel CreateChartHost(
-            string title,
-            Chart chart)
+             string title,
+             Chart chart)
         {
 
             Panel outer = new Panel()
             {
-                Dock =DockStyle.Fill,
-                BackColor =Color.White,
-                Padding =new Padding(5)
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(10)
             };
 
-            TableLayoutPanel layout =new TableLayoutPanel(){
-                    Dock =DockStyle.Fill,
+
+            MakeRounded(outer, 18);
+
+
+
+            TableLayoutPanel layout =
+                new TableLayoutPanel()
+                {
+                    Dock = DockStyle.Fill,
                     RowCount = 2,
                     ColumnCount = 1,
-                    BackColor =
-                    Color.White
+                    BackColor = Color.White
                 };
 
-                layout.RowStyles.Add(new RowStyle(SizeType.Absolute,50));
-                layout.RowStyles.Add(new RowStyle(SizeType.Percent,100));
 
-                Label header =new Label(){
-                    Text = title,
-                    Font =new Font("Segoe UI",14,FontStyle.Bold),
-                    Dock =DockStyle.Fill,
-                    TextAlign =ContentAlignment.MiddleLeft,
-                    Padding =new Padding(15,0,0,0)
-                };
+            layout.RowStyles.Add(
+                new RowStyle(
+                    SizeType.Absolute,
+                    50
+                )
+            );
 
-                chart.Dock =DockStyle.Fill;
-                chart.BackColor =Color.White;
-                layout.Controls.Add(header,0,0);
-                layout.Controls.Add(chart,0,1);
-                outer.Controls.Add(layout);
-          return outer;
+
+            layout.RowStyles.Add(
+                new RowStyle(
+                    SizeType.Percent,
+                    100
+                )
+            );
+
+
+
+            Label header = new Label()
+            {
+                Text = title,
+                Font = new Font(
+                    "Segoe UI",
+                    14,
+                    FontStyle.Bold
+                ),
+                Dock = DockStyle.Fill,
+                Padding = new Padding(15, 0, 0, 0),
+                TextAlign =
+                    ContentAlignment.MiddleLeft
+            };
+
+
+
+            chart.Dock = DockStyle.Fill;
+            chart.BackColor = Color.White;
+            chart.MinimumSize = new Size(300, 250);
+
+
+
+            layout.Controls.Add(
+                header,
+                0,
+                0
+            );
+
+
+            layout.Controls.Add(
+                chart,
+                0,
+                1
+            );
+
+
+            outer.Controls.Add(layout);
+
+
+            return outer;
         }
 
         // ===================== LABEL HELPERS =====================

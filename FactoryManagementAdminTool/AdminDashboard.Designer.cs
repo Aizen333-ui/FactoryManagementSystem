@@ -3,17 +3,16 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace FactoryManagementSystem
+namespace FactoryManagementAdminTool
 {
-    public partial class OwnerDashBoard : Form
+    public partial class AdminDashboard : Form
     {
         Button activeButton = null;
         Panel card;  // Main UI container
         Panel panelBody;
         Panel panelSideMenu, panelHeader, panelMain;
         Label lblTitle;  // Header title label
-        Button btnRawMaterial, btnPayments, btnManageWorkers, btnReports, btnLogout; // Sidebar buttons
-
+        Button btnManageUsers, btnAdminAccounts, btnSystemSettings, btnReports, btnBackup, btnLogout;
         // ===================== INITIALIZE UI COMPONENTS =====================
 
         private void InitializeComponent()
@@ -28,10 +27,11 @@ namespace FactoryManagementSystem
             this.panelMain = new Panel();
             this.lblTitle = new Label();
             this.panelSideMenu.SuspendLayout();
-            this.btnRawMaterial = new Button();
-            this.btnPayments = new Button();
-            this.btnManageWorkers = new Button();
+            this.btnManageUsers = new Button();
+            this.btnAdminAccounts = new Button();
+            this.btnSystemSettings = new Button();
             this.btnReports = new Button();
+            this.btnBackup = new Button();
             this.btnLogout = new Button();
 
             this.SuspendLayout();
@@ -44,8 +44,14 @@ namespace FactoryManagementSystem
             panelMain.Dock = DockStyle.Fill;
 
             // Buttons common style
-            Button[] buttons = { btnRawMaterial, btnPayments, btnManageWorkers, btnReports };
-
+            Button[] buttons =
+            {
+                btnManageUsers,
+                btnAdminAccounts,
+                btnSystemSettings,
+                btnReports,
+                btnBackup
+            };
             int top = 100;
             foreach (var btn in buttons)
             {
@@ -66,19 +72,22 @@ namespace FactoryManagementSystem
                 top += 70;
             }
 
-            btnRawMaterial.Text = "📦 Raw Material";
-            btnPayments.Text = "💰 Payments";
-            btnManageWorkers.Text = "👷  Manage Workers";
+            btnManageUsers.Text = "👥 Manage Users";
+            btnAdminAccounts.Text = "🔑 Admin Accounts";
+            btnSystemSettings.Text = "⚙️ System Settings";
             btnReports.Text = "📄 Reports";
-            btnRawMaterial.Tag = "nav";
-            btnPayments.Tag = "nav";
-            btnManageWorkers.Tag = "nav";
+            btnBackup.Text = "💾 Backup";
+            btnManageUsers.Tag = "nav";
+            btnAdminAccounts.Tag = "nav";
+            btnSystemSettings.Tag = "nav";
             btnReports.Tag = "nav";
+            btnBackup.Tag = "nav";
             // Wire up button click events to code-behind handlers
-            btnRawMaterial.Click += btnRawMaterial_Click;
-            btnPayments.Click += btnPayments_Click;
-            btnManageWorkers.Click += btnManageWorkers_Click;
+            btnManageUsers.Click += btnManageUsers_Click;
+            btnAdminAccounts.Click += btnAdminAccounts_Click;
+            btnSystemSettings.Click += btnSystemSettings_Click;
             btnReports.Click += btnReports_Click;
+            btnBackup.Click += btnBackup_Click;
 
             // Logout
             btnLogout.Text = "⏻ Logout";
@@ -93,7 +102,7 @@ namespace FactoryManagementSystem
 
             btnLogout.Font = new Font("Segoe UI Emoji", 12F, FontStyle.Bold);
 
-           
+
             btnLogout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
             panelSideMenu.Resize += (s, e) =>
@@ -115,7 +124,7 @@ namespace FactoryManagementSystem
             panelHeader.Height = 120;
             panelHeader.Paint += PanelHeader_Paint;
 
-            lblTitle.Text = "Owner Dashboard";
+            lblTitle.Text = "Admin Dashboard";
             lblTitle.ForeColor = Color.White;
             lblTitle.BackColor = Color.Transparent;
             lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
@@ -125,50 +134,81 @@ namespace FactoryManagementSystem
             panelHeader.Controls.Add(lblTitle);
 
             // ================= MAIN =================
+            // OwnerDashBoard spacing: left 60, top/bottom 40, right ~450 (scaled if narrow)
             panelMain.Dock = DockStyle.Fill;
             panelMain.BackColor = Color.FromArgb(243, 244, 246);
-            
-            panelMain.Padding = new Padding(60, 40, 450, 40);
-            panelMain.Resize += (s, e) =>
-            {
-                int horizMargin = panelMain.Padding.Left + panelMain.Padding.Right;
-                int vertMargin = panelMain.Padding.Top + panelMain.Padding.Bottom;
 
-                card.Width = Math.Max(200, panelMain.Width - horizMargin);
-                card.Height = Math.Max(200, panelMain.Height - vertMargin);
-                card.Left = panelMain.Padding.Left;
-                card.Top = panelMain.Padding.Top;
-            };
-            // Card panel (fills right-side area)
-            card = new Panel(); 
+            card = new Panel();
             card.Dock = DockStyle.None;
-            // initial card size based on panelMain padding
-            int _horiz = panelMain.Padding.Left + panelMain.Padding.Right;
-            int _vert = panelMain.Padding.Top + panelMain.Padding.Bottom;
-            card.Width = Math.Max(200, panelMain.Width - _horiz);
-            card.Height = Math.Max(200, panelMain.Height - _vert);
-            card.Left = panelMain.Padding.Left;
-            card.Top = panelMain.Padding.Top;
             card.BackColor = Color.White;
-
-            // Recalculate rounded region when resized
             card.Resize += (s, e) => RoundPanel(card);
 
-            // Initial rounding (will be recalculated on layout)
-            RoundPanel(card);
-
             panelMain.Controls.Add(card);
-
+            panelMain.Resize += (s, e) => LayoutMainCard();
+            this.Shown += (s, e) => LayoutMainCard();
+            this.MinimumSize = new Size(1200, 700);
+            this.Size = new Size(1400, 900);
+            this.WindowState = FormWindowState.Maximized;
             // ================= FORM =================
             this.Controls.Add(panelBody);
             this.Controls.Add(panelHeader);
             panelBody.Controls.Add(panelMain);
             panelBody.Controls.Add(panelSideMenu);
-
-            this.Text = "Owner Dashboard";
+            
+            this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Admin Dashboard";
             this.ResumeLayout(false);
         }
-       
+
+        // Keeps Owner-style right gap without collapsing the card on small widths
+        private void LayoutMainCard()
+        {
+            if (card == null || panelMain == null)
+                return;
+
+            const int leftPad = 60;
+            const int topPad = 40;
+            const int bottomPad = 40;
+            const int preferredRight = 450;
+            const int minCardWidth = 400;
+
+            int rightPad = preferredRight;
+            int availableForCard = panelMain.ClientSize.Width - leftPad - preferredRight;
+
+            if (availableForCard < minCardWidth)
+                rightPad = Math.Max(40, panelMain.ClientSize.Width - leftPad - minCardWidth);
+
+            panelMain.Padding = new Padding(leftPad, topPad, rightPad, bottomPad);
+
+            int horiz = leftPad + rightPad;
+            int vert = topPad + bottomPad;
+
+            card.Left = leftPad;
+            card.Top = topPad;
+            card.Width = Math.Max(200, panelMain.ClientSize.Width - horiz);
+            card.Height = Math.Max(200, panelMain.ClientSize.Height - vert);
+            RoundPanel(card);
+        }
+
+        // ================= ROUNDED PANEL =================
+        private void RoundPanel(Panel panel)
+        {
+            if (panel.Width < 40 || panel.Height < 40)
+                return;
+
+            GraphicsPath path = new GraphicsPath();
+            int radius = 20;
+
+            path.AddArc(0, 0, radius, radius, 180, 90);
+            path.AddArc(panel.Width - radius, 0, radius, radius, 270, 90);
+            path.AddArc(panel.Width - radius, panel.Height - radius, radius, radius, 0, 90);
+            path.AddArc(0, panel.Height - radius, radius, radius, 90, 90);
+            path.CloseAllFigures();
+
+            panel.Region = new Region(path);
+        }
+
         // ================= GRADIENT SIDEBAR =================
         private void PanelSideMenu_Paint(object sender, PaintEventArgs e)
         {
@@ -207,21 +247,6 @@ namespace FactoryManagementSystem
             {
                 e.Graphics.FillRectangle(brush, panelHeader.ClientRectangle);
             }
-        }
-
-        // ================= ROUNDED PANEL =================
-        private void RoundPanel(Panel panel)
-        {
-            GraphicsPath path = new GraphicsPath();
-            int radius = 20;
-
-            path.AddArc(0, 0, radius, radius, 180, 90);
-            path.AddArc(panel.Width - radius, 0, radius, radius, 270, 90);
-            path.AddArc(panel.Width - radius, panel.Height - radius, radius, radius, 0, 90);
-            path.AddArc(0, panel.Height - radius, radius, radius, 90, 90);
-            path.CloseAllFigures();
-
-            panel.Region = new Region(path);
         }
 
         // ================= ROUNDED BUTTON =================

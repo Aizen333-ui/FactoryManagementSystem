@@ -118,14 +118,14 @@ namespace FactoryManagementSystem
         // PIE CHART (Material usage distribution)
         private void LoadPieChart()
         {
-            pieChart.Series.Clear();
-            pieChart.ChartAreas.Clear();
-            pieChart.Legends.Clear();
+            materialusageChart.Series.Clear();
+            materialusageChart.ChartAreas.Clear();
+            materialusageChart.Legends.Clear();
 
             // Chart area setup
             ChartArea area = new ChartArea("Main");
             area.BackColor = Color.White;
-            pieChart.ChartAreas.Add(area);
+            materialusageChart.ChartAreas.Add(area);
 
             // Legend configuration
             Legend lg = new Legend
@@ -133,7 +133,7 @@ namespace FactoryManagementSystem
                 Docking = Docking.Bottom,
                 Font = new Font("Segoe UI", 9F)
             };
-            pieChart.Legends.Add(lg);
+            materialusageChart.Legends.Add(lg);
 
             // Pie series setup
             Series s = new Series("Materials")
@@ -174,20 +174,20 @@ namespace FactoryManagementSystem
                 s.Points.AddXY(material, percent);
             }
 
-            pieChart.Series.Add(s);
+            materialusageChart.Series.Add(s);
         }
 
         // BAR CHART (Monthly production by product)
         private void LoadProductionChart()
         {
-            barChart.Series.Clear();
-            barChart.ChartAreas.Clear();
-            barChart.Legends.Clear();
+            monthlyproductionChart.Series.Clear();
+            monthlyproductionChart.ChartAreas.Clear();
+            monthlyproductionChart.Legends.Clear();
 
             // Chart area setup
             ChartArea area = new ChartArea("Main");
             area.BackColor = Color.White;
-            barChart.ChartAreas.Add(area);
+            monthlyproductionChart.ChartAreas.Add(area);
 
             // Legend setup
             Legend lg = new Legend
@@ -195,7 +195,7 @@ namespace FactoryManagementSystem
                 Docking = Docking.Bottom,
                 Font = new Font("Segoe UI", 9F)
             };
-            barChart.Legends.Add(lg);
+            monthlyproductionChart.Legends.Add(lg);
 
             // Series setup (NOTE: currently Pie type but used for bar-like display logic)
             Series s = new Series("Production")
@@ -236,7 +236,7 @@ namespace FactoryManagementSystem
                 s.Points.AddXY(product, percent);
             }
 
-            barChart.Series.Add(s);
+            monthlyproductionChart.Series.Add(s);
         }
     }
 }

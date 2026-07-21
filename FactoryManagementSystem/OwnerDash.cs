@@ -10,15 +10,15 @@ namespace FactoryManagementSystem
             InitializeComponent();
 
             // Prevent chart controls from receiving focus (better UX)
-            pieChart.TabStop = false;
-            pieChart.TabStop = false;
+            materialChart.TabStop = false;
+            expenseChart.TabStop = false;
 
             // Delay chart loading until control handle is created
             this.HandleCreated += (s, e) =>
             {
                 this.BeginInvoke(new Action(() =>
                 {
-                    LoadPieChart();
+                    LoadMaterialChart();
                     LoadExpenseChart();
                 }));
             };
@@ -68,19 +68,19 @@ namespace FactoryManagementSystem
             lblProduction.Text = total.ToString();
         }
 
-        // PIE CHART: MATERIAL USAGE DISTRIBUTION
-        private void LoadPieChart()
+        // MATERIAL CHART: MATERIAL USAGE DISTRIBUTION
+        private void LoadMaterialChart()
         {
-            pieChart.Series.Clear();
-            pieChart.ChartAreas.Clear();
-            pieChart.Legends.Clear();
+            materialChart.Series.Clear();
+            materialChart.ChartAreas.Clear();
+            materialChart.Legends.Clear();
 
             ChartArea area = new ChartArea("Main")
             {
                 BackColor = Color.White
             };
 
-            pieChart.ChartAreas.Add(area);
+            materialChart.ChartAreas.Add(area);
 
             Legend lg = new Legend
             {
@@ -88,7 +88,7 @@ namespace FactoryManagementSystem
                 Font = new Font("Segoe UI", 9F)
             };
 
-            pieChart.Legends.Add(lg);
+            materialChart.Legends.Add(lg);
 
             Series s = new Series("Materials")
             {
@@ -123,28 +123,33 @@ namespace FactoryManagementSystem
             {
                 string material = r["MaterialName"].ToString();
                 double used = Convert.ToDouble(r["TotalUsed"]);
-                double percent = (used / grandTotal) * 100;
+                double percent = 0;
+
+                if (grandTotal > 0)
+                {
+                    percent = (used / grandTotal) * 100;
+                }
 
                 s.Points.AddXY(material, percent);
             }
 
-            pieChart.Series.Add(s);
+            materialChart.Series.Add(s);
         }
 
         // EXPENSE DISTRIBUTION CHART (Monthly)
         private void LoadExpenseChart()
         {
-            pieChart.Series.Clear();
-            pieChart.ChartAreas.Clear();
-            pieChart.Legends.Clear();
-            pieChart.Titles.Clear();
+            expenseChart.Series.Clear();
+            expenseChart.ChartAreas.Clear();
+            expenseChart.Legends.Clear();
+            expenseChart.Titles.Clear();
 
             ChartArea area = new ChartArea("MainArea")
             {
                 BackColor = Color.White
             };
 
-            pieChart.ChartAreas.Add(area);
+            expenseChart.ChartAreas.Add(area);
 
             Legend lg = new Legend
             {
@@ -152,7 +157,7 @@ namespace FactoryManagementSystem
                 Font = new Font("Segoe UI", 9F)
             };
 
-            pieChart.Legends.Add(lg);
+            expenseChart.Legends.Add(lg);
 
             Series series = new Series("Expenses")
             {
@@ -187,15 +192,20 @@ namespace FactoryManagementSystem
             {
                 string reason = row["Reason"].ToString();
                 double amount = Convert.ToDouble(row["TotalAmount"]);
-                double percent = (amount / grandTotal) * 100;
+                double percent = 0;
+
+                if (grandTotal > 0)
+                {
+                    percent = (amount / grandTotal) * 100;
+                }
 
                 series.Points.AddXY(reason, percent);
             }
 
-            pieChart.Series.Add(series);
+            expenseChart.Series.Add(series);
 
-            pieChart.Dock = DockStyle.Fill;
-            pieChart.Refresh();
+            expenseChart.Dock = DockStyle.Fill;
+            expenseChart.Refresh();
         }
 
         // WORKER CATEGORY COUNTS

@@ -88,10 +88,9 @@ namespace FactoryManagementSystem
                 return;
             }
 
-            // Validate wage range
-            if (!decimal.TryParse(wageTxt, out decimal wage) || wage < 200 || wage > 5000)
+            if (!decimal.TryParse(wageTxt, out decimal wage))
             {
-                MessageBox.Show("Daily wage must be between 200 and 5000 PKR.");
+                MessageBox.Show("Salary can only be entered in numbers.");
                 return;
             }
 
@@ -108,7 +107,13 @@ namespace FactoryManagementSystem
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Workers",
+                    $"Added worker '{name}' with role '{role}' and salary Rs {wage}",
+                    "Success"
+                );
                 MessageBox.Show("Worker added successfully!");
 
                 // Refresh grid after insertion
@@ -121,6 +126,13 @@ namespace FactoryManagementSystem
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Workers",
+                    $"Failed to add worker '{name}'. Error: {ex.Message}",
+                    "Failed"
+                );
                 MessageBox.Show("Error adding worker: " + ex.Message);
             }
         }
@@ -159,7 +171,13 @@ namespace FactoryManagementSystem
                 };
 
                 DBHelper.ExecuteNonQuery(query, p);
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "DELETE",
+                    "Workers",
+                    $"Removed worker with ID {id}",
+                    "Success"
+                );
                 MessageBox.Show("Worker removed!");
 
                 // Refresh grid after deletion
@@ -167,6 +185,13 @@ namespace FactoryManagementSystem
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "DELETE",
+                    "Workers",
+                    $"Failed to remove worker with ID {id}. Error: {ex.Message}",
+                    "Failed"
+                );
                 MessageBox.Show("Error removing worker: " + ex.Message);
             }
         }

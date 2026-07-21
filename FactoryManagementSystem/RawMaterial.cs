@@ -1,7 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
-using System.Xml.Linq;
+using FactoryManagementCore;
 
 namespace FactoryManagementSystem
 {
@@ -133,7 +132,13 @@ namespace FactoryManagementSystem
         };
 
                 DBHelper.ExecuteNonQuery(paymentQuery, paymentParams);
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Raw Material",
+                    $"Added material '{name}' quantity {quantity} {unit} at unit price Rs {unitPrice}. Total expense Rs {totalAmount}",
+                    "Success"
+                );
 
                 MessageBox.Show("Material added successfully!");
 
@@ -147,6 +152,13 @@ namespace FactoryManagementSystem
             }
             catch (Exception ex)
             {
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "CREATE",
+                    "Raw Material",
+                    $"Failed to add material: {ex.Message}",
+                    "Failed"
+                );
                 MessageBox.Show("Error adding material: " + ex.Message);
             }
         }
@@ -182,7 +194,13 @@ namespace FactoryManagementSystem
                 new SqlParameter("@id", id)
                     }
                 );
-
+                Logger.AddLog(
+                    Session.CurrentUser,
+                    "DELETE",
+                    "Raw Material",
+                    $"Deleted material record ID '{id}'",
+                    "Success"
+                );
                 MessageBox.Show("Deleted successfully!");
                 LoadMaterials();
                 return;
@@ -263,7 +281,13 @@ namespace FactoryManagementSystem
                     }
                 );
             }
-
+            Logger.AddLog(
+                Session.CurrentUser,
+                "UPDATE",
+                "Raw Material",
+                $"Reduced {removeQty} from '{name}'. Remaining quantity: {newQty}",
+                "Success"
+            );
             MessageBox.Show("Stock updated successfully!");
             LoadMaterials();
         }

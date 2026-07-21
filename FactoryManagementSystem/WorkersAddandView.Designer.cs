@@ -156,12 +156,12 @@ namespace FactoryManagementSystem
             cmbRole.Height = 30;
             // ================= WAGE =================
 
-            lblWage.Text = "Daily Wage (PKR):";
+            lblWage.Text = "Monthly Salary:";
             lblWage.Font = new Font("Segoe UI", 14F);
             lblWage.AutoSize = true;
             txtWage.Width = 1000;
             txtWage.Height = 30;
-            txtWage.Font = new Font("Segoe UI", 14F);
+            txtWage.Font = new Font("Segoe UI", 12F);
             txtWage.TextChanged += new System.EventHandler(this.TxtWage_TextChanged);
             // ================= BUTTON PANEL =================
 
