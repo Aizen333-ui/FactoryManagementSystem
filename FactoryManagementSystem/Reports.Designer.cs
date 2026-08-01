@@ -16,8 +16,6 @@ namespace FactoryManagementSystem
         private Label lblTitle;
         private Button btnBack;
 
-       
-
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();

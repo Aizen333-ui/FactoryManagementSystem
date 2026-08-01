@@ -376,7 +376,6 @@ namespace FactoryManagementSystem
             this.Size = new System.Drawing.Size(800, 700);
             main.Controls.Add(btnBack);
 
-
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
         }

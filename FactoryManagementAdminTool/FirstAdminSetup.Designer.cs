@@ -78,7 +78,6 @@ namespace FactoryManagementAdminTool
             container.Size = new Size(container.Width, container.Height + 2);
             container.AutoSize = false;
             container.Anchor = AnchorStyles.Left;
-            // place inner control to fill the rounded container and remove its own extra margins
             innerControl.Dock = DockStyle.Fill;
             innerControl.BackColor = Color.White;
             innerControl.Margin = new Padding(0);
@@ -129,7 +128,7 @@ namespace FactoryManagementAdminTool
             this.panelSetup = new System.Windows.Forms.Panel();
 
             this.SuspendLayout();
-            
+
             // FORM
             this.WindowState = FormWindowState.Maximized;
             this.BackColor = Color.White;
@@ -137,7 +136,7 @@ namespace FactoryManagementAdminTool
             this.MaximizeBox = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Admin Setup";
-            
+
 
 
             // PANEL (CARD)
@@ -179,7 +178,7 @@ namespace FactoryManagementAdminTool
             this.lblName.Size = new System.Drawing.Size(200, 30);
             this.lblName.Text = "Full Name";
 
-            
+
             // FULL NAME TEXTBOX
             this.txtName.Font = new Font("Segoe UI", 13F);
             this.txtName.BackColor = Color.White;

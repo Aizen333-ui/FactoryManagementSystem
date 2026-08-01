@@ -8,62 +8,111 @@ namespace FactoryManagementAdminTool
         public AdminReports()
         {
             InitializeComponent();
+
+            // Load report data when page opens
             LoadReport();
         }
 
+        // Loads dashboard statistics and report tables
         private void LoadReport()
         {
             try
             {
-                object totalUsers = DBHelper.ExecuteScalar("SELECT COUNT(*) FROM Users", null);
-                object activeUsers = DBHelper.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Users WHERE IsActive = 1", null);
-                object disabledUsers = DBHelper.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Users WHERE IsActive = 0", null);
-                object totalAdmins = DBHelper.ExecuteScalar(
-                    "SELECT COUNT(*) FROM SystemAdmins", null);
+                // Get user statistics
+                object totalUsers =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Users",
+                        null);
 
-                lblTotalUsers.Text = totalUsers?.ToString() ?? "0";
-                lblActiveUsers.Text = activeUsers?.ToString() ?? "0";
-                lblDisabledUsers.Text = disabledUsers?.ToString() ?? "0";
-                lblAdmins.Text = totalAdmins?.ToString() ?? "0";
 
-                DataTable byRole = DBHelper.ExecuteDataTable(
-                    @"SELECT Role, COUNT(*) AS Total,
-                             SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS Active,
-                             SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS Disabled
-                      FROM Users
-                      GROUP BY Role
-                      ORDER BY Role",
-                    null);
+                object activeUsers =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Users WHERE IsActive = 1",
+                        null);
+
+
+                object disabledUsers =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Users WHERE IsActive = 0",
+                        null);
+
+                // Get total administrator accounts
+                object totalAdmins =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM SystemAdmins",
+                        null);
+
+                // Update summary labels
+                lblTotalUsers.Text =
+                    totalUsers?.ToString() ?? "0";
+
+                lblActiveUsers.Text =
+                    activeUsers?.ToString() ?? "0";
+
+                lblDisabledUsers.Text =
+                    disabledUsers?.ToString() ?? "0";
+
+                lblAdmins.Text =
+                    totalAdmins?.ToString() ?? "0";
+
+                // Load user statistics grouped by role
+                DataTable byRole =
+                    DBHelper.ExecuteDataTable(
+                        @"SELECT Role,
+                                 COUNT(*) AS Total,
+                                 SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS Active,
+                                 SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS Disabled
+                          FROM Users
+                          GROUP BY Role
+                          ORDER BY Role",
+                        null);
 
                 dgvByRole.DataSource = byRole;
 
-                DataTable recent = DBHelper.ExecuteDataTable(
-                    @"SELECT TOP 20 UserID, FullName, Username, Role, IsActive
-                      FROM Users
-                      ORDER BY UserID DESC",
-                    null);
+                // Load latest registered users
+                DataTable recent =
+                    DBHelper.ExecuteDataTable(
+                        @"SELECT TOP 20
+                                 UserID,
+                                 FullName,
+                                 Username,
+                                 Role,
+                                 IsActive
+                          FROM Users
+                          ORDER BY UserID DESC",
+                        null);
 
                 dgvRecent.DataSource = recent;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading report: " + ex.Message);
+                MessageBox.Show(
+                    "Error loading report: " + ex.Message);
             }
         }
 
+        // Refreshes report information manually
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadReport();
         }
 
+        // Returns user to the main admin dashboard
         private void btnBack_Click(object sender, EventArgs e)
         {
-            AdminDashboard dashboard = (AdminDashboard)this.FindForm();
+            AdminDashboard dashboard =
+                (AdminDashboard)this.FindForm();
+
+            // Reset sidebar state
             dashboard.ResetSidebarSelection();
-            dashboard.SetHeaderTitle("Admin Dashboard");
-            dashboard.LoadPage(new AdminDash());
+
+            // Restore dashboard title
+            dashboard.SetHeaderTitle(
+                "Admin Dashboard");
+
+            // Load default dashboard page
+            dashboard.LoadPage(
+                new AdminDash());
         }
     }
 }

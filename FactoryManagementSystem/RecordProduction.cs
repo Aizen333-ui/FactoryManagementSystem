@@ -1,7 +1,7 @@
 ﻿using FactoryManagementSystem;
 using Microsoft.Data.SqlClient;
 using System.Data;
-
+using FactoryManagementCore;
 namespace FactoryDashBoard.Pages
 {
     public partial class RecordProduction : UserControl
@@ -21,13 +21,19 @@ namespace FactoryDashBoard.Pages
 
             // Load dropdown data
             LoadProductOptions();
-            LoadUnitOptions();
 
             // Prevent future production dates
             dateProduction.MaxDate = DateTime.Today;
 
             // Load existing production records
             LoadProduction();
+
+            cmbProductName.SelectedIndexChanged += (s, e) =>
+            {
+                txtUnit.Text = GetUnitForProduct(
+                    cmbProductName.SelectedItem?.ToString() ?? ""
+                );
+            };
         }
 
         // Load product list into ComboBox
@@ -35,6 +41,7 @@ namespace FactoryDashBoard.Pages
         {
             cmbProductName.Items.AddRange(new object[]
             {
+                "Select the product...",
                 "Tuff Tile",
                 "Kurbstone",
                 "Paver Block",
@@ -42,21 +49,21 @@ namespace FactoryDashBoard.Pages
                 "Solid Block"
             });
 
-            cmbProductName.SelectedIndex = -1;
+            cmbProductName.SelectedIndex = 0;
         }
 
-        // Load unit options into ComboBox
-        private void LoadUnitOptions()
+        private string GetUnitForProduct(string product)
         {
-            cmbUnit.Items.AddRange(new object[]
+            return product switch
             {
-                "Pieces",
-                "Sqft"
-            });
-
-            cmbUnit.SelectedIndex = 0;
+                "Tuff Tile" => "Sqft",
+                "Kurbstone" => "Piece",
+                "Paver Block" => "Piece",
+                "Hollow Block" => "Piece",
+                "Solid Block" => "Piece",
+                _ => ""
+            };
         }
-
         // Load production records into DataGridView
         private void LoadProduction()
         {
@@ -79,7 +86,7 @@ namespace FactoryDashBoard.Pages
         private void BtnSave_Click(object? sender, EventArgs e)
         {
             // Validate product selection
-            if (cmbProductName.SelectedIndex == -1)
+            if (cmbProductName.SelectedIndex <= 0)
             {
                 MessageBox.Show("Please select a product");
                 cmbProductName.Focus();
@@ -137,7 +144,7 @@ namespace FactoryDashBoard.Pages
                     Session.CurrentUser,
                     "CREATE",
                     "Production",
-                    $"Recorded production of {quantity} {cmbUnit.Text} for product '{cmbProductName.Text}'",
+                    $"Recorded production of {quantity} {txtUnit.Text} for product '{cmbProductName.Text}'",
                     "Success"
                 );
                 MessageBox.Show("Production record saved successfully!");
@@ -170,9 +177,9 @@ namespace FactoryDashBoard.Pages
         // Reset form fields
         private void ClearFields()
         {
-            cmbProductName.SelectedIndex = -1;
+            cmbProductName.SelectedIndex = 0;
+            txtUnit.Clear();
             txtQuantity.Clear();
-            cmbUnit.SelectedIndex = 0;
             dateProduction.Value = DateTime.Today;
         }
 

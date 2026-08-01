@@ -8,12 +8,16 @@ namespace FactoryManagementAdminTool
     {
         private System.ComponentModel.IContainer components = null;
 
-        // ===================== LAYOUT (adjust these to move controls) =====================
+        // ============================================================
+        // LAYOUT CONSTANTS
+        // Controls positions and sizes are centralized here so the UI
+        // can be adjusted without modifying individual controls.
+        // ============================================================
         private const int LeftMargin = 30;
         private const int FieldWidth = 1000;
         private const int FieldHeight = 50;
-        private const int LabelGap = 6;       // space between label and its field
-        private const int SectionGap = 22;    // space after each field group
+        private const int LabelGap = 6;       
+        private const int SectionGap = 22;    
 
         private static readonly Point TitlePos = new Point(LeftMargin, 20);
 
@@ -37,7 +41,11 @@ namespace FactoryManagementAdminTool
 
         private const int BackButtonBottomMargin = 20;
 
-        // ===================== CONTROLS =====================
+
+        // ============================================================
+        // UI CONTROLS
+        // Declaration of all controls used in User Management screen.
+        // ============================================================
         private Label lblTitle;
         private Label lblFullName;
         private Label lblUsername;
@@ -62,6 +70,10 @@ namespace FactoryManagementAdminTool
 
         private Panel contentPanel;
         private DataGridView dgvUsers;
+        // ============================================================
+        // Creates modern rounded input fields with custom border style.
+        // Used for TextBox and ComboBox containers.
+        // ============================================================
 
         private Panel CreateRoundedBox(Control innerControl, int height = FieldHeight)
         {
@@ -116,7 +128,9 @@ namespace FactoryManagementAdminTool
 
             return container;
         }
-
+        // ============================================================
+        // Applies rounded corners to buttons for modern UI appearance.
+        // ============================================================
         private void RoundButton(Button btn)
         {
             GraphicsPath path = new GraphicsPath();
@@ -128,7 +142,9 @@ namespace FactoryManagementAdminTool
             path.CloseAllFigures();
             btn.Region = new Region(path);
         }
-
+        // ============================================================
+        // Creates reusable labels with common font styling.
+        // ============================================================
         private Label CreateLabel(string text, Point location)
         {
             return new Label
@@ -139,6 +155,10 @@ namespace FactoryManagementAdminTool
                 Location = location
             };
         }
+        // ============================================================
+        // Creates reusable action buttons.
+        // Used for Add, Update, Delete, Search, Back etc.
+        // ============================================================
 
         private Button CreateActionButton(string text, Color backColor, int x, int y, int width = 170)
         {
@@ -158,6 +178,10 @@ namespace FactoryManagementAdminTool
             RoundButton(btn);
             return btn;
         }
+        // ============================================================
+        // Dynamically adjusts DataGridView and Back button position
+        // whenever the UserControl size changes.
+        // ============================================================
 
         private void LayoutGridAndBackButton()
         {
@@ -175,6 +199,11 @@ namespace FactoryManagementAdminTool
             btnBack.Left = LeftMargin;
             btnBack.Top = Math.Max(GridTop + dgvUsers.Height + 12, backTop);
         }
+        // ============================================================
+        // INITIALIZES ALL UI COMPONENTS
+        // Creates controls, sets properties, attaches events,
+        // and adds controls to the main container.
+        // ============================================================
 
         private void InitializeComponent()
         {
@@ -182,7 +211,10 @@ namespace FactoryManagementAdminTool
 
             Dock = DockStyle.Fill;
             BackColor = Color.White;
-
+            // --------------------------------------------------------
+            // Main container panel
+            // Holds all controls and supports scrolling.
+            // --------------------------------------------------------
             contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -190,7 +222,9 @@ namespace FactoryManagementAdminTool
                 BackColor = Color.White,
                 Padding = new Padding(0, 0, 0, 20)
             };
-
+            // --------------------------------------------------------
+            // Page title
+            // --------------------------------------------------------
             lblTitle = new Label
             {
                 Text = "User Management",
@@ -198,7 +232,10 @@ namespace FactoryManagementAdminTool
                 AutoSize = true,
                 Location = TitlePos
             };
-
+            // --------------------------------------------------------
+            // User information fields
+            // Full Name, Username, Password and Role
+            // --------------------------------------------------------
             lblFullName = CreateLabel("Full Name", FullNameLabelPos);
             txtFullName = new TextBox();
             Panel boxFullName = CreateRoundedBox(txtFullName);
@@ -219,14 +256,16 @@ namespace FactoryManagementAdminTool
             {
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            cmbRole.Items.AddRange(new object[] { "Owner", "Manager", "Employee" });
+            cmbRole.Items.AddRange(new object[] { "Owner", "Manager", "Sales Person" });
             cmbRole.Location = RoleFieldPos;
             cmbRole.Width = 1000;
             cmbRole.Height = 45;
             cmbRole.Font = new Font("Segoe UI", 13F);
 
-            
 
+            // --------------------------------------------------------
+            // User management action buttons
+            // --------------------------------------------------------
             btnAdd = CreateActionButton("Add", Color.FromArgb(94, 60, 255), 0, 0);
             btnUpdate = CreateActionButton("Update", Color.FromArgb(59, 130, 246), 180, 0);
             btnDelete = CreateActionButton("Delete", Color.FromArgb(220, 38, 38), 360, 0);
@@ -244,7 +283,9 @@ namespace FactoryManagementAdminTool
             buttonPanel.Controls.Add(btnDelete);
             buttonPanel.Controls.Add(btnResetPassword);
             buttonPanel.Controls.Add(btnToggleStatus);
-
+            // --------------------------------------------------------
+            // Search section
+            // --------------------------------------------------------
             lblSearch = CreateLabel("Search users", SearchLabelPos);
             txtSearch = new TextBox();
             Panel boxSearch = CreateRoundedBox(txtSearch, 45);
@@ -255,6 +296,10 @@ namespace FactoryManagementAdminTool
             btnSearch.Height = 45;
             RoundButton(btnSearch);
             btnSearch.Location = SearchButtonPos;
+            // --------------------------------------------------------
+            // Users DataGridView
+            // Displays registered system users.
+            // --------------------------------------------------------
 
             dgvUsers = new DataGridView
             {
@@ -269,10 +314,16 @@ namespace FactoryManagementAdminTool
                 BorderStyle = BorderStyle.FixedSingle,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
             };
-
+            // --------------------------------------------------------
+            // Navigation button
+            // Returns to dashboard.
+            // --------------------------------------------------------
             btnBack = CreateActionButton("Back", Color.Gray, 0, 0, 180);
             btnBack.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-
+            // --------------------------------------------------------
+            // Event handlers
+            // Connect UI actions with backend logic.
+            // --------------------------------------------------------
             btnAdd.Click += btnAdd_Click;
             btnUpdate.Click += btnUpdate_Click;
             btnDelete.Click += btnDelete_Click;
@@ -281,6 +332,9 @@ namespace FactoryManagementAdminTool
             btnToggleStatus.Click += btnToggleStatus_Click;
             btnSearch.Click += btnSearch_Click;
             dgvUsers.CellClick += dgvUsers_CellClick;
+            // --------------------------------------------------------
+            // Add controls to UserControl
+            // --------------------------------------------------------
 
             contentPanel.Controls.Add(lblTitle);
             contentPanel.Controls.Add(lblFullName);
@@ -297,6 +351,7 @@ namespace FactoryManagementAdminTool
             contentPanel.Controls.Add(btnSearch);
             contentPanel.Controls.Add(dgvUsers);
             contentPanel.Controls.Add(btnBack);
+            // Resize handling keeps grid and navigation responsive.
 
             contentPanel.Resize += (s, e) => LayoutGridAndBackButton();
             Load += (s, e) => LayoutGridAndBackButton();

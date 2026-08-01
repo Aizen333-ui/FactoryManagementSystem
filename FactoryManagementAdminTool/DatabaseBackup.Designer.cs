@@ -6,6 +6,7 @@ namespace FactoryManagementAdminTool
 {
     partial class DatabaseBackup
     {
+        // Database backup page controls
         private Label lblTitle;
         private Label lblPath;
         private Label lblResult;
@@ -14,24 +15,33 @@ namespace FactoryManagementAdminTool
         private Button btnBackup;
         private Button btnBack;
 
+        // Applies rounded corners to buttons
         private void RoundButton(Button btn)
         {
             GraphicsPath path = new GraphicsPath();
+
             int radius = 18;
+
             path.AddArc(0, 0, radius, radius, 180, 90);
             path.AddArc(btn.Width - radius, 0, radius, radius, 270, 90);
             path.AddArc(btn.Width - radius, btn.Height - radius, radius, radius, 0, 90);
             path.AddArc(0, btn.Height - radius, radius, radius, 90, 90);
+
             path.CloseAllFigures();
-            btn.Region = new Region(path);
+            btn.Region =
+                new Region(path);
         }
 
+        // Initializes database backup page UI
         private void InitializeComponent()
         {
             SuspendLayout();
+
+            // UserControl settings
             Dock = DockStyle.Fill;
             BackColor = Color.White;
-
+                
+            // Main layout container
             FlowLayoutPanel main = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -41,6 +51,7 @@ namespace FactoryManagementAdminTool
                 Padding = new Padding(40)
             };
 
+            // Page title
             lblTitle = new Label
             {
                 Text = "Database Backup",
@@ -49,6 +60,7 @@ namespace FactoryManagementAdminTool
                 Margin = new Padding(0, 0, 0, 20)
             };
 
+            // Backup information message
             Label info = new Label
             {
                 Text = "Create a full SQL Server backup of FactoryDB.\n" +
@@ -59,6 +71,7 @@ namespace FactoryManagementAdminTool
                 Margin = new Padding(0, 0, 0, 25)
             };
 
+            // Backup location label
             lblPath = new Label
             {
                 Text = "Backup file path",
@@ -66,14 +79,22 @@ namespace FactoryManagementAdminTool
                 AutoSize = true
             };
 
+            // Backup path textbox
             txtPath = new TextBox
             {
                 Width = 900,
                 Font = new Font("Segoe UI", 12)
             };
 
-            Panel row = new Panel { Width = 950, Height = 70, Margin = new Padding(0, 15, 0, 0) };
+            // Button row container
+            Panel row = new Panel
+            {
+                Width = 950,
+                Height = 70,
+                Margin = new Padding(0, 15, 0, 0)
+            };
 
+            // Browse button
             btnBrowse = new Button
             {
                 Text = "Browse",
@@ -86,9 +107,11 @@ namespace FactoryManagementAdminTool
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
+
             btnBrowse.FlatAppearance.BorderSize = 0;
             RoundButton(btnBrowse);
 
+            // Create backup button
             btnBackup = new Button
             {
                 Text = "Create Backup",
@@ -101,9 +124,11 @@ namespace FactoryManagementAdminTool
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
+
             btnBackup.FlatAppearance.BorderSize = 0;
             RoundButton(btnBackup);
 
+            // Back navigation button
             btnBack = new Button
             {
                 Text = "Back",
@@ -116,13 +141,16 @@ namespace FactoryManagementAdminTool
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
+
             btnBack.FlatAppearance.BorderSize = 0;
             RoundButton(btnBack);
 
+            // Add buttons to row
             row.Controls.Add(btnBrowse);
             row.Controls.Add(btnBackup);
             row.Controls.Add(btnBack);
 
+            // Result/status label
             lblResult = new Label
             {
                 Text = "",
@@ -132,17 +160,18 @@ namespace FactoryManagementAdminTool
                 Margin = new Padding(0, 30, 0, 0)
             };
 
+            // Connect button events
             btnBrowse.Click += btnBrowse_Click;
             btnBackup.Click += btnBackup_Click;
             btnBack.Click += btnBack_Click;
 
+            // Add controls to layout
             main.Controls.Add(lblTitle);
             main.Controls.Add(info);
             main.Controls.Add(lblPath);
             main.Controls.Add(txtPath);
             main.Controls.Add(row);
             main.Controls.Add(lblResult);
-
             Controls.Add(main);
             ResumeLayout(false);
         }

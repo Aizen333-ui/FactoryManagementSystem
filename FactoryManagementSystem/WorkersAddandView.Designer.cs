@@ -333,7 +333,6 @@ namespace FactoryManagementSystem
             main.Controls.Add(this.dataGridView1);
             main.Controls.Add(btnBack);
 
-
             this.Controls.Add(main);
             this.Size = new System.Drawing.Size(800, 700);
 

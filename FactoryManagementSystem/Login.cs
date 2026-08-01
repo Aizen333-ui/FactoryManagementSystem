@@ -1,3 +1,4 @@
+using FactoryManagementCore;
 namespace FactoryManagementSystem
 {
     public partial class Login : Form
@@ -16,7 +17,6 @@ namespace FactoryManagementSystem
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
 
-
             if (username == "" || password == "")
             {
                 MessageBox.Show(
@@ -29,7 +29,6 @@ namespace FactoryManagementSystem
                 return;
             }
 
-
                     string query = @"
                         SELECT Role
                         FROM Users
@@ -37,16 +36,13 @@ namespace FactoryManagementSystem
                         AND Password = @password
                     ";
 
-
             Microsoft.Data.SqlClient.SqlParameter[] parameters =
                     {
                 new Microsoft.Data.SqlClient.SqlParameter("@username", username),
                 new Microsoft.Data.SqlClient.SqlParameter("@password", password)
                     };
 
-
             object result = DBHelper.ExecuteScalar(query, parameters);
-
 
             if (result == null)
             {
@@ -76,8 +72,6 @@ namespace FactoryManagementSystem
 
             string role = result.ToString();
 
-
-
             // ================= OWNER =================
 
             if (role == "Owner")
@@ -94,11 +88,9 @@ namespace FactoryManagementSystem
                 owner.Show();
             }
 
-
-
             // ================= FACTORY =================
 
-            else if (role == "Manager")
+            if (role == "Manager")
             {
                 FactoryDashBoard factory = new FactoryDashBoard();
 
@@ -112,6 +104,17 @@ namespace FactoryManagementSystem
                 factory.Show();
             }
 
+            else if (role == "Sales Person")
+            {
+                SalesDashboard sales = new SalesDashboard();
+                this.Hide();
+
+                sales.FormClosed += (s, args) =>
+                {
+                    this.Show();
+                };
+                sales.Show();
+            }
 
         }
     }

@@ -1,12 +1,13 @@
-﻿using FactoryManagementSystem;
+﻿using FactoryManagementCore;
+using FactoryManagementSystem;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Collections.Generic;
 
 namespace FactoryDashBoard.Pages
 {
     public partial class RawMaterialUsage : UserControl
     {
+        private bool isLoadingMaterials = false;
         // Constructor
         public RawMaterialUsage()
         {
@@ -25,16 +26,28 @@ namespace FactoryDashBoard.Pages
 
             // Load raw materials into grid
             LoadRawMaterials();
-
+            dataGridView.ClearSelection();
+            dataGridView.CurrentCell = null;
+            cmbMaterialName.SelectedIndex = 0;
             dataGridView.SelectionChanged += (_, _) =>
             {
-                if (dataGridView.CurrentRow is null ||
-                    dataGridView.CurrentRow.IsNewRow ||
-                    dataGridView.CurrentRow.Cells["Name"].Value is null)
+                if (isLoadingMaterials)
                     return;
 
-                string name = dataGridView.CurrentRow.Cells["Name"].Value.ToString()!;
-                int idx = cmbMaterialName.FindStringExact(name);
+                if (dataGridView.SelectedRows.Count == 0)
+                    return;
+
+                DataGridViewRow row = dataGridView.SelectedRows[0];
+
+                if (row.Cells["Name"].Value == null)
+                    return;
+
+                string name =
+                    row.Cells["Name"].Value.ToString()!;
+
+                int idx =
+                    cmbMaterialName.FindStringExact(name);
+
                 if (idx >= 0)
                     cmbMaterialName.SelectedIndex = idx;
             };
@@ -45,19 +58,31 @@ namespace FactoryDashBoard.Pages
         {
             try
             {
+                isLoadingMaterials = true;
+
                 string query = @"
-                SELECT MaterialID, Name, Quantity
+                SELECT  *
                 FROM RawMaterial";
 
-                // Execute query and store data
                 DataTable dt = DBHelper.ExecuteDataTable(query, null);
 
-                // Bind data to DataGridView
                 dataGridView.DataSource = dt;
+
+                // remove automatic selection
+                dataGridView.ClearSelection();
+                dataGridView.CurrentCell = null;
+
+                // reset combo box
+                cmbMaterialName.SelectedIndex = 0;
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading materials: " + ex.Message);
+            }
+            finally
+            {
+                isLoadingMaterials = false;
             }
         }
 
@@ -66,19 +91,21 @@ namespace FactoryDashBoard.Pages
         {
             cmbMaterialName.Items.Clear();
 
+            cmbMaterialName.Items.Add("Select Raw Material...");
+
             cmbMaterialName.Items.AddRange(new object[]
             {
-                "Cement",
-                "Sand",
-                "Crush",
-                "Steel",
-                "Mold Oil"
-            });
+            "Cement",
+            "Sand",
+            "Crush",
+            "Steel",
+            "Mold Oil"
+                });
 
-            cmbMaterialName.SelectedIndex = -1;
+            cmbMaterialName.SelectedIndex = 0;
 
-            // Prevent manual typing
-            cmbMaterialName.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbMaterialName.DropDownStyle =
+                ComboBoxStyle.DropDownList;
         }
 
         // Clear all input fields
@@ -93,7 +120,7 @@ namespace FactoryDashBoard.Pages
         // Reset controls to default state
         private void ClearFields()
         {
-            cmbMaterialName.SelectedIndex = -1;
+            cmbMaterialName.SelectedIndex = 0;
             txtQuantity.Clear();
             dateMaterial.Value = DateTime.Today;
         }
@@ -112,7 +139,6 @@ namespace FactoryDashBoard.Pages
             };
         }
 
-       
         private bool TryBuildDeductions(out string displayName, out List<(int MaterialId, string MaterialName, decimal Amount)> deductions, out string? errorMessage)
         {
             displayName = "";
@@ -134,14 +160,13 @@ namespace FactoryDashBoard.Pages
             DataGridViewRow? gridRow =
                 dataGridView.SelectedRows.Count > 0
                     ? dataGridView.SelectedRows[0]
-                    : dataGridView.CurrentRow;
+                    : null;
 
-            bool hasGridRow = gridRow is not null &&
-                !gridRow.IsNewRow &&
-                gridRow.Cells["MaterialID"].Value is object idVal &&
-                int.TryParse(idVal.ToString(), out _) &&
+            bool hasGridRow =
+                gridRow != null &&
+                gridRow.Cells["MaterialID"].Value != null &&
                 gridRow.Cells["Name"].Value != null &&
-                decimal.TryParse(gridRow.Cells["Quantity"].Value?.ToString(), out _);
+                gridRow.Cells["Quantity"].Value != null;
 
             if (hasGridRow && gridRow is not null)
             {
@@ -169,7 +194,8 @@ namespace FactoryDashBoard.Pages
 
             string materialFromCombo = cmbMaterialName.SelectedItem?.ToString() ?? "";
 
-            if (string.IsNullOrEmpty(materialFromCombo))
+            if (string.IsNullOrEmpty(materialFromCombo) ||
+    materialFromCombo == "Select Raw Material...")
             {
                 errorMessage =
                     "Select material from the dropdown, or click a grid row — leave quantity blank to clear that row, or enter an amount.";
@@ -330,10 +356,10 @@ namespace FactoryDashBoard.Pages
 
             if (dashboard != null)
             {
-                dashboard.ResetSidebarSelection(); 
+                dashboard.ResetSidebarSelection();
 
                 dashboard.LoadPage(new FactoryDash());
             }
         }
     }
-    }
+}

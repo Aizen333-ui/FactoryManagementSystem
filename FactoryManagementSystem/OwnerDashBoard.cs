@@ -1,4 +1,5 @@
-﻿namespace FactoryManagementSystem
+﻿using FactoryManagementCore;
+namespace FactoryManagementSystem
 {
     public partial class OwnerDashBoard : Form
     {

@@ -1,6 +1,6 @@
 ﻿using System.Data;
 using Microsoft.Data.SqlClient;
-
+using FactoryManagementCore;
 namespace FactoryManagementSystem
 {
     public partial class Payments : UserControl
@@ -217,7 +217,6 @@ namespace FactoryManagementSystem
                 dataGridView1.CurrentRow.Cells["Amount"].Value
             );
 
-
             string enteredText = txtAmount.Text.Replace("Rs", "").Trim();
             string selectedReason = cmbReason.Text.Trim();
 
@@ -289,7 +288,6 @@ namespace FactoryManagementSystem
                     MessageBox.Show("Payment deleted!");
                 }
 
-
                 // CASE 2: Amount entered -> remove only that amount
                 else
                 {
@@ -301,13 +299,11 @@ namespace FactoryManagementSystem
                         return;
                     }
 
-
                     if (removeAmount <= 0)
                     {
                         MessageBox.Show("Amount must be greater than zero.");
                         return;
                     }
-
 
                     if (removeAmount > currentAmount)
                     {
@@ -315,7 +311,6 @@ namespace FactoryManagementSystem
                             "Cannot remove more than the payment amount.");
                         return;
                     }
-
 
                     if (removeAmount == currentAmount)
                     {
@@ -347,7 +342,6 @@ namespace FactoryManagementSystem
                         new SqlParameter("@id", paymentId)
                             });
                     }
-
                     
                     Logger.AddLog(
                         Session.CurrentUser,
@@ -358,7 +352,6 @@ namespace FactoryManagementSystem
                     );
                     MessageBox.Show("Payment updated!");
                 }
-
 
                 LoadPayments();
                 txtAmount.Clear();

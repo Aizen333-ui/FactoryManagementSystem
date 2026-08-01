@@ -1,5 +1,5 @@
 ﻿using FactoryDashBoard.Pages;
-
+using FactoryManagementCore;
 namespace FactoryManagementSystem
 {
     public partial class FactoryDashBoard : Form
@@ -63,13 +63,7 @@ namespace FactoryManagementSystem
             SetActiveButton(btnRaw);
             LoadPage(new RawMaterialUsage());
         }
-        // --- NAVIGATION BUTTON: REPORT PAGE ---
-
-        private void btnReport_Click(object sender, EventArgs e)
-        {
-            SetActiveButton(btnReport);
-            LoadPage(new Report());
-        }
+        
         // --- LOGOUT BUTTON ---
 
         private void btnLogout_Click(object sender, EventArgs e)

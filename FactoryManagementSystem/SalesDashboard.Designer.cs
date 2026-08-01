@@ -1,56 +1,80 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace FactoryManagementSystem
 {
-    // Main dashboard form for factory management system UI
-    public partial class FactoryDashBoard : Form
+    public partial class SalesDashboard : Form
     {
-        Button activeButton = null; 
-        Panel card;                 // main content card area
-        Panel panelBody;            // container panel
-        Panel panelSideMenu, panelHeader, panelMain;
-        Label lblTitle;
-        Button btnRecord, btnRaw,  btnLogout;
+        // Currently selected sidebar navigation button
 
+        Button activeButton = null;
+        // Main content container where pages are loaded
+
+        Panel card;
+        // Main layout containers
+
+        Panel panelBody;
+        Panel panelSideMenu, panelHeader, panelMain;
+        // Header title
+
+        Label lblTitle;
+        // Sidebar navigation buttons
+
+        Button btnNewSale, btnProducts, btnCustomers;
+        Button btnSalesHistory, btnReturns,  btnLogout;
+
+        // ==================================================
+        // INITIALIZE SALES DASHBOARD UI
+        // ==================================================
+        // Creates:
+        //
+        // - Sidebar navigation
+        // - Header area
+        // - Main content card
+        // - Navigation buttons
+        // - Logout button
+        //
+        // Actual page loading is handled in SalesDashboard.cs
+        // ==================================================
         private void InitializeComponent()
         {
-            // ================= MAIN CONTAINER =================
             panelBody = new Panel();
             panelBody.Dock = DockStyle.Fill;
 
-            // initialize main UI sections
             this.panelSideMenu = new Panel();
             this.panelHeader = new Panel();
             this.panelMain = new Panel();
             this.lblTitle = new Label();
 
-            // initialize buttons
             this.panelSideMenu.SuspendLayout();
-            this.btnRecord = new Button();
-            this.btnRaw = new Button();
+            this.btnNewSale = new Button();
+            this.btnProducts = new Button();
+            this.btnCustomers = new Button();
+            this.btnSalesHistory = new Button();
+            this.btnReturns = new Button();
             this.btnLogout = new Button();
 
             this.SuspendLayout();
-
-            // ================= SIDEBAR =================
+            // ==============================
+            // SIDEBAR MENU
+            // ==============================
             panelSideMenu.Dock = DockStyle.Left;
             panelSideMenu.Width = 450;
-
-            // paint event for gradient sidebar background
             panelSideMenu.Paint += PanelSideMenu_Paint;
 
             panelHeader.Dock = DockStyle.Top;
             panelMain.Dock = DockStyle.Fill;
 
-            // group main action buttons
-            Button[] buttons = { btnRecord, btnRaw };
+            Button[] buttons =
+            {
+                 btnNewSale,  btnCustomers,btnProducts,
+                btnSalesHistory, btnReturns
+            };
 
-            int top = 100;
+            int top = 80;
 
-            // configure sidebar buttons
             foreach (var btn in buttons)
             {
                 btn.Width = panelSideMenu.Width;
@@ -64,63 +88,58 @@ namespace FactoryManagementSystem
                 btn.Font = new Font("Segoe UI Emoji", 16F);
                 btn.TextAlign = ContentAlignment.MiddleLeft;
                 btn.Padding = new Padding(20, 0, 0, 0);
-
-                // hover effects
                 btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(120, 120, 255);
                 btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(90, 90, 220);
+                btn.Tag = "nav";
 
                 panelSideMenu.Controls.Add(btn);
-                top += 70;
+                top += 65;
             }
 
-            // button labels
-            btnRecord.Text = "📊 Record Production";
-            btnRaw.Text = "📦 Raw Material Usage";
-            btnRecord.Tag = "nav";
-            btnRaw.Tag = "nav";
-            // attach click events
-            btnRecord.Click += btnRecord_Click;
-            btnRaw.Click += btnRaw_Click;
+            btnNewSale.Text = "🛒 New Sale";
+            btnCustomers.Text = "👥 Customers";
+            btnProducts.Text = "📦 Products";
+            btnSalesHistory.Text = "📋 Sales History";
+            btnReturns.Text = "↩ Returns";
+            // Navigation events
 
-            // ================= LOGOUT BUTTON =================
+            btnNewSale.Click += btnNewSale_Click;
+            btnProducts.Click += btnProducts_Click;
+            btnCustomers.Click += btnCustomers_Click;
+            btnSalesHistory.Click += btnSalesHistory_Click;
+            btnReturns.Click += btnReturns_Click;
+            // ==============================
+            // LOGOUT BUTTON
+            // ==============================
             btnLogout.Text = "⏻ Logout";
             btnLogout.Width = panelSideMenu.Width - 40;
             btnLogout.Height = 60;
             btnLogout.Left = 10;
-
             btnLogout.FlatStyle = FlatStyle.Flat;
             btnLogout.FlatAppearance.BorderSize = 0;
-
             btnLogout.ForeColor = Color.White;
             btnLogout.BackColor = Color.FromArgb(220, 38, 38);
             btnLogout.Font = new Font("Segoe UI Emoji", 12F, FontStyle.Bold);
-
-            // keep logout button at bottom
             btnLogout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 
-            // reposition on resize
             panelSideMenu.Resize += (s, e) =>
             {
                 btnLogout.Top = panelSideMenu.Height - btnLogout.Height - 20;
                 btnLogout.Left = 20;
             };
 
-            // logout event
             btnLogout.Click += btnLogout_Click;
-
-            // round logout button corners
             RoundButton(btnLogout);
-
             panelSideMenu.Controls.Add(btnLogout);
+            // ==============================
+            // HEADER
+            // ==============================
 
-            // ================= HEADER =================
             panelHeader.Dock = DockStyle.Top;
             panelHeader.Height = 120;
-
-            // gradient header background
             panelHeader.Paint += PanelHeader_Paint;
 
-            lblTitle.Text = "Factory Dashboard";
+            lblTitle.Text = "Sales Dashboard";
             lblTitle.ForeColor = Color.White;
             lblTitle.BackColor = Color.Transparent;
             lblTitle.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
@@ -128,15 +147,14 @@ namespace FactoryManagementSystem
             lblTitle.AutoSize = true;
 
             panelHeader.Controls.Add(lblTitle);
+            // ==============================
+            // MAIN CONTENT AREA
+            // ==============================
 
-            // ================= MAIN CONTENT AREA =================
             panelMain.Dock = DockStyle.Fill;
             panelMain.BackColor = Color.FromArgb(243, 244, 246);
-
-            // padding to create spacing for card layout
             panelMain.Padding = new Padding(60, 40, 450, 40);
 
-            // resize logic for card
             panelMain.Resize += (s, e) =>
             {
                 int horizMargin = panelMain.Padding.Left + panelMain.Padding.Right;
@@ -149,39 +167,33 @@ namespace FactoryManagementSystem
                 card.Top = panelMain.Padding.Top;
             };
 
-            // ================= CARD PANEL =================
             card = new Panel();
             card.BackColor = Color.White;
 
-            // initial sizing
             int horiz = panelMain.Padding.Left + panelMain.Padding.Right;
             int vert = panelMain.Padding.Top + panelMain.Padding.Bottom;
 
             card.Width = Math.Max(200, panelMain.Width - horiz);
             card.Height = Math.Max(200, panelMain.Height - vert);
-
             card.Left = panelMain.Padding.Left;
             card.Top = panelMain.Padding.Top;
 
-            // rounded corners
             card.Resize += (s, e) => RoundPanel(card);
             RoundPanel(card);
 
             panelMain.Controls.Add(card);
 
-            // ================= FORM STRUCTURE =================
             this.Controls.Add(panelBody);
             this.Controls.Add(panelHeader);
 
             panelBody.Controls.Add(panelMain);
             panelBody.Controls.Add(panelSideMenu);
 
-            this.Text = "Factory Dashboard";
+            this.Text = "Sales Dashboard";
 
             this.ResumeLayout(false);
         }
 
-        // ================= SIDEBAR GRADIENT =================
         private void PanelSideMenu_Paint(object sender, PaintEventArgs e)
         {
             using (LinearGradientBrush brush = new LinearGradientBrush(
@@ -194,24 +206,19 @@ namespace FactoryManagementSystem
             }
         }
 
-        // highlight selected button
         private void SetActiveButton(Button btn)
         {
-            // reset previous
             if (activeButton != null)
             {
                 activeButton.BackColor = Color.Transparent;
                 activeButton.ForeColor = Color.White;
             }
 
-            // set new active
             activeButton = btn;
-
             activeButton.BackColor = Color.White;
             activeButton.ForeColor = Color.Black;
         }
 
-        // ================= HEADER GRADIENT =================
         private void PanelHeader_Paint(object sender, PaintEventArgs e)
         {
             using (LinearGradientBrush brush = new LinearGradientBrush(
@@ -224,7 +231,6 @@ namespace FactoryManagementSystem
             }
         }
 
-        // ================= ROUNDED PANEL =================
         private void RoundPanel(Panel panel)
         {
             GraphicsPath path = new GraphicsPath();
@@ -239,7 +245,6 @@ namespace FactoryManagementSystem
             panel.Region = new Region(path);
         }
 
-        // ================= ROUNDED BUTTON =================
         private void RoundButton(Button button)
         {
             GraphicsPath path = new GraphicsPath();

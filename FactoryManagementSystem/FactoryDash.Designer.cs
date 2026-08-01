@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
-
+using ScottPlot.WinForms;
 namespace FactoryManagementSystem
 {
     // Main dashboard UI for factory management system
@@ -15,8 +14,8 @@ namespace FactoryManagementSystem
         private Label lblRawUsagePercent;
 
         // ===================== CHARTS =====================
-        private Chart materialusageChart;
-        private Chart monthlyproductionChart;
+        private FormsPlot materialusageChart;
+        private FormsPlot monthlyproductionChart;
 
         // ===================== MAIN CONTAINERS =====================
         private FlowLayoutPanel mainFlow;
@@ -201,13 +200,22 @@ namespace FactoryManagementSystem
 
             // ================= LEFT CHART =================
 
-            materialusageChart = new Chart();
-            Panel pie1Host =CreateChartHost("Material Usage",materialusageChart);
+            materialusageChart = new FormsPlot();
 
-            // ================= RIGHT CHART =================
+            Panel pie1Host =
+                CreateChartHost(
+                    "Material Usage",
+                    materialusageChart
+                );
 
-            monthlyproductionChart = new Chart();
-            Panel pie2Host =CreateChartHost("Monthly Production",monthlyproductionChart);
+
+            monthlyproductionChart = new FormsPlot();
+
+            Panel pie2Host =
+                CreateChartHost(
+                    "Monthly Production",
+                    monthlyproductionChart
+                );
 
             // ADD CONTROLS
 
@@ -248,10 +256,9 @@ namespace FactoryManagementSystem
         // ===================== CHART CONTAINER =====================
 
         private Panel CreateChartHost(
-             string title,
-             Chart chart)
+            string title,
+            FormsPlot chart)
         {
-
             Panel outer = new Panel()
             {
                 Dock = DockStyle.Fill,
@@ -261,7 +268,6 @@ namespace FactoryManagementSystem
 
 
             MakeRounded(outer, 18);
-
 
 
             TableLayoutPanel layout =
@@ -290,7 +296,6 @@ namespace FactoryManagementSystem
             );
 
 
-
             Label header = new Label()
             {
                 Text = title,
@@ -301,34 +306,26 @@ namespace FactoryManagementSystem
                 ),
                 Dock = DockStyle.Fill,
                 Padding = new Padding(15, 0, 0, 0),
-                TextAlign =
-                    ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
 
-
             chart.Dock = DockStyle.Fill;
-            chart.BackColor = Color.White;
-            chart.MinimumSize = new Size(300, 250);
+
+            chart.MinimumSize =
+                new Size(300, 250);
 
 
+            chart.Plot.FigureBackground.Color =
+                ScottPlot.Color.FromHex("#FFFFFF");
 
-            layout.Controls.Add(
-                header,
-                0,
-                0
-            );
+            chart.Plot.DataBackground.Color =
+                ScottPlot.Color.FromHex("#FFFFFF");
 
-
-            layout.Controls.Add(
-                chart,
-                0,
-                1
-            );
-
+            layout.Controls.Add(header, 0, 0);
+            layout.Controls.Add(chart, 0, 1);
 
             outer.Controls.Add(layout);
-
 
             return outer;
         }

@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
-
+using ScottPlot.WinForms;
 namespace FactoryManagementSystem
 {
     partial class OwnerDash
@@ -16,14 +15,12 @@ namespace FactoryManagementSystem
         private Label lblExpenses;
         private Label lblProduction;
 
-
         // ================= WORKER LABELS =================
 
         private Label lblLabourers;
         private Label lblDrivers;
         private Label lblLoaders;
         private Label lblOperators;
-
 
         // ================= MATERIAL LABELS =================
 
@@ -33,37 +30,25 @@ namespace FactoryManagementSystem
         private Label lblSteel;
         private Label lblOil;
 
-
         // ================= CHARTS =================
 
-        private Chart materialChart;
-        private Chart expenseChart;
-
+        private FormsPlot materialChart;
+        private FormsPlot expenseChart;
 
         // ================= MAIN CONTAINERS =================
 
         private FlowLayoutPanel mainFlow;
-
         private Panel headerPanel;
-
         private Panel kpiPanel;
-
         private Panel workerPanel;
-
         private Panel materialPanel;
-
         private Panel chartPanel;
-
 
         // Only allowed FlowLayoutPanels
         private FlowLayoutPanel workerFlow;
         private FlowLayoutPanel materialFlow;
-
-
         private Label lblTitle;
         private Label lblSub;
-
-
 
         // =====================================================
         // INITIALIZE UI
@@ -74,7 +59,6 @@ namespace FactoryManagementSystem
             components = new System.ComponentModel.Container();
 
             SuspendLayout();
-
 
             // =================================================
             // MAIN CONTAINER
@@ -90,15 +74,11 @@ namespace FactoryManagementSystem
                 BackColor = Color.White
             };
 
-
             Controls.Add(mainFlow);
-
-
 
             // =================================================
             // HEADER
             // =================================================
-
 
             headerPanel = new Panel()
             {
@@ -108,39 +88,27 @@ namespace FactoryManagementSystem
                 Margin = new Padding(0, 0, 0, 10)
             };
 
-
             lblTitle = new Label()
             {
                 Text = "Factory Owner Dashboard",
-                Font = new Font(
-                    "Segoe UI",
-                    24,
-                    FontStyle.Bold
-                ),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 Location = new Point(30, 15),
                 AutoSize = true
             };
 
-
             lblSub = new Label()
             {
                 Text = "Production, workers and expenses overview",
-                Font = new Font(
-                    "Segoe UI",
-                    11
-                ),
+                Font = new Font("Segoe UI", 11),
                 ForeColor = Color.Gray,
                 Location = new Point(35, 80),
                 AutoSize = true
             };
 
-
             headerPanel.Controls.Add(lblTitle);
             headerPanel.Controls.Add(lblSub);
 
-
             mainFlow.Controls.Add(headerPanel);
-
 
             // =================================================
             // KPI SECTION (styled like FactoryDash but keeping OwnerDash names)
@@ -166,10 +134,8 @@ namespace FactoryManagementSystem
 
             card1.Controls.Add(CreateCardTitle("Total Workers"));
             card1.Controls.Add(lblWorkers);
-
             card2.Controls.Add(CreateCardTitle("Expenses"));
             card2.Controls.Add(lblExpenses);
-
             card3.Controls.Add(CreateCardTitle("Production"));
             card3.Controls.Add(lblProduction);
 
@@ -187,7 +153,6 @@ namespace FactoryManagementSystem
             // =================================================
             // WORKER CATEGORY SECTION
             // =================================================
-
 
             workerPanel = new Panel()
             {
@@ -209,7 +174,6 @@ namespace FactoryManagementSystem
                 AutoSize = true
             };
 
-
             workerFlow = new FlowLayoutPanel()
             {
                 Location = new Point(20, 55),
@@ -220,37 +184,16 @@ namespace FactoryManagementSystem
                 BackColor = Color.White
             };
 
-            lblLabourers =
-                CreateMiniStatCard(
-                    workerFlow,
-                    "Labour"
-                );
-
-            lblDrivers =
-                CreateMiniStatCard(
-                    workerFlow,
-                    "Driver"
-                );
-
-            lblLoaders =
-                CreateMiniStatCard(
-                    workerFlow,
-                    "Loader"
-                );
-
-            lblOperators =
-                CreateMiniStatCard(
-                    workerFlow,
-                    "Machine Operator"
-                );
-
+            lblLabourers = CreateMiniStatCard(workerFlow, "Labour");
+            lblDrivers = CreateMiniStatCard(workerFlow, "Driver");
+            lblLoaders = CreateMiniStatCard(workerFlow, "Loader");
+            lblOperators = CreateMiniStatCard(workerFlow, "Machine Operator");
 
             workerPanel.Controls.Add(workerTitle);
             workerPanel.Controls.Add(workerFlow);
             mainFlow.Controls.Add(workerPanel);
 
             // Create a large rounded container (like FactoryDash) to hold Worker and Material sections
-
 
             materialPanel = new Panel()
             {
@@ -260,8 +203,6 @@ namespace FactoryManagementSystem
                 Margin = new Padding(0, 0, 0, 0)
 
             };
-
-
 
             Label materialTitle = new Label()
             {
@@ -275,8 +216,6 @@ namespace FactoryManagementSystem
                 AutoSize = true
             };
 
-
-
             materialFlow = new FlowLayoutPanel()
             {
                 Location = new Point(20, 60),
@@ -287,43 +226,11 @@ namespace FactoryManagementSystem
                 BackColor = Color.White
             };
 
-
-
-            lblCement =
-                CreateMaterialCard(
-                    materialFlow,
-                    "Cement"
-                );
-
-
-            lblSand =
-                CreateMaterialCard(
-                    materialFlow,
-                    "Sand"
-                );
-
-
-            lblCrush =
-                CreateMaterialCard(
-                    materialFlow,
-                    "Crush"
-                );
-
-
-            lblSteel =
-                CreateMaterialCard(
-                    materialFlow,
-                    "Steel"
-                );
-
-
-            lblOil =
-                CreateMaterialCard(
-                    materialFlow,
-                    "Mold Oil"
-                );
-
-
+            lblCement = CreateMaterialCard(materialFlow, "Cement");
+            lblSand = CreateMaterialCard(materialFlow, "Sand");
+            lblCrush = CreateMaterialCard(materialFlow, "Crush");
+            lblSteel = CreateMaterialCard(materialFlow, "Steel");
+            lblOil = CreateMaterialCard(materialFlow, "Mold Oil");
 
             materialPanel.Controls.Add(materialTitle);
             materialPanel.Controls.Add(materialFlow);
@@ -338,7 +245,6 @@ namespace FactoryManagementSystem
             // CHART SECTION (LAST)
             // =================================================
 
-
             chartPanel = new Panel()
             {
                 Width = 1500,
@@ -346,8 +252,6 @@ namespace FactoryManagementSystem
                 BackColor = Color.White,
                 Margin = new Padding(0, 20, 0, 20)
             };
-
-
 
             TableLayoutPanel chartLayout =
                 new TableLayoutPanel()
@@ -358,15 +262,12 @@ namespace FactoryManagementSystem
                     BackColor = Color.White
                 };
 
-
-
             chartLayout.ColumnStyles.Add(
                 new ColumnStyle(
                     SizeType.Percent,
                     48
                 )
             );
-
 
             chartLayout.ColumnStyles.Add(
                 new ColumnStyle(
@@ -375,7 +276,6 @@ namespace FactoryManagementSystem
                 )
             );
 
-
             chartLayout.ColumnStyles.Add(
                 new ColumnStyle(
                     SizeType.Percent,
@@ -383,62 +283,26 @@ namespace FactoryManagementSystem
                 )
             );
 
+            materialChart = new FormsPlot();
+            expenseChart = new FormsPlot();
 
+            Panel materialChartHost = CreateChartHost("Material Usage", materialChart);
+            Panel expenseChartHost = CreateChartHost("Expense Distribution", expenseChart);
 
-            materialChart = new Chart();
-
-
-            expenseChart = new Chart();
-
-
-
-
-            Panel materialChartHost =
-                CreateChartHost(
-                    "Material Usage",
-                    materialChart
-                );
-
-
-
-            Panel expenseChartHost =
-                CreateChartHost(
-                    "Expense Distribution",
-                    expenseChart
-                );
-
-            chartLayout.Controls.Add(
-                materialChartHost,
-                0,
-                0
-            );
-
-            chartLayout.Controls.Add(
-                expenseChartHost,
-                2,
-                0
-            );
-
-
+            chartLayout.Controls.Add(materialChartHost, 0, 0);
+            chartLayout.Controls.Add(expenseChartHost, 2, 0);
 
             chartPanel.Controls.Add(chartLayout);
 
-
-
             mainFlow.Controls.Add(chartPanel);
-
-
-
 
             // =================================================
             // FORM SETTINGS
             // =================================================
 
-
             BackColor = Color.White;
             Dock = DockStyle.Fill;
             Name = "OwnerDash";
-
 
             ResumeLayout(false);
         }
@@ -456,12 +320,10 @@ namespace FactoryManagementSystem
                 Padding = new Padding(10)
             };
 
-
             MakeRounded(panel, 16);
 
             return panel;
         }
-
 
         // =====================================================
         // CHART CONTAINER
@@ -469,7 +331,7 @@ namespace FactoryManagementSystem
 
         private Panel CreateChartHost(
             string title,
-            Chart chart)
+            FormsPlot chart)
         {
 
             Panel outer = new Panel()
@@ -479,10 +341,7 @@ namespace FactoryManagementSystem
                 Padding = new Padding(10)
             };
 
-
             MakeRounded(outer, 18);
-
-
 
             TableLayoutPanel layout =
                 new TableLayoutPanel()
@@ -493,126 +352,61 @@ namespace FactoryManagementSystem
                     BackColor = Color.White
                 };
 
-
-            layout.RowStyles.Add(
-                new RowStyle(
-                    SizeType.Absolute,
-                    50
-                )
-            );
-
-
-            layout.RowStyles.Add(
-                new RowStyle(
-                    SizeType.Percent,
-                    100
-                )
-            );
-
-
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
             Label header = new Label()
             {
                 Text = title,
-                Font = new Font(
-                    "Segoe UI",
-                    14,
-                    FontStyle.Bold
-                ),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 Dock = DockStyle.Fill,
                 Padding = new Padding(15, 0, 0, 0),
-                TextAlign =
-                    ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft
             };
-
-
 
             chart.Dock = DockStyle.Fill;
             chart.BackColor = Color.White;
             chart.MinimumSize = new Size(300, 250);
 
-
-
-            layout.Controls.Add(
-                header,
-                0,
-                0
-            );
-
-
-            layout.Controls.Add(
-                chart,
-                0,
-                1
-            );
-
+            layout.Controls.Add(header, 0, 0);
+            layout.Controls.Add(chart, 0, 1);
 
             outer.Controls.Add(layout);
-
 
             return outer;
         }
 
-
-
-
         // =====================================================
         // LABEL HELPERS
         // =====================================================
-
 
         private Label CreateCardTitle(string text)
         {
             return new Label()
             {
                 Text = text,
-                Font = new Font(
-                    "Segoe UI",
-                    12,
-                    FontStyle.Bold
-                ),
-
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = Color.Black,
-
-                Location =
-                    new Point(20, 20),
-
+                Location = new Point(20, 20),
                 AutoSize = true
             };
         }
-
-
-
 
         private Label CreateBigValueLabel()
         {
             return new Label()
             {
                 Text = "0",
-
-                Font = new Font(
-                    "Segoe UI",
-                    28,
-                    FontStyle.Bold
-                ),
-
+                Font = new Font("Segoe UI", 28, FontStyle.Bold),
                 ForeColor = Color.Black,
-
-                Location =
-                    new Point(20, 70),
-
+                Location = new Point(20, 70),
                 AutoSize = true
             };
         }
 
-
-
-
-
         // =====================================================
         // WORKER MINI CARD
         // =====================================================
-
 
         private Label CreateMiniStatCard(
             FlowLayoutPanel parent,
@@ -622,9 +416,7 @@ namespace FactoryManagementSystem
             Panel panel = new Panel()
             {
                 Size = new Size(300, 130),
-
                 BackColor = Color.White,
-
                 Margin = new Padding(10),
                 Padding = new Padding(10)
 
@@ -634,60 +426,32 @@ namespace FactoryManagementSystem
             Label name = new Label()
             {
                 Text = title,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11,
-                    FontStyle.Bold
-                ),
-
-                Location =
-                    new Point(15, 15),
-
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Location = new Point(15, 15),
                 AutoSize = true
             };
-
-
 
             Label value = new Label()
             {
                 Text = "0",
-
-                Font = new Font(
-                    "Segoe UI",
-                    18,
-                    FontStyle.Bold
-                ),
-
-                Location =
-                    new Point(15, 45),
-
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Location = new Point(15, 45),
                 AutoSize = true
             };
-
-
 
             panel.Controls.Add(name);
             panel.Controls.Add(value);
 
-
             MakeRounded(panel, 12);
 
-
             parent.Controls.Add(panel);
-
 
             return value;
         }
 
-
-
-
-
         // =====================================================
         // MATERIAL CARD
         // =====================================================
-
 
         private Label CreateMaterialCard(
             FlowLayoutPanel parent,
@@ -697,71 +461,39 @@ namespace FactoryManagementSystem
             Panel panel = new Panel()
             {
                 Size = new Size(240, 100),
-
                 BackColor = Color.White,
-
                 Margin = new Padding(10)
             };
-
-
 
             Label name = new Label()
             {
                 Text = material,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11,
-                    FontStyle.Bold
-                ),
-
-                Location =
-                    new Point(15, 15),
-
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Location = new Point(15, 15),
                 AutoSize = true
             };
-
-
 
             Label value = new Label()
             {
                 Text = "0",
-
-                Font = new Font(
-                    "Segoe UI",
-                    18,
-                    FontStyle.Bold
-                ),
-
-                Location =
-                    new Point(15, 50),
-
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Location = new Point(15, 50),
                 AutoSize = true
             };
-
-
 
             panel.Controls.Add(name);
             panel.Controls.Add(value);
 
-
             MakeRounded(panel, 12);
 
-
             parent.Controls.Add(panel);
-
 
             return value;
         }
 
-
-
-
-
         // =====================================================
         // ROUND CORNERS
         // =====================================================
-
 
         private void MakeRounded(Control ctl, int radius)
         {
@@ -770,39 +502,15 @@ namespace FactoryManagementSystem
                 GraphicsPath path = new GraphicsPath();
 
                 path.AddArc(0, 0, radius, radius, 180, 90);
-                path.AddArc(
-                    ctl.Width - radius,
-                    0,
-                    radius,
-                    radius,
-                    270,
-                    90);
-
-                path.AddArc(
-                    ctl.Width - radius,
-                    ctl.Height - radius,
-                    radius,
-                    radius,
-                    0,
-                    90);
-
-                path.AddArc(
-                    0,
-                    ctl.Height - radius,
-                    radius,
-                    radius,
-                    90,
-                    90);
+                path.AddArc(ctl.Width - radius, 0, radius, radius, 270, 90);
+                path.AddArc(ctl.Width - radius, ctl.Height - radius, radius, radius, 0, 90);
+                path.AddArc(0, ctl.Height - radius, radius, radius, 90, 90);
 
                 path.CloseAllFigures();
-
                 ctl.Region = new Region(path);
             }
 
-
             ApplyRegion();
-
-
 
             // ============================
             // DRAW BORDER
@@ -810,81 +518,25 @@ namespace FactoryManagementSystem
 
             ctl.Paint += (s, e) =>
             {
-                e.Graphics.SmoothingMode =
-                    SmoothingMode.AntiAlias;
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
+                Rectangle rect = new Rectangle(1, 1, ctl.Width - 3, ctl.Height - 3);
 
-                Rectangle rect =
-                    new Rectangle(
-                        1,
-                        1,
-                        ctl.Width - 3,
-                        ctl.Height - 3
-                    );
-
-
-                using (GraphicsPath borderPath =
-                      new GraphicsPath())
+                using (GraphicsPath borderPath = new GraphicsPath())
                 {
-
-                    borderPath.AddArc(
-                        rect.X,
-                        rect.Y,
-                        radius,
-                        radius,
-                        180,
-                        90);
-
-
-                    borderPath.AddArc(
-                        rect.Right - radius,
-                        rect.Y,
-                        radius,
-                        radius,
-                        270,
-                        90);
-
-
-                    borderPath.AddArc(
-                        rect.Right - radius,
-                        rect.Bottom - radius,
-                        radius,
-                        radius,
-                        0,
-                        90);
-
-
-                    borderPath.AddArc(
-                        rect.X,
-                        rect.Bottom - radius,
-                        radius,
-                        radius,
-                        90,
-                        90);
-
+                    borderPath.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                    borderPath.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                    borderPath.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                    borderPath.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
 
                     borderPath.CloseAllFigures();
 
-
-
-                    using (Pen pen =
-                        new Pen(
-                            Color.FromArgb(
-                                180,
-                                190,
-                                210),
-                            1.5f))
+                    using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
                     {
-
-                        e.Graphics.DrawPath(
-                            pen,
-                            borderPath);
-
+                        e.Graphics.DrawPath(pen, borderPath);
                     }
                 }
             };
-
-
 
             // ============================
             // UPDATE WHEN RESIZED
@@ -896,6 +548,5 @@ namespace FactoryManagementSystem
                 ctl.Invalidate();
             };
         }
-
     }
 }

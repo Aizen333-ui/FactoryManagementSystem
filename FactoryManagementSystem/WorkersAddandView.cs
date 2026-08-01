@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
-
+using FactoryManagementCore;
 namespace FactoryManagementSystem
 {
     public partial class WorkersAddandView : UserControl

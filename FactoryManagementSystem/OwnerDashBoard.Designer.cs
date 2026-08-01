@@ -92,7 +92,6 @@ namespace FactoryManagementSystem
             btnLogout.BackColor = Color.FromArgb(220, 38, 38);
 
             btnLogout.Font = new Font("Segoe UI Emoji", 12F, FontStyle.Bold);
-
            
             btnLogout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
 

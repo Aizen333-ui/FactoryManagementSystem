@@ -6,42 +6,119 @@ namespace FactoryManagementAdminTool
 {
     public partial class SystemSettings : UserControl
     {
+
+        // ============================================================
+        // Constructor
+        //
+        // Initializes the UI and loads:
+        // - Database settings
+        // - System statistics
+        // - Audit logs
+        // ============================================================
+
         public SystemSettings()
         {
             InitializeComponent();
+
             LoadSettings();
+
             LoadAuditLogs();
-   
         }
+
+
+
+        // ============================================================
+        // Loads system configuration information.
+        //
+        // Displays:
+        // - Current database connection string
+        // - Total users count
+        // - Total administrators count
+        // - Database connection status
+        // ============================================================
 
         private void LoadSettings()
         {
-            txtConnection.Text = DBHelper.ConnectionString;
+            // Display current connection string
+            txtConnection.Text =
+                DBHelper.ConnectionString;
+
 
             try
             {
-                object users = DBHelper.ExecuteScalar("SELECT COUNT(*) FROM Users", null);
-                object admins = DBHelper.ExecuteScalar("SELECT COUNT(*) FROM SystemAdmins", null);
-                lblStats.Text = $"Users: {users}   |   Admins: {admins}";
-                lblStatus.Text = "Database connection: OK";
-                lblStatus.ForeColor = Color.FromArgb(22, 163, 74);
+                // Retrieve total registered users
+                object users =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Users",
+                        null);
+
+
+                // Retrieve total system administrators
+                object admins =
+                    DBHelper.ExecuteScalar(
+                        "SELECT COUNT(*) FROM SystemAdmins",
+                        null);
+
+
+
+                // Update statistics display
+                lblStats.Text =
+                    $"Users: {users}   |   Admins: {admins}";
+
+
+                // Update connection status
+                lblStatus.Text =
+                    "Database connection: OK";
+
+
+                lblStatus.ForeColor =
+                    Color.FromArgb(
+                        22,
+                        163,
+                        74);
             }
             catch (Exception ex)
             {
-                lblStats.Text = "Unable to load stats.";
-                lblStatus.Text = "Database connection: FAILED — " + ex.Message;
-                lblStatus.ForeColor = Color.FromArgb(220, 38, 38);
+                // Display error state if database
+                // information cannot be loaded.
+                lblStats.Text =
+                    "Unable to load stats.";
+
+
+                lblStatus.Text =
+                    "Database connection: FAILED — "
+                    + ex.Message;
+
+
+                lblStatus.ForeColor =
+                    Color.FromArgb(
+                        220,
+                        38,
+                        38);
             }
         }
+
+
+
+        // ============================================================
+        // Tests database connectivity manually.
+        //
+        // Opens a temporary SQL connection and confirms whether
+        // the database server is reachable.
+        // ============================================================
 
         private void btnTest_Click(object sender, EventArgs e)
         {
             try
             {
-                using (SqlConnection con = new SqlConnection(DBHelper.ConnectionString))
+                using (SqlConnection con =
+                    new SqlConnection(
+                        DBHelper.ConnectionString))
                 {
                     con.Open();
                 }
+
+
 
                 MessageBox.Show(
                     "Connection successful.",
@@ -49,45 +126,92 @@ namespace FactoryManagementAdminTool
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
+
+
+                // Refresh status after successful connection
                 LoadSettings();
-                
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Connection failed:\n" + ex.Message,
+                    "Connection failed:\n"
+                    + ex.Message,
                     "System Settings",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-               
             }
         }
+
+
+
+        // ============================================================
+        // Refreshes all System Settings information.
+        //
+        // Reloads:
+        // - Database status
+        // - User/admin statistics
+        // - Audit logs
+        // ============================================================
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             LoadSettings();
+
             LoadAuditLogs();
-            
         }
+
+
+
+        // ============================================================
+        // Returns user back to Admin Dashboard.
+        //
+        // Resets sidebar selection and dashboard header.
+        // ============================================================
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            AdminDashboard dashboard = (AdminDashboard)this.FindForm();
+            AdminDashboard dashboard =
+                (AdminDashboard)this.FindForm();
+
+
             dashboard.ResetSidebarSelection();
-            dashboard.SetHeaderTitle("Admin Dashboard");
-            dashboard.LoadPage(new AdminDash());
-            
+
+            dashboard.SetHeaderTitle(
+                "Admin Dashboard");
+
+
+            dashboard.LoadPage(
+                new AdminDash());
         }
+
+
+
+        // ============================================================
+        // Reloads audit logs manually.
+        // ============================================================
 
         private void btnReloadLogs_Click(object sender, EventArgs e)
         {
             LoadAuditLogs();
-            
         }
+
+
+
+        // ============================================================
+        // Exports audit logs to a text file.
+        //
+        // Process:
+        // - Validates available logs
+        // - Opens save dialog
+        // - Writes log records into text file
+        // - Creates audit entry
+        // ============================================================
+
         private void btnExportLogs_Click(object sender, EventArgs e)
         {
             try
             {
+                // Prevent exporting empty data
                 if (dgvAuditLogs.Rows.Count == 0)
                 {
                     MessageBox.Show(
@@ -100,30 +224,50 @@ namespace FactoryManagementAdminTool
                 }
 
 
-                SaveFileDialog save = new SaveFileDialog();
 
-                save.Filter = "Text Files (*.txt)|*.txt";
-                save.FileName = "FactoryManagement_Logs_" +
-                                DateTime.Now.ToString("yyyyMMdd_HHmmss")
-                                + ".txt";
+                SaveFileDialog save =
+                    new SaveFileDialog();
 
 
-                if (save.ShowDialog() != DialogResult.OK)
+                save.Filter =
+                    "Text Files (*.txt)|*.txt";
+
+
+                save.FileName =
+                    "FactoryManagement_Logs_" +
+                    DateTime.Now.ToString(
+                        "yyyyMMdd_HHmmss")
+                    + ".txt";
+
+
+
+                // Stop if user cancels save operation
+                if (save.ShowDialog()
+                    != DialogResult.OK)
+                {
                     return;
+                }
 
 
 
-                using (StreamWriter writer = new StreamWriter(save.FileName))
+                using (StreamWriter writer =
+                    new StreamWriter(
+                        save.FileName))
                 {
 
+                    // File header
                     writer.WriteLine(
                         "====================================");
+
 
                     writer.WriteLine(
                         " Factory Management System Logs");
 
+
                     writer.WriteLine(
-                        " Generated: " + DateTime.Now);
+                        " Generated: "
+                        + DateTime.Now);
+
 
                     writer.WriteLine(
                         "====================================");
@@ -133,37 +277,48 @@ namespace FactoryManagementAdminTool
 
 
 
-                    foreach (DataGridViewRow row in dgvAuditLogs.Rows)
+                    // Write every audit record
+                    foreach (DataGridViewRow row
+                        in dgvAuditLogs.Rows)
                     {
-
                         if (row.IsNewRow)
                             continue;
 
 
+
                         string logLine =
-                            "Date: " + row.Cells["LogDate"].Value +
-                            " | User: " + row.Cells["Username"].Value +
-                            " | Action: " + row.Cells["Action"].Value +
-                            " | Status: " + row.Cells["Status"].Value;
+                            "Date: "
+                            + row.Cells["LogDate"].Value
+
+                            + " | User: "
+                            + row.Cells["Username"].Value
+
+                            + " | Action: "
+                            + row.Cells["Action"].Value
+
+                            + " | Status: "
+                            + row.Cells["Status"].Value;
+
 
 
                         writer.WriteLine(logLine);
 
+
                         writer.WriteLine(
                             "------------------------------------");
-
                     }
-
                 }
 
 
+
+                // Record successful export activity
                 Logger.AddLog(
                     Session.CurrentUser,
                     "Export Logs",
                     "System Settings",
                     "System logs exported successfully",
-                    "Success"
-                );
+                    "Success");
+
 
 
                 MessageBox.Show(
@@ -171,54 +326,76 @@ namespace FactoryManagementAdminTool
                     "Export Logs",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
-
             }
             catch (Exception ex)
             {
-
+                // Record export failure
                 Logger.AddLog(
                     Session.CurrentUser,
                     "Export Logs",
                     "System Settings",
                     ex.Message,
-                    "Failed"
-                );
+                    "Failed");
+
 
 
                 MessageBox.Show(
-                    "Error exporting logs:\n" + ex.Message,
+                    "Error exporting logs:\n"
+                    + ex.Message,
                     "Export Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-
             }
         }
+
+
+
+        // ============================================================
+        // Loads audit history from database.
+        //
+        // Retrieves:
+        // - Username
+        // - Action performed
+        // - Module name
+        // - Description
+        // - Status
+        // - Date/time
+        //
+        // Results are displayed in Audit Logs DataGridView.
+        // ============================================================
+
         private void LoadAuditLogs()
         {
             try
             {
                 string query = @"
-                            SELECT 
-                                LogID,
-                                Username,
-                                Action,
-                                Module,
-                                Description,
-                                Status,
-                                LogDate
-                            FROM AuditLogs
-                            ORDER BY LogID DESC";
+                    SELECT 
+                        Username,
+                        Action,
+                        Module,
+                        Description,
+                        Status,
+                        LogDate
+                    FROM AuditLogs
+                    ORDER BY LogID DESC";
 
-                DataTable dt = DBHelper.ExecuteDataTable(query, null);
 
-                dgvAuditLogs.DataSource = dt;
+                DataTable dt =
+                    DBHelper.ExecuteDataTable(
+                        query,
+                        null);
+
+
+                dgvAuditLogs.DataSource =
+                    dt;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading audit logs: " + ex.Message);
+                MessageBox.Show(
+                    "Error loading audit logs: "
+                    + ex.Message);
             }
         }
 
-        
     }
 }

@@ -6,12 +6,18 @@ namespace FactoryManagementAdminTool
 {
     public partial class ManageUsers : UserControl
     {
+        // ============================================================
+        // Constructor
+        // Initializes UI components and loads existing users.
+        // ============================================================
         public ManageUsers()
         {
             InitializeComponent();
             LoadUsers();
         }
-
+        // ============================================================
+        // Loads all users from database and displays them in DataGridView.
+        // ============================================================
         private void LoadUsers()
         {
             try
@@ -34,7 +40,10 @@ namespace FactoryManagementAdminTool
                 MessageBox.Show("Error loading users: " + ex.Message);
             }
         }
-
+        // ============================================================
+        // Adds a new user account.
+        // Performs validation, inserts user data, and creates audit log.
+        // ============================================================
         private void btnAdd_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtFullName.Text) ||
@@ -84,7 +93,11 @@ namespace FactoryManagementAdminTool
                 MessageBox.Show("Error adding user: " + ex.Message);
             }
         }
-
+        // ============================================================
+        // Updates selected user's information.
+        // Password is updated only when a new password is entered.
+        // Otherwise existing password remains unchanged.
+        // ============================================================
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (dgvUsers.CurrentRow == null)
@@ -166,6 +179,10 @@ namespace FactoryManagementAdminTool
                 MessageBox.Show("Error updating user: " + ex.Message);
             }
         }
+        // ============================================================
+        // Deletes selected user permanently from Users table.
+        // Requires confirmation before deletion.
+        // ============================================================
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
@@ -207,6 +224,9 @@ namespace FactoryManagementAdminTool
                 MessageBox.Show("Error deleting user: " + ex.Message);
             }
         }
+        // ============================================================
+        // Opens password reset window for selected user.
+        // ============================================================
 
         private void btnResetPassword_Click(object sender, EventArgs e)
         {
@@ -232,7 +252,10 @@ namespace FactoryManagementAdminTool
             );
             LoadUsers();
         }
-
+        // ============================================================
+        // Enables or disables selected user account.
+        // Updates IsActive status in database.
+        // ============================================================
         private void btnToggleStatus_Click(object sender, EventArgs e)
         {
             if (dgvUsers.CurrentRow == null)
@@ -266,7 +289,10 @@ namespace FactoryManagementAdminTool
             LoadUsers();
             UpdateToggleButtonText(newStatus);
         }
-
+        // ============================================================
+        // Searches users by username, full name, or role.
+        // Displays filtered results in DataGridView.
+        // ============================================================
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string term = txtSearch.Text.Trim();
@@ -296,7 +322,10 @@ namespace FactoryManagementAdminTool
                 MessageBox.Show("Search error: " + ex.Message);
             }
         }
-
+        // ============================================================
+        // Loads selected user information into input fields
+        // when a DataGridView row is clicked.
+        // ============================================================
         private void dgvUsers_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
@@ -312,6 +341,9 @@ namespace FactoryManagementAdminTool
             bool active = Convert.ToBoolean(row.Cells["IsActive"].Value);
             UpdateToggleButtonText(active);
         }
+        // ============================================================
+        // Changes Toggle button text based on account status.
+        // ============================================================
 
         private void UpdateToggleButtonText(bool active)
         {
@@ -326,7 +358,10 @@ namespace FactoryManagementAdminTool
             txtSearch.Clear();
             cmbRole.SelectedIndex = -1;
         }
-
+        // ============================================================
+        // Returns user to Admin Dashboard.
+        // Resets sidebar and dashboard header.
+        // ============================================================
         private void btnBack_Click(object sender, EventArgs e)
         {
             AdminDashboard dashboard = (AdminDashboard)this.FindForm();

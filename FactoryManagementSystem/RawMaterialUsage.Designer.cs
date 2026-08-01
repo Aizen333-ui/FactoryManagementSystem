@@ -13,7 +13,7 @@ namespace FactoryDashBoard.Pages
         private Label lblQuantity;
         private Label lblDate;
 
-        private ComboBox cmbMaterialName; // changed from TextBox
+        private ComboBox cmbMaterialName; 
         private TextBox txtQuantity;
         private DateTimePicker dateMaterial;
 
@@ -51,7 +51,6 @@ namespace FactoryDashBoard.Pages
             this.btnBack.ForeColor = Color.White;
             this.btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
 
-
             btn.Resize += (s, e) =>
             {
                 ApplyRoundedRegion(btn, 18);
@@ -71,9 +70,6 @@ namespace FactoryDashBoard.Pages
                     path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
                     path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
                     path.CloseFigure();
-
-
-
 
                 }
             };
@@ -229,9 +225,6 @@ namespace FactoryDashBoard.Pages
             btnPanel.AutoSize = true;
             btnPanel.Margin = new Padding(0, 20, 0, 20);
 
-
-
-
             // CLEAR BUTTON
             this.btnClear = new Button();
             this.btnClear.Text = "Clear";
@@ -241,7 +234,6 @@ namespace FactoryDashBoard.Pages
             this.btnClear.ForeColor = Color.White;
             this.btnClear.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             this.btnClear.Location = new Point(700, 10);
-
 
             // REMOVE BUTTON 
             this.btnRemove = new Button();
@@ -306,10 +298,8 @@ namespace FactoryDashBoard.Pages
             this.dataGridView.Height = 500;
             this.dataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView.RowHeadersVisible = false;
-            this.dataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView.MultiSelect = false;
             this.dataGridView.ReadOnly = true; 
-
 
             // ===== ADD TO MAIN =====
             main.Controls.Add(title);
@@ -334,6 +324,3 @@ namespace FactoryDashBoard.Pages
         }
     }
 }
-
-
-

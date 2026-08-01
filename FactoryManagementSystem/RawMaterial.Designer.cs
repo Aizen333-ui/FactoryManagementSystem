@@ -419,7 +419,6 @@ namespace FactoryManagementSystem
             // Inventory box
             main.Controls.Add(inventoryBox);
 
-
             // Data grid
             main.Controls.Add(this.dataGridView1);
             main.Controls.Add(btnBack);

@@ -9,13 +9,15 @@ namespace FactoryManagementAdminTool
     {
         public AdminDashboard()
         {
- 
             InitializeComponent();
+            // Load default dashboard page when application starts
             LoadPage(new AdminDash());
         }
 
+        // Loads a UserControl page inside the dashboard content area
         public void LoadPage(UserControl page)
         {
+            // If no card container exists, load directly into main panel
             if (card == null)
             {
                 panelMain.Controls.Clear();
@@ -25,19 +27,24 @@ namespace FactoryManagementAdminTool
                 return;
             }
 
+            // Load page inside dashboard card container
             card.Controls.Clear();
             page.Dock = DockStyle.Fill;
             page.Margin = new Padding(0);
+
+            // Add inner spacing around page content
             page.Padding = new Padding(24);
             card.Controls.Add(page);
             page.BringToFront();
         }
 
+        // Updates dashboard header title
         public void SetHeaderTitle(string title)
         {
             lblTitle.Text = title;
         }
 
+        // Opens user management page
         private void btnManageUsers_Click(object sender, EventArgs e)
         {
             OpenManageUsers();
@@ -50,6 +57,7 @@ namespace FactoryManagementAdminTool
             LoadPage(new ManageUsers());
         }
 
+        // Opens admin account management page
         private void btnAdminAccounts_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnAdminAccounts);
@@ -57,6 +65,7 @@ namespace FactoryManagementAdminTool
             LoadPage(new AdminAccounts());
         }
 
+        // Opens system settings page
         private void btnSystemSettings_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnSystemSettings);
@@ -64,6 +73,7 @@ namespace FactoryManagementAdminTool
             LoadPage(new SystemSettings());
         }
 
+        // Opens reports page
         private void btnReports_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnReports);
@@ -71,6 +81,7 @@ namespace FactoryManagementAdminTool
             LoadPage(new AdminReports());
         }
 
+        // Opens database backup page
         private void btnBackup_Click(object sender, EventArgs e)
         {
             SetActiveButton(btnBackup);
@@ -78,6 +89,7 @@ namespace FactoryManagementAdminTool
             LoadPage(new DatabaseBackup());
         }
 
+        // Clears currently selected sidebar button
         public void ResetSidebarSelection()
         {
             if (activeButton != null)
@@ -88,8 +100,10 @@ namespace FactoryManagementAdminTool
             }
         }
 
+        // Handles admin logout process
         private void btnLogout_Click(object sender, EventArgs e)
         {
+            // Ask for confirmation before closing session
             if (MessageBox.Show(
                     "Do you want to logout?",
                     "Confirm",
@@ -98,6 +112,8 @@ namespace FactoryManagementAdminTool
             {
                 return;
             }
+
+            // Record logout activity in audit logs
             Logger.AddLog(
                 Session.CurrentUser,
                 "LOGOUT",
@@ -106,6 +122,7 @@ namespace FactoryManagementAdminTool
                 "Success"
             );
 
+            // Close dashboard and return to login screen
             this.Close();
         }
     }

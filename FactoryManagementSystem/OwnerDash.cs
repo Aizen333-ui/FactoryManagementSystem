@@ -1,6 +1,5 @@
 ﻿using System.Data;
-using System.Windows.Forms.DataVisualization.Charting;
-
+using FactoryManagementCore;
 namespace FactoryManagementSystem
 {
     public partial class OwnerDash : UserControl
@@ -71,140 +70,126 @@ namespace FactoryManagementSystem
         // MATERIAL CHART: MATERIAL USAGE DISTRIBUTION
         private void LoadMaterialChart()
         {
-            materialChart.Series.Clear();
-            materialChart.ChartAreas.Clear();
-            materialChart.Legends.Clear();
+            materialChart.Plot.Clear();
 
-            ChartArea area = new ChartArea("Main")
-            {
-                BackColor = Color.White
-            };
-
-            materialChart.ChartAreas.Add(area);
-
-            Legend lg = new Legend
-            {
-                Docking = Docking.Bottom,
-                Font = new Font("Segoe UI", 9F)
-            };
-
-            materialChart.Legends.Add(lg);
-
-            Series s = new Series("Materials")
-            {
-                ChartType = SeriesChartType.Pie,
-                IsValueShownAsLabel = true,
-                LabelFormat = "0.##'%'",
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
-            };
-
-            // Fetch monthly material usage
             DataTable dt = DBHelper.ExecuteDataTable(@"
-                SELECT 
-                    MaterialName,
-                    SUM(QuantityUsed) AS TotalUsed
-                FROM MaterialUsage
-                WHERE 
-                    MONTH(Date) = MONTH(GETDATE())
-                    AND YEAR(Date) = YEAR(GETDATE())
-                GROUP BY MaterialName
-            ", null);
+        SELECT 
+            MaterialName,
+            SUM(QuantityUsed) AS TotalUsed
+        FROM MaterialUsage
+        WHERE 
+            MONTH(Date) = MONTH(GETDATE())
+            AND YEAR(Date) = YEAR(GETDATE())
+        GROUP BY MaterialName
+    ", null);
 
             double grandTotal = 0;
 
-            // Calculate total usage for percentage conversion
             foreach (DataRow r in dt.Rows)
             {
                 grandTotal += Convert.ToDouble(r["TotalUsed"]);
             }
 
-            // Add data points as percentages
+            List<double> values = new();
+            List<string> labels = new();
+
             foreach (DataRow r in dt.Rows)
             {
                 string material = r["MaterialName"].ToString();
                 double used = Convert.ToDouble(r["TotalUsed"]);
-                double percent = 0;
 
-                if (grandTotal > 0)
-                {
-                    percent = (used / grandTotal) * 100;
-                }
+                double percent = grandTotal > 0
+                    ? (used / grandTotal) * 100
+                    : 0;
 
-                s.Points.AddXY(material, percent);
+                values.Add(percent);
+                labels.Add(material);
             }
 
-            materialChart.Series.Add(s);
+            // Use a bar chart instead of a pie chart for material usage
+            materialChart.Plot.Add.Bars(values.ToArray());
+
+            var tickGenMat = new ScottPlot.TickGenerators.NumericManual();
+            for (int i = 0; i < labels.Count; i++)
+            {
+                tickGenMat.AddMajor(i, labels[i]);
+            }
+
+            if (labels.Count > 0)
+                materialChart.Plot.Axes.Bottom.TickGenerator = tickGenMat;
+
+            // Ensure Y axis shows percent range 0-100 by using manual ticks
+            var yTickMat = new ScottPlot.TickGenerators.NumericManual();
+            for (int v = 0; v <= 100; v += 10)
+            {
+                yTickMat.AddMajor(v, v.ToString());
+            }
+            materialChart.Plot.Axes.Left.TickGenerator = yTickMat;
+
+            materialChart.Plot.Title("Monthly Material Usage");
+            materialChart.Refresh();
         }
 
         // EXPENSE DISTRIBUTION CHART (Monthly)
         private void LoadExpenseChart()
         {
-            expenseChart.Series.Clear();
-            expenseChart.ChartAreas.Clear();
-            expenseChart.Legends.Clear();
-            expenseChart.Titles.Clear();
+            expenseChart.Plot.Clear();
 
-            ChartArea area = new ChartArea("MainArea")
-            {
-                BackColor = Color.White
-            };
-
-            expenseChart.ChartAreas.Add(area);
-
-            Legend lg = new Legend
-            {
-                Docking = Docking.Bottom,
-                Font = new Font("Segoe UI", 9F)
-            };
-
-            expenseChart.Legends.Add(lg);
-
-            Series series = new Series("Expenses")
-            {
-                ChartType = SeriesChartType.Pie, 
-                IsValueShownAsLabel = true,
-                LabelFormat = "0.##'%'",
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold)
-            };
-
-            // Fetch payments grouped by reason
             DataTable dt = DBHelper.ExecuteDataTable(@"
-                SELECT 
-                    UPPER(LTRIM(RTRIM(Reason))) AS Reason,
-                    SUM(Amount) AS TotalAmount
-                FROM Payments
-                WHERE 
-                    MONTH(Date) = MONTH(GETDATE())
-                    AND YEAR(Date) = YEAR(GETDATE())
-                GROUP BY UPPER(LTRIM(RTRIM(Reason)))
-            ", null);
+        SELECT 
+            UPPER(LTRIM(RTRIM(Reason))) AS Reason,
+            SUM(Amount) AS TotalAmount
+        FROM Payments
+        WHERE 
+            MONTH(Date) = MONTH(GETDATE())
+            AND YEAR(Date) = YEAR(GETDATE())
+        GROUP BY UPPER(LTRIM(RTRIM(Reason)))
+    ", null);
 
             double grandTotal = 0;
 
-            // Calculate total expenses
             foreach (DataRow row in dt.Rows)
             {
                 grandTotal += Convert.ToDouble(row["TotalAmount"]);
             }
 
-            // Convert each category into percentage
+            List<double> values = new();
+            List<string> labels = new();
+
             foreach (DataRow row in dt.Rows)
             {
                 string reason = row["Reason"].ToString();
                 double amount = Convert.ToDouble(row["TotalAmount"]);
-                double percent = 0;
 
-                if (grandTotal > 0)
-                {
-                    percent = (amount / grandTotal) * 100;
-                }
+                double percent = grandTotal > 0
+                    ? (amount / grandTotal) * 100
+                    : 0;
 
-                series.Points.AddXY(reason, percent);
+                values.Add(percent);
+                labels.Add(reason);
             }
 
-            expenseChart.Series.Add(series);
+            // Use a bar chart instead of a pie chart for expense distribution
+            expenseChart.Plot.Add.Bars(values.ToArray());
 
-            expenseChart.Dock = DockStyle.Fill;
+            var tickGenExp = new ScottPlot.TickGenerators.NumericManual();
+            for (int i = 0; i < labels.Count; i++)
+            {
+                tickGenExp.AddMajor(i, labels[i]);
+            }
+
+            if (labels.Count > 0)
+                expenseChart.Plot.Axes.Bottom.TickGenerator = tickGenExp;
+
+            // Ensure Y axis shows percent range 0-100 by using manual ticks
+            var yTickExp = new ScottPlot.TickGenerators.NumericManual();
+            for (int v = 0; v <= 100; v += 10)
+            {
+                yTickExp.AddMajor(v, v.ToString());
+            }
+            expenseChart.Plot.Axes.Left.TickGenerator = yTickExp;
+
+            expenseChart.Plot.Title("Monthly Expense Distribution");
             expenseChart.Refresh();
         }
 
@@ -218,7 +203,7 @@ namespace FactoryManagementSystem
         }
 
         // Generic method to get worker count by role
-        private void LoadWorkerCount(Label lbl, string role)
+        private void LoadWorkerCount(System.Windows.Forms.Label lbl, string role)
         {
             string query = "SELECT COUNT(*) FROM Workers WHERE Role=@role";
 
@@ -245,7 +230,7 @@ namespace FactoryManagementSystem
         }
 
         // Generic method to fetch stock of a material
-        private void LoadMaterial(Label lbl, string material)
+        private void LoadMaterial(System.Windows.Forms.Label lbl, string material)
         {
             string query = @"
                 SELECT ISNULL(SUM(Quantity),0)

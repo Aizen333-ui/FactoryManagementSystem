@@ -18,7 +18,7 @@ namespace FactoryDashBoard.Pages
 
         private ComboBox cmbProductName;
         private TextBox txtQuantity;
-        private ComboBox cmbUnit;
+        private TextBox txtUnit;
         private DateTimePicker dateProduction;
         // ================= BUTTONS =================
 
@@ -71,49 +71,52 @@ namespace FactoryDashBoard.Pages
         }
 
         // ===================== ROUNDED INPUT BOX =====================
-        private Panel CreateRoundedBox(Control inner, int height = 55)
+        private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
             Panel container = new Panel();
-            container.Height = inner.Height > 0 ? inner.Height + 28 : height;
-            container.Width = inner.Width > 0 ? inner.Width + 24 : 600;
+
+            container.Height = (innerControl.Height > 0) ? innerControl.Height + 28 : height;
+            container.Width = (innerControl.Width > 0) ? innerControl.Width + 24 : 600;
 
             container.BackColor = Color.White;
-            container.Padding = new Padding(12, 12, 14, 14);
+            container.Padding = new Padding(12, 10, 12, 10);
             container.Margin = new Padding(0, 0, 0, 25);
 
-            inner.Dock = DockStyle.Fill;
-            inner.Location = new Point(0, 2);
-            inner.Margin = new Padding(0);
-            inner.BackColor = Color.White;
-            inner.Height = 30;
+            innerControl.Dock = DockStyle.None;
+            innerControl.Location = new Point(12, 10);
+            innerControl.Margin = new Padding(0);
+            innerControl.BackColor = Color.White;
+            innerControl.Width = container.Width - 24;
 
-            if (inner is TextBox tb)
+            if (innerControl is TextBox tb)
             {
                 tb.BorderStyle = BorderStyle.None;
                 tb.Font = new Font("Segoe UI", 13F);
                 tb.Multiline = false;
             }
 
-            if (inner is ComboBox cb)
+            if (innerControl is ComboBox cb)
             {
                 cb.FlatStyle = FlatStyle.Flat;
                 cb.Font = new Font("Segoe UI", 13F);
                 cb.DropDownStyle = ComboBoxStyle.DropDownList;
+                cb.Height = 30;
+
             }
 
-            if (inner is DateTimePicker dt)
+            if (innerControl is DateTimePicker dt)
             {
                 dt.Font = new Font("Segoe UI", 12F);
                 dt.Format = DateTimePickerFormat.Custom;
                 dt.CustomFormat = "dd/MM/yyyy";
             }
 
-            container.Controls.Add(inner);
+            container.Controls.Add(innerControl);
 
             container.Paint += (s, e) =>
             {
                 int radius = 12;
-                Rectangle rect = new Rectangle(0, 0, container.Width - 1, container.Height - 1);
+                Rectangle rect = new Rectangle(1, 1, container.Width - 2, container.Height - 2);
 
                 using (GraphicsPath path = new GraphicsPath())
                 {
@@ -193,13 +196,13 @@ namespace FactoryDashBoard.Pages
             lblUnit.AutoSize = true;
             lblUnit.Margin = new Padding(0, 15, 0, 8);
 
-            cmbUnit = new ComboBox();
-            cmbUnit.Width = 1000;
-            cmbUnit.Font = new Font("Segoe UI", 13F);
-            cmbUnit.DropDownStyle = ComboBoxStyle.DropDownList;
+            txtUnit = new TextBox();
+            txtUnit.Width = 1000;
+            txtUnit.Font = new Font("Segoe UI", 13F);
+            txtUnit.ReadOnly = true;
 
             main.Controls.Add(lblUnit);
-            main.Controls.Add(CreateRoundedBox(cmbUnit));
+            main.Controls.Add(CreateRoundedBox(txtUnit));
 
             // ================= DATE =================
             lblDate = new Label();
