@@ -75,10 +75,10 @@ namespace SalesDashboard.Pages
             lblCompanyName.AutoSize = true;
             lblCompanyName.Location = new Point(30, 20);
 
-            lblInvoiceTitle.Text = "SALES INVOICE";
+            lblInvoiceTitle.Text = "Sales Invoice";
             lblInvoiceTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             lblInvoiceTitle.AutoSize = true;
-            lblInvoiceTitle.Location = new Point(650, 30);
+            lblInvoiceTitle.Location = new Point(30, 70);
 
             pnlHeader.Controls.Add(lblCompanyName);
             pnlHeader.Controls.Add(lblInvoiceTitle);
@@ -90,21 +90,41 @@ namespace SalesDashboard.Pages
             pnlInfo.Size = new Size(840, 100);
             pnlInfo.BackColor = Color.White;
 
+            // ================= INVOICE NUMBER =================
+
             lblInvoiceNo.Text = "Invoice No:";
-            lblInvoiceNo.AutoSize = true;
-            lblInvoiceNo.Location = new Point(20, 20);
+            lblInvoiceNo.AutoSize = false;
+            lblInvoiceNo.Size = new Size(350, 30);
+            lblInvoiceNo.AutoEllipsis = true;
+            lblInvoiceNo.Location = new Point(20, 15);
+            lblInvoiceNo.Font = new Font("Segoe UI", 14F);
+
+            // ================= DATE =================
 
             lblDate.Text = "Date:";
-            lblDate.AutoSize = true;
+            lblDate.AutoSize = false;
+            lblDate.Size = new Size(350, 30);
+            lblDate.AutoEllipsis = true;
             lblDate.Location = new Point(20, 55);
+            lblDate.Font = new Font("Segoe UI", 14F);
 
-            lblCustomer.Text = "Customer:";
-            lblCustomer.AutoSize = true;
-            lblCustomer.Location = new Point(400, 20);
+            // ================= CUSTOMER =================
 
-            lblPayment.Text = "Payment:";
-            lblPayment.AutoSize = true;
+            lblCustomer.Text = "Customer Name:";
+            lblCustomer.AutoSize = false;
+            lblCustomer.Size = new Size(400, 30);
+            lblCustomer.AutoEllipsis = true;
+            lblCustomer.Location = new Point(400, 15);
+            lblCustomer.Font = new Font("Segoe UI", 14F);
+
+            // ================= PAYMENT =================
+
+            lblPayment.Text = "Payment Method:";
+            lblPayment.AutoSize = false;
+            lblPayment.Size = new Size(400, 30);
+            lblPayment.AutoEllipsis = true;
             lblPayment.Location = new Point(400, 55);
+            lblPayment.Font = new Font("Segoe UI", 14F);
 
             pnlInfo.Controls.Add(lblInvoiceNo);
             pnlInfo.Controls.Add(lblDate);
@@ -136,25 +156,25 @@ namespace SalesDashboard.Pages
             pnlBottom.BackColor = Color.White;
 
             lblSubTotal.Text = "Subtotal:";
-            lblSubTotal.Font = new Font("Segoe UI", 11F);
+            lblSubTotal.Font = new Font("Segoe UI", 13F);
             lblSubTotal.AutoSize = true;
-            lblSubTotal.Location = new Point(520, 10);
+            lblSubTotal.Location = new Point(10, 10);
 
             lblDiscount.Text = "Discount:";
-            lblDiscount.Font = new Font("Segoe UI", 11F);
+            lblDiscount.Font = new Font("Segoe UI", 13F);
             lblDiscount.AutoSize = true;
-            lblDiscount.Location = new Point(520, 35);
+            lblDiscount.Location = new Point(10, 35);
 
             lblTax.Text = "Tax:";
-            lblTax.Font = new Font("Segoe UI", 11F);
+            lblTax.Font = new Font("Segoe UI", 13F);
             lblTax.AutoSize = true;
-            lblTax.Location = new Point(520, 60);
+            lblTax.Location = new Point(10, 60);
 
             // Highlight final invoice amount
             lblTotal.Text = "Grand Total:";
             lblTotal.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             lblTotal.AutoSize = true;
-            lblTotal.Location = new Point(520, 95);
+            lblTotal.Location = new Point(10, 95);
 
             pnlBottom.Controls.Add(lblSubTotal);
             pnlBottom.Controls.Add(lblDiscount);
@@ -170,7 +190,7 @@ namespace SalesDashboard.Pages
 
             btnPrint.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
 
-            btnPrint.Location = new Point(375, 640);
+            btnPrint.Location = new Point(375, 670);
 
             // Print event handler
             btnPrint.Click += btnPrint_Click;
@@ -180,7 +200,7 @@ namespace SalesDashboard.Pages
 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(920, 720);
+            ClientSize = new Size(920, 780);
             BackColor = Color.White;
             Text = "Sales Invoice";
             StartPosition = FormStartPosition.CenterScreen;

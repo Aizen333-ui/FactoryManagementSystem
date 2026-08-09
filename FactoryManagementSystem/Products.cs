@@ -8,6 +8,11 @@ namespace SalesDashboard.Pages
         {
             InitializeComponent();
 
+            // Prevent automatic selection
+            dgvProducts.MultiSelect = false;
+            dgvProducts.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
             // Attach button click events
             btnBack.Click += btnBack_Click;
             btnSearch.Click += btnSearch_Click;
@@ -15,14 +20,21 @@ namespace SalesDashboard.Pages
 
             // Load product list when page opens
             LoadProducts();
-        }
+            this.Load += Products_Load;
 
+        }
+        // Ensures no product is selected when the page loads
+        private void Products_Load(object? sender, EventArgs e)
+        {
+            // Remove automatic first-row selection
+            dgvProducts.ClearSelection();
+            dgvProducts.CurrentCell = null;
+        }
         // Clears search and filter values and reloads complete product list
         private void btnClear_Click(object? sender, EventArgs e)
         {
             txtSearch.Clear();
             cmbFilter.SelectedIndex = 0;
-
             LoadProducts(); // Reload all products
         }
 
@@ -61,11 +73,6 @@ namespace SalesDashboard.Pages
                         query += " AND Quantity <= 5000 AND Quantity > 0";
                     }
 
-                    // Products currently unavailable
-                    else if (filter == "Out of Stock")
-                    {
-                        query += " AND Quantity = 0";
-                    }
                 }
 
                 // Sort products alphabetically
@@ -93,6 +100,8 @@ namespace SalesDashboard.Pages
 
                 // Display results in DataGridView
                 dgvProducts.DataSource = dt;
+                dgvProducts.ClearSelection();
+                dgvProducts.CurrentCell = null;
             }
             catch (Exception ex)
             {

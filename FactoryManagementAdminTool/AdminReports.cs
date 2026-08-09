@@ -9,8 +9,45 @@ namespace FactoryManagementAdminTool
         {
             InitializeComponent();
 
-            // Load report data when page opens
+            dgvByRole.ReadOnly = true;
+            dgvByRole.MultiSelect = false;
+            dgvByRole.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            dgvRecent.ReadOnly = true;
+            dgvRecent.MultiSelect = false;
+            dgvRecent.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             LoadReport();
+
+            this.HandleCreated += AdminReports_HandleCreated;
+
+            dgvByRole.DataBindingComplete += DgvByRole_DataBindingComplete;
+            dgvRecent.DataBindingComplete += DgvRecent_DataBindingComplete;
+        }
+        // Clears selection in DataGridViews when the control is created
+        private void AdminReports_HandleCreated(object sender, EventArgs e)
+        {
+            dgvByRole.ClearSelection();
+            dgvByRole.CurrentCell = null;
+
+            dgvRecent.ClearSelection();
+            dgvRecent.CurrentCell = null;
+        }
+        // Clears selection in DataGridViews after data binding is complete for role-based statistics
+        private void DgvByRole_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvByRole.ClearSelection();
+            dgvByRole.CurrentCell = null;
+        }
+        // Clears selection in DataGridViews after data binding is complete for recent users
+        private void DgvRecent_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvRecent.ClearSelection();
+            dgvRecent.CurrentCell = null;
         }
 
         // Loads dashboard statistics and report tables
@@ -68,7 +105,8 @@ namespace FactoryManagementAdminTool
                         null);
 
                 dgvByRole.DataSource = byRole;
-
+                dgvByRole.ClearSelection();
+                dgvByRole.CurrentCell = null;
                 // Load latest registered users
                 DataTable recent =
                     DBHelper.ExecuteDataTable(
@@ -83,6 +121,8 @@ namespace FactoryManagementAdminTool
                         null);
 
                 dgvRecent.DataSource = recent;
+                dgvRecent.ClearSelection();
+                dgvRecent.CurrentCell = null;
             }
             catch (Exception ex)
             {

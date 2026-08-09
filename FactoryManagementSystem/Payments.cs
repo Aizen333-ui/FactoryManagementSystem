@@ -16,24 +16,45 @@ namespace FactoryManagementSystem
             // Add payment reasons to combo box
             cmbReason.Items.AddRange(new object[]
             {
+                "Select a Reason...",
                 "Cement",
                 "Sand",
                 "Crush",
                 "Steel",
-                "Mold Oil",               
+                "Mold Oil",
                 "Worker Salary",
                 "Diesel Expense",
                 "Machine Maintenance",
                 "Factory Rent",
                 "Other Expense"
-                
             });
 
             // Prevent manual typing in combo box
             cmbReason.DropDownStyle = ComboBoxStyle.DropDownList;
-
-            // Load payment records into DataGridView
+            cmbReason.SelectedIndex = 0;
+            // Load payment records
             LoadPayments();
+
+            // Clear automatic DataGridView selection
+            this.HandleCreated += Payments_HandleCreated;
+
+            // Clear selection after DataSource binding
+            dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
+        }
+        // Clear selection when the control is created
+        private void Payments_HandleCreated(object sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
+        }
+        // Clear selection after DataGridView binding is complete
+        private void DataGridView1_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            // Prevent first row from being automatically selected
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
 
         // Load all payments from database
@@ -42,25 +63,29 @@ namespace FactoryManagementSystem
         {
             try
             {
-                // Fetch data from database
                 DataTable dt = DBHelper.ExecuteDataTable(
                     "SELECT * FROM Payments ORDER BY PaymentID DESC",
                     null
                 );
 
-                // Bind data to grid
                 dataGridView1.AutoGenerateColumns = true;
                 dataGridView1.DataSource = dt;
 
                 // Format amount column with currency
                 if (dataGridView1.Columns.Contains("Amount"))
                 {
-                    dataGridView1.Columns["Amount"].DefaultCellStyle.Format = "'Rs '0.00";
+                    dataGridView1.Columns["Amount"]
+                        .DefaultCellStyle.Format = "'Rs '0.00";
                 }
+
+                // Ensure nothing is selected after loading
+                dataGridView1.ClearSelection();
+                dataGridView1.CurrentCell = null;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading payments: " + ex.Message);
+                MessageBox.Show(
+                    "Error loading payments: " + ex.Message);
             }
         }
 
@@ -101,7 +126,7 @@ namespace FactoryManagementSystem
                 cmbWorkerName.Visible = false;
                 workerNameBox.Visible = false;
 
-                cmbWorkerName.SelectedIndex = -1;
+                cmbWorkerName.SelectedIndex = 0;
             }
         }
         private void LoadWorkers()
@@ -114,10 +139,16 @@ namespace FactoryManagementSystem
 
                 cmbWorkerName.Items.Clear();
 
+                // Default option
+                cmbWorkerName.Items.Add("Select a Worker...");
+
                 foreach (DataRow row in dt.Rows)
                 {
                     cmbWorkerName.Items.Add(row["Name"].ToString());
                 }
+
+                // Always return to default option
+                cmbWorkerName.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -128,6 +159,13 @@ namespace FactoryManagementSystem
         {
             string amountText = txtAmount.Text.Replace("Rs", "").Trim();
             DateTime date = datePaid.Value;
+
+            // Validate reason
+            if (cmbReason.SelectedIndex <= 0)
+            {
+                MessageBox.Show("Please select a reason.");
+                return;
+            }
 
             // Validate amount
             if (!decimal.TryParse(amountText, out decimal amount) || amount <= 0)
@@ -147,9 +185,10 @@ namespace FactoryManagementSystem
             {
                 string reason = cmbReason.SelectedItem.ToString();
 
-                if (cmbReason.Text == "Worker Salary")
+                // Worker Salary requires worker selection
+                if (cmbReason.SelectedIndex == 6) // Worker Salary
                 {
-                    if (cmbWorkerName.SelectedIndex == -1)
+                    if (cmbWorkerName.SelectedIndex <= 0)
                     {
                         MessageBox.Show("Please select worker name.");
                         return;
@@ -158,18 +197,21 @@ namespace FactoryManagementSystem
                     reason = "Worker Salary - " + cmbWorkerName.Text;
                 }
 
-                // Insert payment into database
                 string query =
-                    "INSERT INTO Payments (Amount, Reason, Date) VALUES (@amount, @reason, @date)";
+                    @"INSERT INTO Payments
+              (Amount, Reason, Date)
+              VALUES
+              (@amount, @reason, @date)";
 
                 SqlParameter[] p =
                 {
-                new SqlParameter("@amount", amount),
-                new SqlParameter("@reason", reason),
-                new SqlParameter("@date", date)
-                };
+            new SqlParameter("@amount", amount),
+            new SqlParameter("@reason", reason),
+            new SqlParameter("@date", date)
+        };
 
                 DBHelper.ExecuteNonQuery(query, p);
+
                 Logger.AddLog(
                     Session.CurrentUser,
                     "CREATE",
@@ -177,15 +219,15 @@ namespace FactoryManagementSystem
                     $"Added payment of Rs {amount} for '{reason}'",
                     "Success"
                 );
+
                 MessageBox.Show("Payment added!");
 
-                // Refresh grid
                 LoadPayments();
 
-                // Clear inputs
+                // Reset fields
                 txtAmount.Clear();
-                cmbReason.SelectedIndex = -1;
-                cmbWorkerName.SelectedIndex = -1;
+                cmbReason.SelectedIndex = 0;
+                cmbWorkerName.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -196,6 +238,7 @@ namespace FactoryManagementSystem
                     $"Failed to add payment: {ex.Message}",
                     "Failed"
                 );
+
                 MessageBox.Show("Error adding: " + ex.Message);
             }
         }

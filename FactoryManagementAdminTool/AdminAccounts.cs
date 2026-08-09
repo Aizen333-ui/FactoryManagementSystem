@@ -10,8 +10,19 @@ namespace FactoryManagementAdminTool
         {
             InitializeComponent();
 
-            // Load all existing administrator accounts when the control opens
+            dgvAdmins.ReadOnly = true;
+            dgvAdmins.MultiSelect = false;
+            dgvAdmins.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             LoadAdmins();
+
+            this.Load += AdminAccounts_Load;
+        }
+        // Ensures no admin is pre-selected when the form loads.
+        private void AdminAccounts_Load(object sender, EventArgs e)
+        {
+            dgvAdmins.ClearSelection();
+            dgvAdmins.CurrentCell = null;
         }
 
         /// Loads all system administrator accounts from the database
@@ -22,11 +33,14 @@ namespace FactoryManagementAdminTool
             {
                 DataTable dt = DBHelper.ExecuteDataTable(
                     @"SELECT AdminID, Username
-                      FROM SystemAdmins
-                      ORDER BY AdminID DESC",
+              FROM SystemAdmins
+              ORDER BY AdminID DESC",
                     null);
 
                 dgvAdmins.DataSource = dt;
+
+                dgvAdmins.ClearSelection();
+                dgvAdmins.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -71,7 +85,7 @@ namespace FactoryManagementAdminTool
 
                 // Insert new admin account into database
                 int result = DBHelper.ExecuteNonQuery(
-                    @"INSERT INTO SystemAdmins (Username, PasswordHash)
+                    @"INSERT INTO SystemAdmins (Username, Password)
                       VALUES (@username, @password)",
                     new[]
                     {
@@ -109,7 +123,8 @@ namespace FactoryManagementAdminTool
         /// Password update is optional.
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (dgvAdmins.CurrentRow == null)
+            if (dgvAdmins.CurrentRow == null ||
+                dgvAdmins.CurrentRow.IsNewRow)
             {
                 MessageBox.Show("Select an admin first.");
                 return;
@@ -121,57 +136,107 @@ namespace FactoryManagementAdminTool
                 return;
             }
 
-
-            // Get selected admin ID from DataGridView
             int id = Convert.ToInt32(
                 dgvAdmins.CurrentRow.Cells["AdminID"].Value);
 
+            string newUsername = txtUsername.Text.Trim();
+
             try
             {
-                // Update username and password if a new password is provided
-                if (!string.IsNullOrWhiteSpace(txtPassword.Text))
-                {
-                    if (txtPassword.Text != txtConfirm.Text)
+                // Get current username from database
+                object currentUsernameObj = DBHelper.ExecuteScalar(
+                    @"SELECT Username
+              FROM SystemAdmins
+              WHERE AdminID=@id",
+                    new[]
                     {
-                        MessageBox.Show("Passwords do not match.");
-                        return;
-                    }
+                new SqlParameter("@id", id)
+                    });
 
-                    DBHelper.ExecuteNonQuery(
-                        @"UPDATE SystemAdmins
-                          SET Username=@username,
-                              PasswordHash=@password
-                          WHERE AdminID=@id",
+                string currentUsername =
+                    currentUsernameObj?.ToString() ?? "";
+
+                bool usernameChanged =
+                    !string.Equals(
+                        currentUsername,
+                        newUsername,
+                        StringComparison.Ordinal);
+
+                bool passwordChanged =
+                    !string.IsNullOrWhiteSpace(txtPassword.Text);
+
+                // Nothing was changed
+                if (!usernameChanged && !passwordChanged)
+                {
+                    MessageBox.Show("No changes were made.");
+                    return;
+                }
+
+                // Password provided → confirm it
+                if (passwordChanged &&
+                    txtPassword.Text != txtConfirm.Text)
+                {
+                    MessageBox.Show("Passwords do not match.");
+                    return;
+                }
+
+                // Check duplicate username only if username changed
+                if (usernameChanged)
+                {
+                    object exists = DBHelper.ExecuteScalar(
+                        @"SELECT COUNT(*)
+                  FROM SystemAdmins
+                  WHERE Username=@username
+                  AND AdminID<>@id",
                         new[]
                         {
-                            new SqlParameter("@username", txtUsername.Text.Trim()),
-                            new SqlParameter("@password", txtPassword.Text),
-                            new SqlParameter("@id", id)
+                    new SqlParameter("@username", newUsername),
+                    new SqlParameter("@id", id)
+                        });
+
+                    if (Convert.ToInt32(exists) > 0)
+                    {
+                        MessageBox.Show("Username already exists.");
+                        return;
+                    }
+                }
+
+                // Update username + password
+                if (passwordChanged)
+                {
+                    DBHelper.ExecuteNonQuery(
+                        @"UPDATE SystemAdmins
+                  SET Username=@username,
+                      Password=@password
+                  WHERE AdminID=@id",
+                        new[]
+                        {
+                    new SqlParameter("@username", newUsername),
+                    new SqlParameter("@password", txtPassword.Text),
+                    new SqlParameter("@id", id)
                         });
                 }
                 else
                 {
-                    // Update only username when password field is empty
+                    // Update username only
                     DBHelper.ExecuteNonQuery(
                         @"UPDATE SystemAdmins
-                          SET Username=@username
-                          WHERE AdminID=@id",
+                  SET Username=@username
+                  WHERE AdminID=@id",
                         new[]
                         {
-                            new SqlParameter("@username", txtUsername.Text.Trim()),
-                            new SqlParameter("@id", id)
+                    new SqlParameter("@username", newUsername),
+                    new SqlParameter("@id", id)
                         });
                 }
 
-                // Save update activity
                 Logger.AddLog(
                     Session.CurrentUser,
                     "UPDATE",
                     "Admin Accounts",
-                    $"Updated admin account '{txtUsername.Text.Trim()}'",
+                    $"Updated admin account '{newUsername}'",
                     "Success"
                 );
-
 
                 MessageBox.Show("Admin updated successfully.");
 

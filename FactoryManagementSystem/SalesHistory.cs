@@ -9,6 +9,10 @@ namespace SalesDashboard.Pages
         {
             InitializeComponent();
 
+            // Prevent automatic row selection
+            dgvSalesHistory.MultiSelect = false;
+            dgvSalesHistory.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
 
             // Register button click events
             btnBack.Click += btnBack_Click;
@@ -17,6 +21,15 @@ namespace SalesDashboard.Pages
 
             // Load all sales records when page opens
             LoadSalesHistory();
+
+            // Clear automatic DataGridView selection
+            this.Load += SalesHistory_Load;
+        }
+        // Clears automatic DataGridView selection
+        private void SalesHistory_Load(object? sender, EventArgs e)
+        {
+            dgvSalesHistory.ClearSelection();
+            dgvSalesHistory.CurrentCell = null;
         }
 
         // Clears all search/filter values
@@ -134,6 +147,10 @@ namespace SalesDashboard.Pages
                 // Bind database result to DataGridView
                 dgvSalesHistory.AutoGenerateColumns = true;
                 dgvSalesHistory.DataSource = dt;
+
+                // Remove automatic first-row selection
+                dgvSalesHistory.ClearSelection();
+                dgvSalesHistory.CurrentCell = null;
             }
 
             catch (Exception ex)

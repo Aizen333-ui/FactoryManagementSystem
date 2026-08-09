@@ -171,13 +171,8 @@ namespace FactoryManagementSystem
             cmbName.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbName.Items.AddRange(new object[]
             {
-                "Cement", "Sand", "Crush", "Steel", "Mold Oil"
+               "Select the Raw Material...", "Cement", "Sand", "Crush", "Steel", "Mold Oil"
             });
-            cmbName.SelectedIndexChanged += new System.EventHandler(this.cmbName_SelectedIndexChanged);
-            cmbName.SelectedValueChanged += new System.EventHandler(this.cmbName_SelectedIndexChanged);
-            cmbName.TextChanged += new System.EventHandler(this.cmbName_SelectedIndexChanged);
-            // start with no selection
-            cmbName.SelectedIndex = -1;
 
             // ===== QUANTITY =====
             Label label3 = new Label();

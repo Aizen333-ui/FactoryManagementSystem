@@ -13,46 +13,25 @@ namespace FactoryDashBoard.Pages
         {
             InitializeComponent();
 
-            // Attach button events
             btnClear.Click += BtnClear_Click;
             btnRemove.Click += BtnRemove_Click;
             btnBack.Click += btnBack_Click;
 
-            // Load combo box items
             LoadMaterialOptions();
 
-            // Restrict future dates
             dateMaterial.MaxDate = DateTime.Today;
 
-            // Load raw materials into grid
             LoadRawMaterials();
+
+            // Prevent automatic selection when the control is loaded
+            this.Load += RawMaterialUsage_Load;
+        }
+        // Event handler to prevent automatic selection when the control is loaded
+        private void RawMaterialUsage_Load(object? sender, EventArgs e)
+        {
             dataGridView.ClearSelection();
             dataGridView.CurrentCell = null;
-            cmbMaterialName.SelectedIndex = 0;
-            dataGridView.SelectionChanged += (_, _) =>
-            {
-                if (isLoadingMaterials)
-                    return;
-
-                if (dataGridView.SelectedRows.Count == 0)
-                    return;
-
-                DataGridViewRow row = dataGridView.SelectedRows[0];
-
-                if (row.Cells["Name"].Value == null)
-                    return;
-
-                string name =
-                    row.Cells["Name"].Value.ToString()!;
-
-                int idx =
-                    cmbMaterialName.FindStringExact(name);
-
-                if (idx >= 0)
-                    cmbMaterialName.SelectedIndex = idx;
-            };
         }
-
         // Load raw material records from database
         private void LoadRawMaterials()
         {
@@ -61,20 +40,19 @@ namespace FactoryDashBoard.Pages
                 isLoadingMaterials = true;
 
                 string query = @"
-                SELECT  *
-                FROM RawMaterial";
+            SELECT *
+            FROM RawMaterial";
 
                 DataTable dt = DBHelper.ExecuteDataTable(query, null);
 
                 dataGridView.DataSource = dt;
 
-                // remove automatic selection
+                // Prevent the first row/cell from being selected
                 dataGridView.ClearSelection();
                 dataGridView.CurrentCell = null;
 
-                // reset combo box
+                // Reset combo box
                 cmbMaterialName.SelectedIndex = 0;
-
             }
             catch (Exception ex)
             {
@@ -282,7 +260,7 @@ namespace FactoryDashBoard.Pages
             if (dr != DialogResult.Yes)
                 return;
 
-            DateTime usageDate = dateMaterial.Value.Date;
+            DateTime usageDate = dateMaterial.Value.Date.Add(DateTime.Now.TimeOfDay);
 
             const string upd =
                 @"UPDATE RawMaterial SET Quantity = Quantity - @q 

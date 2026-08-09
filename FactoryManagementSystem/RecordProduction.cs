@@ -28,12 +28,21 @@ namespace FactoryDashBoard.Pages
             // Load existing production records
             LoadProduction();
 
+            // Prevent automatic selection
+            this.Load += RecordProduction_Load;
+
             cmbProductName.SelectedIndexChanged += (s, e) =>
             {
                 txtUnit.Text = GetUnitForProduct(
                     cmbProductName.SelectedItem?.ToString() ?? ""
                 );
             };
+        }
+        // Prevent automatic selection of first row/cell in DataGridView
+        private void RecordProduction_Load(object? sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
 
         // Load product list into ComboBox
@@ -75,13 +84,17 @@ namespace FactoryDashBoard.Pages
                 );
 
                 dataGridView1.DataSource = dt;
+
+                // Prevent automatic selection of first row/cell
+                dataGridView1.ClearSelection();
+                dataGridView1.CurrentCell = null;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading production: " + ex.Message);
             }
         }
-        
+
         // Save production record
         private void BtnSave_Click(object? sender, EventArgs e)
         {
@@ -117,7 +130,7 @@ namespace FactoryDashBoard.Pages
                 return;
             }
 
-            DateTime selectedDate = dateProduction.Value.Date;
+            DateTime selectedDate = dateProduction.Value.Date.Add(DateTime.Now.TimeOfDay);
 
             // Prevent future date entry
             if (selectedDate > DateTime.Today)
@@ -181,6 +194,10 @@ namespace FactoryDashBoard.Pages
             txtUnit.Clear();
             txtQuantity.Clear();
             dateProduction.Value = DateTime.Today;
+
+            // Remove any DataGridView selection
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
 
         // Restrict quantity textbox to numeric input only

@@ -8,7 +8,7 @@ namespace SalesDashboard.Pages
     {
         // Stores completed sale ID for invoice printing
         private int lastSaleID = 0;
-
+        private int cartCustomerID = 0;
 
         // ============================================================
         // Constructor
@@ -31,7 +31,7 @@ namespace SalesDashboard.Pages
             btnCompleteSale.Click += btnCompleteSale_Click;
             btnPrintInvoice.Click += btnPrintInvoice_Click;
             btnBack.Click += btnBack_Click;
-
+            cmbCustomer.SelectedIndexChanged += cmbCustomer_SelectedIndexChanged;
 
             txtDiscount.TextChanged +=
                 (s, e) => CalculateCartTotal();
@@ -39,14 +39,71 @@ namespace SalesDashboard.Pages
             txtTax.TextChanged +=
                 (s, e) => CalculateCartTotal();
 
-            dgvCart.SelectionMode =
-            DataGridViewSelectionMode.CellSelect;
-
+            dgvCompletedSales.ReadOnly = true;
+            dgvCompletedSales.MultiSelect = false;
+            dgvCompletedSales.TabStop = true;
+            dgvCompletedSales.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvCompletedSales.AllowUserToAddRows = false;
+            dgvCart.ReadOnly = true;
             dgvCart.MultiSelect = false;
+            dgvCart.TabStop = true;
+            dgvCart.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvCart.AllowUserToAddRows = false;
             LoadInitialData();
+            Load += NewSale_Load;
+            Load += Cart_Load;
+
 
         }
+        // ============================================================
+        // Prevent selection of completed sales and cart rows on load
+        private void NewSale_Load(object sender, EventArgs e)
+        {
+            dgvCompletedSales.ClearSelection();
+            dgvCompletedSales.CurrentCell = null;
+        }
 
+        private void Cart_Load(object sender, EventArgs e)
+        {
+            dgvCart.ClearSelection();
+            dgvCart.CurrentCell = null;
+        }
+
+        private void cmbCustomer_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            // Cart is empty, so customer can be changed
+            if (dgvCart.Rows.Count == 0)
+            {
+                cartCustomerID = 0;
+                return;
+            }
+
+            // Ignore the event if the selected customer
+            // is already the customer assigned to the cart
+            if (cmbCustomer.SelectedItem is CustomerItem customer &&
+                customer.ID == cartCustomerID)
+            {
+                return;
+            }
+
+            MessageBox.Show(
+                "You cannot change the customer while the cart contains products.\n\n" +
+                "Please remove all products from the cart before changing the customer.",
+                "Customer Change Not Allowed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+
+            // Restore the original customer
+            foreach (object item in cmbCustomer.Items)
+            {
+                if (item is CustomerItem existingCustomer &&
+                    existingCustomer.ID == cartCustomerID)
+                {
+                    cmbCustomer.SelectedItem = existingCustomer;
+                    return;
+                }
+            }
+        }
         // ============================================================
         // Loads all initial page data
         //
@@ -303,6 +360,13 @@ namespace SalesDashboard.Pages
                     return;
                 }
 
+                CustomerItem customer =
+                (CustomerItem)cmbCustomer.SelectedItem;
+
+                if (dgvCart.Rows.Count == 0)
+                {
+                    cartCustomerID = customer.ID;
+                }
 
 
                 string product =
@@ -316,8 +380,8 @@ namespace SalesDashboard.Pages
                 object result =
                     DBHelper.ExecuteScalar(
                     @"SELECT SUM(Quantity)
-              FROM Production
-              WHERE ProductName=@name",
+                    FROM Production
+                    WHERE ProductName=@name",
                     new SqlParameter[]
                     {
                 new SqlParameter(
@@ -374,34 +438,15 @@ namespace SalesDashboard.Pages
                     price,
                     total);
 
-
-
-                // Select only the ProductName cell of the newly added row
-
-                int newRowIndex = dgvCart.Rows.Count - 1;
-
                 dgvCart.ClearSelection();
-
-                dgvCart.CurrentCell =
-                dgvCart.Rows[newRowIndex]
-                .Cells["ProductName"];
-
-                dgvCart.Rows[newRowIndex]
-                    .Cells["ProductName"]
-                    .Selected = true;
-
-
-
+                dgvCart.CurrentCell = null;
                 CalculateCartTotal();
-
 
                 txtQuantity.Clear();
 
                 txtUnitPrice.Clear();
 
-
                 cmbProduct.SelectedIndex = 0;
-
 
             }
             catch (Exception ex)
@@ -411,8 +456,6 @@ namespace SalesDashboard.Pages
                     + ex.Message);
             }
         }
-
-
 
         // ============================================================
         // Remove product from cart
@@ -539,11 +582,14 @@ namespace SalesDashboard.Pages
                 }
 
 
-
                 txtQuantity.Clear();
 
-
                 CalculateCartTotal();
+
+                if (dgvCart.Rows.Count == 0)
+                {
+                    cartCustomerID = 0;
+                }
 
             }
             catch (Exception ex)
@@ -553,22 +599,20 @@ namespace SalesDashboard.Pages
             }
         }
 
-
-
         // ============================================================
         // Refresh stock list
         // ============================================================
 
-        private void btnRefresh_Click(
-            object sender,
-            EventArgs e)
+        private void btnRefresh_Click(object sender,EventArgs e)   
         {
             ClearSaleForm();
 
             LoadAvailableProducts();
+
+            // Deselect any selected invoice
+            dgvCompletedSales.ClearSelection();
+            dgvCompletedSales.CurrentCell = null;
         }
-
-
 
         // ============================================================
         // Calculates totals
@@ -639,8 +683,7 @@ namespace SalesDashboard.Pages
                 + grandTotal.ToString("N2");
         }
 
-
-
+        
         // ============================================================
         // Loads completed sales
         //
@@ -686,6 +729,8 @@ namespace SalesDashboard.Pages
                         row["GrandTotal"],
                         row["PaymentStatus"]);
                 }
+                dgvCompletedSales.ClearSelection();
+                dgvCompletedSales.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -813,33 +858,33 @@ namespace SalesDashboard.Pages
 
                     string saleQuery =
                     @"
-            INSERT INTO Sales
-            (
-                InvoiceNo,
-                CustomerID,
-                SaleDate,
-                SubTotal,
-                Discount,
-                Tax,
-                GrandTotal,
-                PaymentStatus,
-                PaymentMethod
-            )
-            VALUES
-            (
-                @invoice,
-                @customer,
-                GETDATE(),
-                @subtotal,
-                @discount,
-                @tax,
-                @total,
-                @status,
-                @method
-            );
+                    INSERT INTO Sales
+                    (
+                        InvoiceNo,
+                        CustomerID,
+                        SaleDate,
+                        SubTotal,
+                        Discount,
+                        Tax,
+                        GrandTotal,
+                        PaymentStatus,
+                        PaymentMethod
+                    )
+                    VALUES
+                    (
+                        @invoice,
+                        @customer,
+                        GETDATE(),
+                        @subtotal,
+                        @discount,
+                        @tax,
+                        @total,
+                        @status,
+                        @method
+                    );
 
-            SELECT SCOPE_IDENTITY();
-            ";
+                    SELECT SCOPE_IDENTITY();
+                    ";
 
 
 
@@ -948,24 +993,24 @@ namespace SalesDashboard.Pages
 
                         string itemQuery =
                         @"
-                INSERT INTO SaleItems
-                (
-                    SaleID,
-                    ProductionID,
-                    ProductName,
-                    Quantity,
-                    UnitPrice,
-                    TotalAmount
-                )
-                VALUES
-                (
-                    @sale,
-                    @production,
-                    @name,
-                    @qty,
-                    @price,
-                    @amount
-                )";
+                        INSERT INTO SaleItems
+                        (
+                            SaleID,
+                            ProductionID,
+                            ProductName,
+                            Quantity,
+                            UnitPrice,
+                            TotalAmount
+                        )
+                        VALUES
+                        (
+                            @sale,
+                            @production,
+                            @name,
+                            @qty,
+                            @price,
+                            @amount
+                        )";
 
 
 
@@ -1014,12 +1059,12 @@ namespace SalesDashboard.Pages
 
                         string stockQuery =
                         @"
-                UPDATE Production
-                SET Quantity =
-                    Quantity - @qty
+                        UPDATE Production
+                        SET Quantity =
+                            Quantity - @qty
 
-                WHERE ProductionID =
-                    @id";
+                        WHERE ProductionID =
+                            @id";
 
 
                         using (SqlCommand cmd =
@@ -1050,22 +1095,22 @@ namespace SalesDashboard.Pages
 
                     string paymentQuery =
                     @"
-            INSERT INTO SalesPayment
-            (
-                SaleID,
-                AmountPaid,
-                PaymentMethod,
-                PaymentDate,
-                PaymentStatus
-            )
-            VALUES
-            (
-                @sale,
-                @amount,
-                @method,
-                GETDATE(),
-                @status
-            )";
+                    INSERT INTO SalesPayment
+                    (
+                        SaleID,
+                        AmountPaid,
+                        PaymentMethod,
+                        PaymentDate,
+                        PaymentStatus
+                    )
+                    VALUES
+                    (
+                        @sale,
+                        @amount,
+                        @method,
+                        GETDATE(),
+                        @status
+                    )";
 
 
 
@@ -1155,34 +1200,84 @@ namespace SalesDashboard.Pages
         // ============================================================
 
         private void btnPrintInvoice_Click(
-            object sender,
-            EventArgs e)
+    object sender,
+    EventArgs e)
         {
             try
             {
-                if (lastSaleID == 0)
+                int saleID = 0;
+
+                // =====================================================
+                // OPTION 1:
+                // User selected an invoice from the grid
+                // =====================================================
+
+                if (dgvCompletedSales.CurrentRow != null &&
+                    !dgvCompletedSales.CurrentRow.IsNewRow)
+                {
+                    string invoiceNo =
+                        dgvCompletedSales.CurrentRow
+                        .Cells["Invoice"]
+                        .Value?
+                        .ToString();
+
+                    if (!string.IsNullOrWhiteSpace(invoiceNo))
+                    {
+                        object result =
+                            DBHelper.ExecuteScalar(
+                                @"SELECT SaleID
+                          FROM Sales
+                          WHERE InvoiceNo = @invoice",
+                                new SqlParameter[]
+                                {
+                            new SqlParameter(
+                                "@invoice",
+                                invoiceNo)
+                                });
+
+                        if (result != null &&
+                            result != DBNull.Value)
+                        {
+                            saleID = Convert.ToInt32(result);
+                        }
+                    }
+                }
+
+                // =====================================================
+                // OPTION 2:
+                // Nothing selected → use last completed sale
+                // =====================================================
+
+                if (saleID == 0)
+                {
+                    saleID = lastSaleID;
+                }
+
+                // =====================================================
+                // Nothing available to print
+                // =====================================================
+
+                if (saleID == 0)
                 {
                     MessageBox.Show(
-                        "Complete a sale first.");
+                        "Complete a sale or select an invoice first.");
 
                     return;
                 }
 
-
+                // =====================================================
+                // Print invoice
+                // =====================================================
 
                 Logger.AddLog(
                     Session.CurrentUser ?? "System",
                     "PRINT INVOICE",
                     "Sales Dashboard",
-                    $"Printed invoice for Sale ID {lastSaleID}",
+                    $"Printed invoice for Sale ID {saleID}",
                     "Success");
 
-
-
                 InvoiceReport report =
-                    new InvoiceReport(
-                        lastSaleID);
-
+                    new InvoiceReport(saleID);
 
                 report.ShowDialog();
             }
@@ -1195,14 +1290,11 @@ namespace SalesDashboard.Pages
                     ex.Message,
                     "Failure");
 
-
                 MessageBox.Show(
                     "Invoice error: "
                     + ex.Message);
             }
         }
-
-
 
         // ============================================================
         // Back Button
@@ -1218,8 +1310,6 @@ namespace SalesDashboard.Pages
                 this.FindForm()
                 as FactoryManagementSystem.SalesDashboard;
 
-
-
             if (dashboard != null)
             {
                 dashboard.ResetSidebarSelection();
@@ -1229,8 +1319,6 @@ namespace SalesDashboard.Pages
                     new FactoryManagementSystem.SalesDash());
             }
         }
-
-
 
         // ============================================================
         // Clears current sale form
@@ -1244,7 +1332,6 @@ namespace SalesDashboard.Pages
 
             cmbProduct.SelectedIndex = 0;
 
-
             txtQuantity.Clear();
 
             txtUnitPrice.Clear();
@@ -1253,61 +1340,15 @@ namespace SalesDashboard.Pages
 
             txtTax.Clear();
 
-
-
             cmbPaymentMethod.SelectedIndex = 0;
 
             cmbPaymentStatus.SelectedIndex = 0;
 
-
-
             dgvCart.Rows.Clear();
-
-
+            cartCustomerID = 0;
 
             CalculateCartTotal();
 
-
         }
-
-
-
-        // ============================================================
-        // Gets selected customer ID
-        //
-        // Used if needed by other pages.
-        // ============================================================
-
-        private int GetSelectedCustomerID()
-        {
-            if (cmbCustomer.SelectedItem
-                is CustomerItem customer)
-            {
-                return customer.ID;
-            }
-
-
-            return 0;
-        }
-
-
-
-        // ============================================================
-        // UserControl Dispose
-        // ============================================================
-
-        protected override void Dispose(
-            bool disposing)
-        {
-            if (disposing &&
-               components != null)
-            {
-                components.Dispose();
-            }
-
-
-            base.Dispose(disposing);
-        }
-
     }
 }

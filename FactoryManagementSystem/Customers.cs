@@ -8,7 +8,9 @@ namespace SalesDashboard.Pages
 {
     public partial class Customers : UserControl
     {
-
+        private string originalCustomerName = string.Empty;
+        private string originalPhone = string.Empty;
+        private string originalAddress = string.Empty;
         // ============================================================
         // Stores currently selected customer ID.
         //
@@ -54,7 +56,7 @@ namespace SalesDashboard.Pages
             LoadCustomers();
 
             // Execute initial page setup after loading
-            this.Load += Customers_Load;
+            Load += Customers_Load;
         }
 
         // ============================================================
@@ -437,7 +439,19 @@ namespace SalesDashboard.Pages
 
             string address =
                 txtAddress.Text.Trim();
+            // Check whether anything actually changed
+            if (name == originalCustomerName &&
+                phone == originalPhone &&
+                address == originalAddress)
+            {
+                MessageBox.Show(
+                    "No changes were made.",
+                    "Customers",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
 
+                return;
+            }
             // Validate customer name
             if (string.IsNullOrEmpty(name))
             {
@@ -589,8 +603,8 @@ namespace SalesDashboard.Pages
         // ============================================================
 
         private void dgvCustomers_SelectionChanged(
-            object? sender,
-            EventArgs e)
+    object? sender,
+    EventArgs e)
         {
             // Ignore selection while grid is loading
             if (isLoadingCustomers)
@@ -609,23 +623,30 @@ namespace SalesDashboard.Pages
                 if (row.DataBoundItem is DataRowView drv)
                 {
                     selectedCustomerId =
-                        drv.Row.Field<int>(
-                            "CustomerID");
+                        drv.Row.Field<int>("CustomerID");
 
-                    txtCustomerName.Text =
-                        drv.Row.Field<string>(
-                            "CustomerName")
+                    // Store original values
+                    originalCustomerName =
+                        drv.Row.Field<string>("CustomerName")
                         ?? "";
+
+                    originalPhone =
+                        drv.Row.Field<string>("Phone")
+                        ?? "";
+
+                    originalAddress =
+                        drv.Row.Field<string>("Address")
+                        ?? "";
+
+                    // Display values in input fields
+                    txtCustomerName.Text =
+                        originalCustomerName;
 
                     txtPhone.Text =
-                        drv.Row.Field<string>(
-                            "Phone")
-                        ?? "";
+                        originalPhone;
 
                     txtAddress.Text =
-                        drv.Row.Field<string>(
-                            "Address")
-                        ?? "";
+                        originalAddress;
                 }
             }
             catch
@@ -656,6 +677,15 @@ namespace SalesDashboard.Pages
 
             selectedCustomerId =
                 null;
+
+            originalCustomerName =
+                string.Empty;
+
+            originalPhone =
+                string.Empty;
+
+            originalAddress =
+                string.Empty;
         }
 
         // ============================================================

@@ -78,72 +78,132 @@ namespace FactoryDashBoard.Pages
         }
         // ===== CREATE ROUNDED INPUT BOX (TEXTBOX / COMBOBOX / DATEPICKER) =====
 
-        private Panel CreateRoundedBox(Control innerControl, int height = 55)
+        private Panel CreateRoundedBox(Control inner)
         {
-            Panel container = new Panel();
-
-            container.Height = (innerControl.Height > 0) ? innerControl.Height + 28 : height;
-            container.Width = (innerControl.Width > 0) ? innerControl.Width + 24 : 600;
-
-            container.BackColor = Color.White;
-            container.Padding = new Padding(12, 10, 12, 10);
-            container.Margin = new Padding(0, 0, 0, 25);
-
-            innerControl.Dock = DockStyle.None;
-            innerControl.Location = new Point(12, 10);
-            innerControl.Margin = new Padding(0);
-            innerControl.BackColor = Color.White;
-            innerControl.Width = container.Width - 24;
-
-            if (innerControl is TextBox tb)
+            Panel box =
+            new Panel
             {
-                tb.BorderStyle = BorderStyle.None;
-                tb.Font = new Font("Segoe UI", 13F);
-                tb.Multiline = false;
-            }
+                Width = inner.Width + 24,
+                Height = 50,
+                BackColor = Color.White
+            };
 
-            if (innerControl is ComboBox cb)
+
+            if (inner is ComboBox cb)
             {
                 cb.FlatStyle = FlatStyle.Flat;
                 cb.Font = new Font("Segoe UI", 13F);
                 cb.DropDownStyle = ComboBoxStyle.DropDownList;
-                cb.Height = 30;
 
+                cb.Margin = Padding.Empty;
+
+                cb.Height = 36;
+
+                cb.Width = box.Width - 24;
+
+                cb.Location =
+                    new Point(
+                        12,
+                        (box.Height - cb.Height) / 2);
+            }
+            else if (inner is TextBox tb)
+            {
+                tb.BorderStyle =
+                    BorderStyle.None;
+
+                tb.Font =
+                    new Font(
+                        "Segoe UI",
+                        13F);
+
+                tb.Height = 36;
+
+                tb.Width = box.Width - 24;
+
+                tb.Location =
+                    new Point(
+                        12,
+                        (box.Height - tb.Height) / 2);
+            }
+            else
+            {
+                inner.Location =
+                    new Point(
+                        12,
+                        (box.Height - inner.Height) / 2);
             }
 
-            if (innerControl is DateTimePicker dt)
-            {
-                dt.Font = new Font("Segoe UI", 12F);
-                dt.Format = DateTimePickerFormat.Custom;
-                dt.CustomFormat = "dd/MM/yyyy";
-            }
 
-            container.Controls.Add(innerControl);
+            box.Controls.Add(inner);
 
-            container.Paint += (s, e) =>
+
+            box.Paint += (s, e) =>
             {
+                Rectangle rect =
+                    new Rectangle(
+                        0,
+                        0,
+                        box.Width - 1,
+                        box.Height - 1);
+
                 int radius = 12;
-                Rectangle rect = new Rectangle(1, 1, container.Width - 2, container.Height - 2);
 
                 using (GraphicsPath path = new GraphicsPath())
                 {
-                    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-                    path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
-                    path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
-                    path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
-                    path.CloseAllFigures();
+                    path.AddArc(
+                        rect.X,
+                        rect.Y,
+                        radius,
+                        radius,
+                        180,
+                        90);
 
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    path.AddArc(
+                        rect.Right - radius,
+                        rect.Y,
+                        radius,
+                        radius,
+                        270,
+                        90);
 
-                    using (SolidBrush brush = new SolidBrush(Color.White))
-                        e.Graphics.FillPath(brush, path);
+                    path.AddArc(
+                        rect.Right - radius,
+                        rect.Bottom - radius,
+                        radius,
+                        radius,
+                        0,
+                        90);
 
-                    using (Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f))
-                        e.Graphics.DrawPath(pen, path);
+                    path.AddArc(
+                        rect.X,
+                        rect.Bottom - radius,
+                        radius,
+                        radius,
+                        90,
+                        90);
+
+
+                    path.CloseFigure();
+
+
+                    e.Graphics.SmoothingMode =
+                        SmoothingMode.AntiAlias;
+
+
+                    using Pen pen =
+                        new Pen(
+                            Color.FromArgb(180, 190, 210),
+                            1.5f);
+
+
+                    e.Graphics.DrawPath(
+                        pen,
+                        path);
                 }
             };
 
-            return container;
+
+            return box;
         }
         // ===== APPLY ROUNDED REGION =====
 

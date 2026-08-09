@@ -11,7 +11,7 @@ namespace FactoryManagementSystem
 
         // ================= KPI LABELS =================
 
-        private Label lblWorkers;
+        private Label lblRawMaterialUsage;
         private Label lblExpenses;
         private Label lblProduction;
 
@@ -128,12 +128,12 @@ namespace FactoryManagementSystem
             Panel card3 = CreateCard();
 
             // Use existing OwnerDash label fields so backend names stay the same
-            lblWorkers = CreateBigValueLabel();
+            lblRawMaterialUsage = CreateBigValueLabel();
             lblExpenses = CreateBigValueLabel();
             lblProduction = CreateBigValueLabel();
 
-            card1.Controls.Add(CreateCardTitle("Total Workers"));
-            card1.Controls.Add(lblWorkers);
+            card1.Controls.Add(CreateCardTitle("Raw Material Usage(out of 100)"));
+            card1.Controls.Add(lblRawMaterialUsage);
             card2.Controls.Add(CreateCardTitle("Expenses"));
             card2.Controls.Add(lblExpenses);
             card3.Controls.Add(CreateCardTitle("Production"));

@@ -83,6 +83,7 @@ namespace FactoryManagementSystem
                     BackColor = System.Drawing.Color.White,
                     Margin = new Padding(10)
                 };
+                MakeRounded(card, 16);
 
 
                 System.Windows.Forms.Label lblName = new System.Windows.Forms.Label

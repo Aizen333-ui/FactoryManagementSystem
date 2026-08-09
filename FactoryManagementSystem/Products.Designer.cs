@@ -179,8 +179,7 @@ namespace SalesDashboard.Pages
             {
                 "All Products",
                 "In Stock",
-                "Low Stock",
-                "Out of Stock"
+                "Low Stock"
             });
 
             cmbFilter.SelectedIndex = 0;

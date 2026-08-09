@@ -13,8 +13,33 @@ namespace FactoryManagementAdminTool
         public ManageUsers()
         {
             InitializeComponent();
+            dgvUsers.ReadOnly = true;
+            dgvUsers.MultiSelect = false;
+            dgvUsers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             LoadUsers();
+            this.HandleCreated += ManageUsers_HandleCreated;
+            // Ensure no row is selected after binding completes
+            dgvUsers.DataBindingComplete += DgvUsers_DataBindingComplete;
+
         }
+        // ============================================================
+        // Ensures no row is selected when the control is first created.
+        // ============================================================
+        private void ManageUsers_HandleCreated(object sender, EventArgs e)
+        {
+            dgvUsers.ClearSelection();
+            dgvUsers.CurrentCell = null;
+        }
+        // ============================================================
+        // Ensures no row is selected after the DataGridView finishes binding.
+        // ============================================================
+        private void DgvUsers_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // Clear selection after the grid finishes binding so no row is pre-selected
+            dgvUsers.ClearSelection();
+            dgvUsers.CurrentCell = null;
+        }
+
         // ============================================================
         // Loads all users from database and displays them in DataGridView.
         // ============================================================
@@ -34,6 +59,8 @@ namespace FactoryManagementAdminTool
 
                 DataTable dt = DBHelper.ExecuteDataTable(query, null);
                 dgvUsers.DataSource = dt;
+                dgvUsers.ClearSelection();
+                dgvUsers.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -49,7 +76,7 @@ namespace FactoryManagementAdminTool
             if (string.IsNullOrWhiteSpace(txtFullName.Text) ||
                 string.IsNullOrWhiteSpace(txtUsername.Text) ||
                 string.IsNullOrWhiteSpace(txtPassword.Text) ||
-                cmbRole.SelectedItem == null)
+                cmbRole.SelectedIndex <= 0)
             {
                 MessageBox.Show("Please fill all fields including role.");
                 return;
@@ -108,54 +135,90 @@ namespace FactoryManagementAdminTool
 
             if (string.IsNullOrWhiteSpace(txtFullName.Text) ||
                 string.IsNullOrWhiteSpace(txtUsername.Text) ||
-                cmbRole.SelectedItem == null)
+                cmbRole.SelectedIndex <= 0)
             {
                 MessageBox.Show("Please fill name, username, and role.");
                 return;
             }
 
-            int id = Convert.ToInt32(dgvUsers.CurrentRow.Cells["UserID"].Value);
-            bool isActive = Convert.ToBoolean(dgvUsers.CurrentRow.Cells["IsActive"].Value);
+            DataGridViewRow row = dgvUsers.CurrentRow;
+
+            int id = Convert.ToInt32(row.Cells["UserID"].Value);
+
+            string currentFullName =
+                row.Cells["FullName"].Value?.ToString() ?? "";
+
+            string currentUsername =
+                row.Cells["Username"].Value?.ToString() ?? "";
+
+            string currentRole =
+                row.Cells["Role"].Value?.ToString() ?? "";
+
+            bool currentIsActive =
+                Convert.ToBoolean(row.Cells["IsActive"].Value);
+
+            string newFullName = txtFullName.Text.Trim();
+            string newUsername = txtUsername.Text.Trim();
+            string newRole = cmbRole.SelectedItem.ToString();
+
+            bool passwordChanged =
+                !string.IsNullOrWhiteSpace(txtPassword.Text);
+
+            // ============================================================
+            // Check whether anything was actually changed
+            // ============================================================
+
+            bool basicDetailsChanged =
+                !string.Equals(currentFullName, newFullName, StringComparison.Ordinal) ||
+                !string.Equals(currentUsername, newUsername, StringComparison.Ordinal) ||
+                !string.Equals(currentRole, newRole, StringComparison.Ordinal);
+
+            if (!basicDetailsChanged && !passwordChanged)
+            {
+                MessageBox.Show("No changes were made.");
+                return;
+            }
 
             try
             {
                 string query;
                 SqlParameter[] parameters;
 
-                if (string.IsNullOrWhiteSpace(txtPassword.Text))
+                if (!passwordChanged)
                 {
-                    // Keep existing password when field left blank
                     query = @"
-                    UPDATE Users
-                    SET FullName=@fullname, Username=@username, Role=@role, IsActive=@isactive
-                    WHERE UserID=@id";
+                UPDATE Users
+                SET FullName = @fullname,
+                    Username = @username,
+                    Role = @role
+                WHERE UserID = @id";
 
                     parameters = new[]
                     {
-                        new SqlParameter("@fullname", txtFullName.Text.Trim()),
-                        new SqlParameter("@username", txtUsername.Text.Trim()),
-                        new SqlParameter("@role", cmbRole.SelectedItem.ToString()),
-                        new SqlParameter("@isactive", isActive),
-                        new SqlParameter("@id", id)
-                    };
+                new SqlParameter("@fullname", newFullName),
+                new SqlParameter("@username", newUsername),
+                new SqlParameter("@role", newRole),
+                new SqlParameter("@id", id)
+            };
                 }
                 else
                 {
                     query = @"
-                    UPDATE Users
-                    SET FullName=@fullname, Username=@username, Password=@password,
-                        Role=@role, IsActive=@isactive
-                    WHERE UserID=@id";
+                UPDATE Users
+                SET FullName = @fullname,
+                    Username = @username,
+                    Password = @password,
+                    Role = @role
+                WHERE UserID = @id";
 
                     parameters = new[]
                     {
-                        new SqlParameter("@fullname", txtFullName.Text.Trim()),
-                        new SqlParameter("@username", txtUsername.Text.Trim()),
-                        new SqlParameter("@password", txtPassword.Text),
-                        new SqlParameter("@role", cmbRole.SelectedItem.ToString()),
-                        new SqlParameter("@isactive", isActive),
-                        new SqlParameter("@id", id)
-                    };
+                new SqlParameter("@fullname", newFullName),
+                new SqlParameter("@username", newUsername),
+                new SqlParameter("@password", txtPassword.Text),
+                new SqlParameter("@role", newRole),
+                new SqlParameter("@id", id)
+            };
                 }
 
                 int result = DBHelper.ExecuteNonQuery(query, parameters);
@@ -163,13 +226,15 @@ namespace FactoryManagementAdminTool
                 if (result > 0)
                 {
                     Logger.AddLog(
-                       Session.CurrentUser,
-                       "UPDATE",
-                       "Manage Users",
-                       $"Updated user account '{txtUsername.Text.Trim()}'",
-                       "Success"
-                   );
+                        Session.CurrentUser,
+                        "UPDATE",
+                        "Manage Users",
+                        $"Updated user account '{newUsername}'",
+                        "Success"
+                    );
+
                     MessageBox.Show("User updated successfully.");
+
                     LoadUsers();
                     ClearFields();
                 }
@@ -289,6 +354,34 @@ namespace FactoryManagementAdminTool
             LoadUsers();
             UpdateToggleButtonText(newStatus);
         }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            // Clear all input fields
+            txtFullName.Clear();
+            txtUsername.Clear();
+            txtPassword.Clear();
+            txtSearch.Clear();
+
+            // Clear ComboBox selection
+            cmbRole.SelectedIndex = 0;
+            cmbRole.Text = "";
+
+            // Clear DataGridView selection
+            dgvUsers.ClearSelection();
+            dgvUsers.CurrentCell = null;
+
+            // Reset toggle button
+            btnToggleStatus.Text = "Disable User";
+
+            // Reload users
+            LoadUsers();
+
+            // Make absolutely sure nothing is selected after reload
+            dgvUsers.ClearSelection();
+            dgvUsers.CurrentCell = null;
+        }
+
         // ============================================================
         // Searches users by username, full name, or role.
         // Displays filtered results in DataGridView.
@@ -356,7 +449,7 @@ namespace FactoryManagementAdminTool
             txtUsername.Clear();
             txtPassword.Clear();
             txtSearch.Clear();
-            cmbRole.SelectedIndex = -1;
+            cmbRole.SelectedIndex = 0;
         }
         // ============================================================
         // Returns user to Admin Dashboard.

@@ -20,12 +20,34 @@ namespace FactoryManagementAdminTool
         {
             InitializeComponent();
 
+            dgvAuditLogs.ReadOnly = true;
+            dgvAuditLogs.MultiSelect = false;
+            dgvAuditLogs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             LoadSettings();
-
             LoadAuditLogs();
+
+            this.HandleCreated += SystemSettings_HandleCreated;
+
+            dgvAuditLogs.DataBindingComplete += DgvAuditLogs_DataBindingComplete;
         }
-
-
+        // ============================================================
+        // Event handler for the HandleCreated event.
+        // ============================================================
+        private void SystemSettings_HandleCreated(object sender, EventArgs e)
+        {
+            dgvAuditLogs.ClearSelection();
+            dgvAuditLogs.CurrentCell = null;
+        }
+        // ============================================================
+        // Event handler for the DataBindingComplete event of the DataGridView.
+        private void DgvAuditLogs_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvAuditLogs.ClearSelection();
+            dgvAuditLogs.CurrentCell = null;
+        }
 
         // ============================================================
         // Loads system configuration information.
@@ -386,8 +408,10 @@ namespace FactoryManagementAdminTool
                         null);
 
 
-                dgvAuditLogs.DataSource =
-                    dt;
+                dgvAuditLogs.DataSource = dt;
+
+                dgvAuditLogs.ClearSelection();
+                dgvAuditLogs.CurrentCell = null;
             }
             catch (Exception ex)
             {

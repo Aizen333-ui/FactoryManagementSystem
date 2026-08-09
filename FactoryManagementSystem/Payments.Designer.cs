@@ -182,9 +182,15 @@ namespace FactoryManagementSystem
             lblWorkerName.Text = "Worker Name:";
             lblWorkerName.Font = new Font("Segoe UI", 14F);
             lblWorkerName.AutoSize = true;
+
             cmbWorkerName.Width = 1000;
             cmbWorkerName.Height = 30;
             cmbWorkerName.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            cmbWorkerName.Items.Add("Select a Worker...");
+
+            cmbWorkerName.SelectedIndex = 0;
+
             cmbWorkerName.Visible = false;
             lblWorkerName.Visible = false;
             // Date

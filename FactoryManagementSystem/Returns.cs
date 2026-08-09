@@ -17,6 +17,11 @@ namespace SalesDashboard.Pages
         {
             InitializeComponent();
 
+            // Prevent automatic selection
+            dgvReturnHistory.MultiSelect = false;
+            dgvReturnHistory.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+
             // Button event bindings
             btnBack.Click += btnBack_Click;
             btnSearchInvoice.Click += btnSearchInvoice_Click;
@@ -34,6 +39,15 @@ namespace SalesDashboard.Pages
 
             // Load previously processed returns
             LoadReturnHistory();
+
+            // Remove automatic selection when page opens
+            this.Load += Returns_Load;
+        }
+
+        private void Returns_Load(object? sender, EventArgs e)
+        {
+            dgvReturnHistory.ClearSelection();
+            dgvReturnHistory.CurrentCell = null;
         }
 
         // ==================================================
@@ -49,7 +63,7 @@ namespace SalesDashboard.Pages
 
             txtInvoiceNumber.Clear();
 
-            lblInvoiceNo.Text = "-";
+            
             lblCustomerName.Text = "-";
             lblSaleDate.Text = "-";
             lblPaymentMethod.Text = "-";
@@ -104,6 +118,10 @@ namespace SalesDashboard.Pages
 
                 dgvReturnHistory.AutoGenerateColumns = true;
                 dgvReturnHistory.DataSource = dt;
+
+                // Remove automatic first-row selection
+                dgvReturnHistory.ClearSelection();
+                dgvReturnHistory.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -197,10 +215,6 @@ namespace SalesDashboard.Pages
                 currentCustomerId =
                     Convert.ToInt32(row["CustomerID"]);
 
-                // Display invoice information
-                lblInvoiceNo.Text =
-                    row["InvoiceNo"].ToString();
-
                 lblCustomerName.Text =
                     row["CustomerName"].ToString();
 
@@ -239,47 +253,38 @@ namespace SalesDashboard.Pages
             {
                 string query = @"
                 SELECT
+                    SaleItemID,
                     ProductionID,
                     ProductName,
                     Quantity,
                     UnitPrice,
                     TotalAmount
-
                 FROM SaleItems
-
-                WHERE SaleID=@sale";
+                WHERE SaleID = @sale";
 
                 DataTable dt =
                     DBHelper.ExecuteDataTable(
                         query,
                         new[]
                         {
-                            new SqlParameter(
-                                "@sale",
-                                currentSaleId)
+                    new SqlParameter(
+                        "@sale",
+                        currentSaleId.Value)
                         });
 
-                dgvReturnItems.AutoGenerateColumns = true;
+                dgvReturnItems.AutoGenerateColumns = false;
                 dgvReturnItems.DataSource = dt;
 
-                // ProductionID is only required internally
-                // so hide it from the user
-                dgvReturnItems.Columns["ProductionID"].Visible = false;
-
-                // Prevent accidental selection after loading
                 dgvReturnItems.ClearSelection();
 
-                // Reset return input fields
                 ClearReturnFields();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Error loading sale items: " + ex.Message
-                );
+                    "Error loading sale items: " + ex.Message);
             }
         }
-
         // ==================================================
         // PRODUCT SELECTION CHANGE
         // ==================================================
@@ -459,6 +464,7 @@ namespace SalesDashboard.Pages
                 Convert.ToInt32(
                     row.Cells["ProductionID"].Value);
 
+            //Product Name
             string productName =
                 row.Cells["ProductName"]
                 .Value?
@@ -657,7 +663,6 @@ namespace SalesDashboard.Pages
 
                             txtInvoiceNumber.Clear();
 
-                            lblInvoiceNo.Text = "-";
                             lblCustomerName.Text = "-";
                             lblSaleDate.Text = "-";
                             lblPaymentMethod.Text = "-";

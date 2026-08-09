@@ -15,6 +15,8 @@ namespace FactoryManagementSystem
         private DataGridView datagridReport;
         private Label lblTitle;
         private Button btnBack;
+        private ComboBox cmbFilter;
+        private Button btnFilter;
 
         private Panel CreateRoundedBox(Control innerControl, int height = 55)
         {
@@ -95,6 +97,8 @@ namespace FactoryManagementSystem
             this.btnViewReport = new Button();
             this.datagridReport = new DataGridView();
             this.btnBack = new Button();
+            this.cmbFilter = new ComboBox();
+            this.btnFilter = new Button();
 
             this.SuspendLayout();
 
@@ -173,16 +177,84 @@ namespace FactoryManagementSystem
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             };
             btnViewReport.Click += new EventHandler(this.btnViewReport_Click);
+
+            cmbFilter.Width = 500;
+            cmbFilter.Height = 40;
+            cmbFilter.Font = new Font("Segoe UI", 13F);
+            cmbFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            cmbFilter.Items.AddRange(new object[]
+            {
+                "All",
+                "Material Usage",
+                "Production",
+                "Sale",
+                "Return"
+            });
+
+            cmbFilter.SelectedIndex = 0;
+
+            btnFilter.Text = "Filter";
+            btnFilter.Width = 200;
+            btnFilter.Height = 45;
+            btnFilter.FlatStyle = FlatStyle.Flat;
+            btnFilter.FlatAppearance.BorderSize = 0;
+            btnFilter.ForeColor = Color.White;
+            btnFilter.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+
+            RoundControl(btnFilter, 16);
+
+            btnFilter.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                bool hover =
+                    btnFilter.ClientRectangle.Contains(
+                        btnFilter.PointToClient(Cursor.Position));
+
+                bool down =
+                    (Control.MouseButtons == MouseButtons.Left) && hover;
+
+                Color baseColor = Color.FromArgb(99, 102, 241);
+                Color hoverColor = Color.FromArgb(120, 120, 255);
+                Color downColor = Color.FromArgb(70, 70, 200);
+
+                Color useColor = baseColor;
+
+                if (down)
+                    useColor = downColor;
+                else if (hover)
+                    useColor = hoverColor;
+
+                using var brush = new SolidBrush(useColor);
+
+                e.Graphics.FillRectangle(
+                    brush,
+                    btnFilter.ClientRectangle);
+
+                TextRenderer.DrawText(
+                    e.Graphics,
+                    btnFilter.Text,
+                    btnFilter.Font,
+                    btnFilter.ClientRectangle,
+                    btnFilter.ForeColor,
+                    TextFormatFlags.HorizontalCenter |
+                    TextFormatFlags.VerticalCenter);
+            };
+
+            btnFilter.Click += new EventHandler(this.btnFilter_Click);
+
             Panel reportBox = CreateRoundedBox(datagridReport, 800);
             reportBox.Margin = new Padding(0, 20, 0, 20);
             datagridReport.Width = 1160;
-            datagridReport.Height = 500;
+            datagridReport.Height = 400;
             datagridReport.ReadOnly = true;
             btnBack.Text = "Back";
             btnBack.Width = 260;
             btnBack.Height = 50;
             btnBack.FlatStyle = FlatStyle.Flat;
             btnBack.FlatAppearance.BorderSize = 0;
+            btnBack.Margin = new Padding(0, 0, 0, 40);
             btnBack.ForeColor = Color.White;
             btnBack.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnBack.Location = new Point(260, 850);
@@ -219,17 +291,40 @@ namespace FactoryManagementSystem
             btnBack.Click += new System.EventHandler(this.btnBack_Click);
             RoundControl(btnBack, 16);
             main.Controls.Add(lblTitle);
+
             main.Controls.Add(lblFrom);
-            // Date pickers displayed directly (no outer rounded boxes)
             main.Controls.Add(dtFrom);
+
             main.Controls.Add(lblTo);
             main.Controls.Add(dtTo);
+
             main.Controls.Add(btnViewReport);
+
+            // Filter controls immediately below View Report
+            FlowLayoutPanel filterPanel = new FlowLayoutPanel
+            {
+                Width = 1160,
+                Height = 55,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Margin = new Padding(0, 0, 0, 20)
+            };
+
+            cmbFilter.Margin = new Padding(0, 0, 15, 0);
+            btnFilter.Margin = new Padding(0, 0, 0, 0);
+
+            filterPanel.Controls.Add(cmbFilter);
+            filterPanel.Controls.Add(btnFilter);
+
+            main.Controls.Add(filterPanel);
+
+            // DataGridView comes after filter
             main.Controls.Add(reportBox);
+
             main.Controls.Add(btnBack);
 
             this.Controls.Add(main);
-            this.Size = new Size(800, 700);
+            this.Size = new Size(1200, 1000);
             this.ResumeLayout(false);
         }
     }

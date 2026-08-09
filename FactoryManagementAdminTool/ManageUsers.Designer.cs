@@ -65,6 +65,7 @@ namespace FactoryManagementAdminTool
         private Button btnDelete;
         private Button btnResetPassword;
         private Button btnToggleStatus;
+        private Button btnRefresh;
         private Button btnBack;
         private Button btnSearch;
 
@@ -256,12 +257,12 @@ namespace FactoryManagementAdminTool
             {
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            cmbRole.Items.AddRange(new object[] { "Owner", "Manager", "Sales Person" });
+            cmbRole.Items.AddRange(new object[] { "Select a Role...", "Owner", "Manager", "Sales Person" });
             cmbRole.Location = RoleFieldPos;
             cmbRole.Width = 1000;
             cmbRole.Height = 45;
             cmbRole.Font = new Font("Segoe UI", 13F);
-
+            cmbRole.SelectedIndex = 0;
 
             // --------------------------------------------------------
             // User management action buttons
@@ -271,11 +272,12 @@ namespace FactoryManagementAdminTool
             btnDelete = CreateActionButton("Delete", Color.FromArgb(220, 38, 38), 360, 0);
             btnResetPassword = CreateActionButton("Reset Password", Color.FromArgb(245, 158, 11), 540, 0, 190);
             btnToggleStatus = CreateActionButton("Disable User", Color.FromArgb(16, 185, 129), 740, 0, 170);
+            btnRefresh = CreateActionButton( "Refresh",Color.Gray,920,0,150);
 
             Panel buttonPanel = new Panel
             {
                 Location = ButtonRowPos,
-                Size = new Size(FieldWidth, 55),
+                Size = new Size(1080, 55),
                 BackColor = Color.Transparent
             };
             buttonPanel.Controls.Add(btnAdd);
@@ -283,6 +285,8 @@ namespace FactoryManagementAdminTool
             buttonPanel.Controls.Add(btnDelete);
             buttonPanel.Controls.Add(btnResetPassword);
             buttonPanel.Controls.Add(btnToggleStatus);
+            buttonPanel.Controls.Add(btnRefresh);
+
             // --------------------------------------------------------
             // Search section
             // --------------------------------------------------------
@@ -332,6 +336,7 @@ namespace FactoryManagementAdminTool
             btnToggleStatus.Click += btnToggleStatus_Click;
             btnSearch.Click += btnSearch_Click;
             dgvUsers.CellClick += dgvUsers_CellClick;
+            btnRefresh.Click += btnRefresh_Click;
             // --------------------------------------------------------
             // Add controls to UserControl
             // --------------------------------------------------------

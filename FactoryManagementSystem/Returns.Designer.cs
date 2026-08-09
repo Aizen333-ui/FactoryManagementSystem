@@ -34,7 +34,6 @@ namespace SalesDashboard.Pages
         private Button btnProcessReturn;
         private Button btnBack;
 
-        private Label lblInvoiceNo;
         private Label lblCustomerName;
         private Label lblSaleDate;
         private Label lblPaymentMethod;
@@ -85,10 +84,6 @@ namespace SalesDashboard.Pages
                 BackColor = Color.White
             };
 
-            inner.Location =
-                new Point(
-                    12,
-                    (box.Height - inner.Height) / 2);
 
             if (inner is ComboBox cb)
             {
@@ -96,26 +91,18 @@ namespace SalesDashboard.Pages
                 cb.Font = new Font("Segoe UI", 13F);
                 cb.DropDownStyle = ComboBoxStyle.DropDownList;
 
-                // Remove default margins
                 cb.Margin = Padding.Empty;
 
-                // Give the combo a fixed height
                 cb.Height = 36;
 
-                // Vertically center it inside the rounded panel
-                cb.Location = new Point(
-                    12,
-                    (box.Height - cb.Height) / 2
-                );
-
                 cb.Width = box.Width - 24;
+
+                cb.Location =
+                    new Point(
+                        12,
+                        (box.Height - cb.Height) / 2);
             }
-            else
-            {
-                inner.Location = new Point(12, 12);
-            }
-            
-            if (inner is TextBox tb)
+            else if (inner is TextBox tb)
             {
                 tb.BorderStyle =
                     BorderStyle.None;
@@ -124,38 +111,93 @@ namespace SalesDashboard.Pages
                     new Font(
                         "Segoe UI",
                         13F);
+
+                tb.Height = 36;
+
+                tb.Width = box.Width - 24;
+
+                tb.Location =
+                    new Point(
+                        12,
+                        (box.Height - tb.Height) / 2);
             }
+            else
+            {
+                inner.Location =
+                    new Point(
+                        12,
+                        (box.Height - inner.Height) / 2);
+            }
+
 
             box.Controls.Add(inner);
 
-            if (inner is ComboBox cb2)
-            {
-                cb2.Location = new Point(
-                    12,
-                    (box.Height - cb2.Height) / 2
-                );
-            }
 
             box.Paint += (s, e) =>
             {
-                Rectangle rect = new Rectangle(0, 0, box.Width - 1, box.Height - 1);
+                Rectangle rect =
+                    new Rectangle(
+                        0,
+                        0,
+                        box.Width - 1,
+                        box.Height - 1);
+
                 int radius = 12;
 
                 using (GraphicsPath path = new GraphicsPath())
                 {
-                    path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
-                    path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
-                    path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
-                    path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+                    path.AddArc(
+                        rect.X,
+                        rect.Y,
+                        radius,
+                        radius,
+                        180,
+                        90);
+
+                    path.AddArc(
+                        rect.Right - radius,
+                        rect.Y,
+                        radius,
+                        radius,
+                        270,
+                        90);
+
+                    path.AddArc(
+                        rect.Right - radius,
+                        rect.Bottom - radius,
+                        radius,
+                        radius,
+                        0,
+                        90);
+
+                    path.AddArc(
+                        rect.X,
+                        rect.Bottom - radius,
+                        radius,
+                        radius,
+                        90,
+                        90);
+
 
                     path.CloseFigure();
 
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                    using Pen pen = new Pen(Color.FromArgb(180, 190, 210), 1.5f);
-                    e.Graphics.DrawPath(pen, path);
+                    e.Graphics.SmoothingMode =
+                        SmoothingMode.AntiAlias;
+
+
+                    using Pen pen =
+                        new Pen(
+                            Color.FromArgb(180, 190, 210),
+                            1.5f);
+
+
+                    e.Graphics.DrawPath(
+                        pen,
+                        path);
                 }
             };
+
 
             return box;
         }
@@ -257,26 +299,11 @@ namespace SalesDashboard.Pages
                     BackColor = Color.White
                 };
 
-            Label lblInvoiceTitle = new Label
-            {
-                Text = "Invoice:",
-                Location = new Point(0, 10),
-                Font = new Font("Segoe UI", 13F),
-                AutoSize = true
-            };
-
-            lblInvoiceNo = new Label
-            {
-                Text = "-",
-                Location = new Point(120, 10),
-                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
-                AutoSize = true
-            };
-
+            
             Label lblCustomerTitle = new Label
             {
                 Text = "Customer:",
-                Location = new Point(300, 10),
+                Location = new Point(0, 10),
                 Font = new Font("Segoe UI", 13F),
                 AutoSize = true
             };
@@ -284,7 +311,7 @@ namespace SalesDashboard.Pages
             lblCustomerName = new Label
             {
                 Text = "-",
-                Location = new Point(430, 10),
+                Location = new Point(170, 10),
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 AutoSize = true
             };
@@ -308,7 +335,7 @@ namespace SalesDashboard.Pages
             Label lblPaymentTitle = new Label
             {
                 Text = "Payment Method:",
-                Location = new Point(300, 50),
+                Location = new Point(300, 10),
                 Font = new Font("Segoe UI", 13F),
                 AutoSize = true
             };
@@ -316,7 +343,7 @@ namespace SalesDashboard.Pages
             lblPaymentMethod = new Label
             {
                 Text = "-",
-                Location = new Point(430, 50),
+                Location = new Point(570, 10),
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 AutoSize = true
             };
@@ -324,7 +351,7 @@ namespace SalesDashboard.Pages
             Label lblTotalTitle = new Label
             {
                 Text = "Total:",
-                Location = new Point(700, 50),
+                Location = new Point(300, 50),
                 Font = new Font("Segoe UI", 13F),
                 AutoSize = true
             };
@@ -332,13 +359,12 @@ namespace SalesDashboard.Pages
             lblOriginalTotal = new Label
             {
                 Text = "-",
-                Location = new Point(780, 50),
+                Location = new Point(430, 50),
                 Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 AutoSize = true
             };
 
-            saleInfo.Controls.Add(lblInvoiceTitle);
-            saleInfo.Controls.Add(lblInvoiceNo);
+           
 
             saleInfo.Controls.Add(lblCustomerTitle);
             saleInfo.Controls.Add(lblCustomerName);
@@ -384,19 +410,55 @@ namespace SalesDashboard.Pages
                 };
 
             dgvReturnItems.Columns.Add(
-                "SaleItemID",
-                "SaleItemID");
-
-            dgvReturnItems.Columns["SaleItemID"]
-                .Visible = false;
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "SaleItemID",
+                    HeaderText = "SaleItemID",
+                    DataPropertyName = "SaleItemID",
+                    Visible = false
+                });
 
             dgvReturnItems.Columns.Add(
-                "ProductionID",
-                "ProductionID");
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "ProductionID",
+                    HeaderText = "ProductionID",
+                    DataPropertyName = "ProductionID",
+                    Visible = false
+                });
 
-            dgvReturnItems.Columns["ProductionID"]
-                .Visible = false;
-           
+            dgvReturnItems.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "ProductName",
+                    HeaderText = "Product",
+                    DataPropertyName = "ProductName"
+                });
+
+            dgvReturnItems.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "Quantity",
+                    HeaderText = "Quantity",
+                    DataPropertyName = "Quantity"
+                });
+
+            dgvReturnItems.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "UnitPrice",
+                    HeaderText = "Unit Price",
+                    DataPropertyName = "UnitPrice"
+                });
+
+            dgvReturnItems.Columns.Add(
+                new DataGridViewTextBoxColumn
+                {
+                    Name = "TotalAmount",
+                    HeaderText = "Total Amount",
+                    DataPropertyName = "TotalAmount"
+                });
+
             main.Controls.Add(
                 dgvReturnItems);
             // ================= RETURN DETAILS =================
@@ -649,7 +711,7 @@ namespace SalesDashboard.Pages
                     Text = "Process Return",
                     Width = 220,
                     Height = 50,
-                    Location = new Point(800, 30)
+                    Location = new Point(780, 50)
                 };
 
             MakeRoundedButton(

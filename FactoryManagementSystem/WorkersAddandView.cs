@@ -18,17 +18,40 @@ namespace FactoryManagementSystem
 
             // Initialize worker roles dropdown
             cmbRole.Items.AddRange(new object[]
-            {
-                "Labor",
-                "Driver",
-                "Loader",
-                "Machine Operator"
-            });
+                 {
+                    "Select Role...",
+                    "Labor",
+                    "Driver",
+                    "Loader",
+                    "Machine Operator"
+                 });
 
             cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbRole.SelectedIndex = 0;
 
-            // Load existing workers from database
+            // Load existing workers
             LoadWorkers();
+
+            // Clear automatic selection when the control is created
+            this.HandleCreated += WorkersAddandView_HandleCreated;
+
+            // Clear selection after DataSource binding completes
+            dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
+        }
+        // ================= CLEAR SELECTION ON LOAD =================
+        private void WorkersAddandView_HandleCreated(object sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
+        }
+        // ================= CLEAR SELECTION AFTER DATA BINDING =================
+        private void DataGridView1_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            // Prevent the first worker from being automatically selected
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
 
         // ================= LOAD WORKERS =================
@@ -37,13 +60,20 @@ namespace FactoryManagementSystem
             try
             {
                 string query = "SELECT * FROM Workers ORDER BY WorkerID DESC";
-                DataTable dt = DBHelper.ExecuteDataTable(query, null);
+
+                DataTable dt =
+                    DBHelper.ExecuteDataTable(query, null);
 
                 dataGridView1.DataSource = dt;
+
+                // Ensure no worker is selected after loading
+                dataGridView1.ClearSelection();
+                dataGridView1.CurrentCell = null;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error loading workers: " + ex.Message);
+                MessageBox.Show(
+                    "Error loading workers: " + ex.Message);
             }
         }
 
@@ -82,9 +112,9 @@ namespace FactoryManagementSystem
             }
 
             // Validate role selection
-            if (string.IsNullOrEmpty(role))
+            if (cmbRole.SelectedIndex <= 0)
             {
-                MessageBox.Show("Please select worker role.");
+                MessageBox.Show("Please select a worker role.");
                 return;
             }
 
@@ -122,7 +152,7 @@ namespace FactoryManagementSystem
                 // Clear form fields
                 txtName.Clear();
                 txtWage.Clear();
-                cmbRole.SelectedIndex = -1;
+                cmbRole.SelectedIndex = 0;
             }
             catch (Exception ex)
             {

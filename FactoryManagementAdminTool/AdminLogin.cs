@@ -40,7 +40,7 @@ namespace FactoryManagementAdminTool
 
             // Check admin credentials from database
             string query =
-                "SELECT COUNT(*) FROM SystemAdmins WHERE Username=@username AND PasswordHash=@password";
+                "SELECT COUNT(*) FROM SystemAdmins WHERE Username=@username AND Password=@password";
 
 
             SqlParameter[] parameters =

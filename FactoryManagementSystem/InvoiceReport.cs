@@ -22,11 +22,23 @@ namespace SalesDashboard.Pages
 
             saleID = id;
 
+            
+            dgvInvoiceItems.ReadOnly = true;
+            dgvInvoiceItems.AllowUserToAddRows = false;
+            dgvInvoiceItems.RowHeadersVisible = false;
+            dgvInvoiceItems.MultiSelect = false;
             // Load invoice details and products from database
             LoadInvoice();
 
             // Configure printing components
             InitializePrinting();
+            this.Shown += InvoiceReport_Shown;
+        }
+        // Clears selection in the DataGridView when the form is shown
+        private void InvoiceReport_Shown(object sender, EventArgs e)
+        {
+            dgvInvoiceItems.ClearSelection();
+            dgvInvoiceItems.CurrentCell = null;
         }
 
         // ================= PRINT INITIALIZATION =================
@@ -121,120 +133,324 @@ namespace SalesDashboard.Pages
         {
             Graphics g = e.Graphics;
 
-            Font titleFont =
+            Font companyFont =
                 new Font("Segoe UI", 18, FontStyle.Bold);
+
+            Font invoiceTitleFont =
+                new Font("Segoe UI", 16, FontStyle.Bold);
 
             Font normalFont =
                 new Font("Segoe UI", 11);
 
-            int x = 50;
-            int y = 50;
+            Font boldFont =
+                new Font("Segoe UI", 11, FontStyle.Bold);
 
-            // ================= INVOICE HEADER =================
+            Font totalFont =
+                new Font("Segoe UI", 14, FontStyle.Bold);
+
+            // ============================================================
+            // PAGE DIMENSIONS
+            // ============================================================
+
+            float pageWidth = e.PageBounds.Width;
+            float pageHeight = e.PageBounds.Height;
+
+            float leftMargin = 50;
+            float rightMargin = pageWidth - 50;
+
+            float y = 50;
+
+            // ============================================================
+            // COMPANY NAME - CENTERED
+            // ============================================================
+
+            string companyName = "MS Crete";
+
+            SizeF companySize =
+                g.MeasureString(companyName, companyFont);
+
+            float companyX =
+                (pageWidth - companySize.Width) / 2;
 
             g.DrawString(
-                lblCompanyName.Text,
-                titleFont,
+                companyName,
+                companyFont,
                 Brushes.Black,
-                x,
+                companyX,
+                y
+            );
+
+            y += 40;
+
+            // ============================================================
+            // SALES INVOICE - CENTERED
+            // ============================================================
+
+            string invoiceTitle = "SALES INVOICE";
+
+            SizeF invoiceTitleSize =
+                g.MeasureString(invoiceTitle, invoiceTitleFont);
+
+            float invoiceTitleX =
+                (pageWidth - invoiceTitleSize.Width) / 2;
+
+            g.DrawString(
+                invoiceTitle,
+                invoiceTitleFont,
+                Brushes.Black,
+                invoiceTitleX,
                 y
             );
 
             y += 50;
 
-            // ================= CUSTOMER INFORMATION =================
+            // ============================================================
+            // CUSTOMER INFORMATION
+            // ============================================================
 
-            g.DrawString(lblInvoiceNo.Text, normalFont, Brushes.Black, x, y);
+            g.DrawString(
+                lblInvoiceNo.Text,
+                normalFont,
+                Brushes.Black,
+                leftMargin,
+                y
+            );
+
+            g.DrawString(
+                lblDate.Text,
+                normalFont,
+                Brushes.Black,
+                pageWidth / 2,
+                y
+            );
 
             y += 25;
 
-            g.DrawString(lblDate.Text, normalFont, Brushes.Black, x, y);
+            g.DrawString(
+                lblCustomer.Text,
+                normalFont,
+                Brushes.Black,
+                leftMargin,
+                y
+            );
 
-            y += 25;
+            g.DrawString(
+                lblPayment.Text,
+                normalFont,
+                Brushes.Black,
+                pageWidth / 2,
+                y
+            );
 
-            g.DrawString(lblCustomer.Text, normalFont, Brushes.Black, x, y);
+            y += 35;
 
-            y += 25;
+            // ============================================================
+            // SEPARATOR
+            // ============================================================
 
-            g.DrawString(lblPayment.Text, normalFont, Brushes.Black, x, y);
+            g.DrawLine(
+                Pens.Black,
+                leftMargin,
+                y,
+                rightMargin,
+                y
+            );
 
+            y += 15;
 
-            y += 40;
+            // ============================================================
+            // ITEMS HEADER
+            // ============================================================
 
-            // ================= ITEMS TABLE HEADER =================
+            float productX = leftMargin;
+            float qtyX = 350;
+            float priceX = 420;
+            float amountX = 520;
 
-            g.DrawString("Product", normalFont, Brushes.Black, x, y);
+            g.DrawString(
+                "Product",
+                boldFont,
+                Brushes.Black,
+                productX,
+                y
+            );
 
-            g.DrawString("Qty", normalFont, Brushes.Black, x + 250, y);
+            g.DrawString(
+                "Qty",
+                boldFont,
+                Brushes.Black,
+                qtyX,
+                y
+            );
 
-            g.DrawString("Price", normalFont, Brushes.Black, x + 330, y);
+            g.DrawString(
+                "Price",
+                boldFont,
+                Brushes.Black,
+                priceX,
+                y
+            );
 
-            g.DrawString("Amount", normalFont, Brushes.Black, x + 430, y);
+            g.DrawString(
+                "Amount",
+                boldFont,
+                Brushes.Black,
+                amountX,
+                y
+            );
 
             y += 30;
 
-            // ================= PRINT PRODUCT ITEMS =================
-            // Reads rows from invoice DataGridView and prints them
+            // ============================================================
+            // PRODUCT ITEMS
+            // ============================================================
 
             foreach (DataGridViewRow row in dgvInvoiceItems.Rows)
             {
                 if (row.IsNewRow)
                     continue;
 
+                string product =
+                    row.Cells["ProductName"].Value?.ToString() ?? "";
+
+                string quantity =
+                    row.Cells["Quantity"].Value?.ToString() ?? "";
+
+                string price =
+                    row.Cells["UnitPrice"].Value?.ToString() ?? "";
+
+                string amount =
+                    row.Cells["TotalAmount"].Value?.ToString() ?? "";
+
                 g.DrawString(
-                    row.Cells["ProductName"].Value.ToString(),
+                    product,
                     normalFont,
                     Brushes.Black,
-                    x,
+                    productX,
                     y
                 );
 
                 g.DrawString(
-                    row.Cells["Quantity"].Value.ToString(),
+                    quantity,
                     normalFont,
                     Brushes.Black,
-                    x + 250,
+                    qtyX,
                     y
                 );
 
                 g.DrawString(
-                    row.Cells["UnitPrice"].Value.ToString(),
+                    price,
                     normalFont,
                     Brushes.Black,
-                    x + 330,
+                    priceX,
                     y
                 );
 
                 g.DrawString(
-                    row.Cells["TotalAmount"].Value.ToString(),
+                    amount,
                     normalFont,
                     Brushes.Black,
-                    x + 430,
+                    amountX,
                     y
                 );
 
                 y += 25;
             }
 
-            y += 40;
+            // ============================================================
+            // SEPARATOR BEFORE TOTALS
+            // ============================================================
 
-            // Print final payable amount
+            y += 10;
+
+            g.DrawLine(
+                Pens.Black,
+                leftMargin,
+                y,
+                rightMargin,
+                y
+            );
+
+            y += 20;
+
+            // ============================================================
+            // FINANCIAL SUMMARY
+            // ============================================================
+
+            float summaryLabelX = 350;
+            float summaryValueX = 520;
+
+            g.DrawString(
+                lblSubTotal.Text,
+                normalFont,
+                Brushes.Black,
+                summaryLabelX,
+                y
+            );
+
+            y += 25;
+
+            g.DrawString(
+                lblDiscount.Text,
+                normalFont,
+                Brushes.Black,
+                summaryLabelX,
+                y
+            );
+
+            y += 25;
+
+            g.DrawString(
+                lblTax.Text,
+                normalFont,
+                Brushes.Black,
+                summaryLabelX,
+                y
+            );
+
+            y += 30;
+
+            // ============================================================
+            // GRAND TOTAL
+            // ============================================================
+
+            g.DrawLine(
+                Pens.Black,
+                summaryLabelX,
+                y,
+                rightMargin,
+                y
+            );
+
+            y += 10;
+
             g.DrawString(
                 lblTotal.Text,
-                new Font("Segoe UI", 14, FontStyle.Bold),
+                totalFont,
                 Brushes.Black,
-                x + 350,
+                summaryLabelX,
                 y
             );
 
             y += 50;
 
-            // Invoice footer message
+            // ============================================================
+            // FOOTER
+            // ============================================================
+
+            string footer = "Thank you for your business!";
+
+            SizeF footerSize =
+                g.MeasureString(footer, normalFont);
+
+            float footerX =
+                (pageWidth - footerSize.Width) / 2;
+
             g.DrawString(
-                "Thank you for your business!",
+                footer,
                 normalFont,
                 Brushes.Black,
-                x,
+                footerX,
                 y
             );
         }
@@ -331,7 +547,8 @@ namespace SalesDashboard.Pages
                     {
                         new SqlParameter("@id", saleID)
                     });
-
+                dgvInvoiceItems.ClearSelection();
+                dgvInvoiceItems.CurrentCell = null;
                 // Save invoice viewing activity
                 try
                 {

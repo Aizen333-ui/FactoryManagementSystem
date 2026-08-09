@@ -11,19 +11,42 @@ namespace FactoryManagementSystem
         {
             InitializeComponent();
 
-            // Attach button click events
-            this.btnAdd.Click -= btnAdd_Click;
-            this.btnAdd.Click += btnAdd_Click;
+            btnAdd.Click -= btnAdd_Click;
+            btnAdd.Click += btnAdd_Click;
 
-            this.btnRemove.Click -= BtnRemove_Click;
-            this.btnRemove.Click += BtnRemove_Click;
+            btnRemove.Click -= BtnRemove_Click;
+            btnRemove.Click += BtnRemove_Click;
 
-            // Attach combo box selection event
-            this.cmbName.SelectedIndexChanged -= cmbName_SelectedIndexChanged;
-            this.cmbName.SelectedIndexChanged += cmbName_SelectedIndexChanged;
+            cmbName.SelectedIndexChanged -= cmbName_SelectedIndexChanged;
+            cmbName.SelectedIndexChanged += cmbName_SelectedIndexChanged;
+            cmbName.SelectedIndex = 0;
 
-            // Load materials into DataGridView
+            // DataGridView settings
+            dataGridView1.ReadOnly = true;
+            dataGridView1.MultiSelect = false;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             LoadMaterials();
+
+            // Prevent pre-selection when the control is created
+            this.HandleCreated += RawMaterial_HandleCreated;
+
+            // Prevent pre-selection after DataSource binding
+            dataGridView1.DataBindingComplete += DataGridView1_DataBindingComplete;
+        }
+        // Prevent pre-selection when the control is created
+        private void RawMaterial_HandleCreated(object sender, EventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
+        }
+        // Prevent pre-selection after DataSource binding
+        private void DataGridView1_DataBindingComplete(
+            object sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            dataGridView1.ClearSelection();
+            dataGridView1.CurrentCell = null;
         }
 
         // Load all raw materials from database
@@ -38,6 +61,8 @@ namespace FactoryManagementSystem
 
                 // Bind data to grid
                 dataGridView1.DataSource = dt;
+                dataGridView1.ClearSelection();
+                dataGridView1.CurrentCell = null;
             }
             catch (Exception ex)
             {
@@ -50,6 +75,7 @@ namespace FactoryManagementSystem
         {
             return materialName switch
             {
+                "Select the Raw Material..." => "",
                 "Cement" => "Bag",
                 "Sand" => "Ton",
                 "Crush" => "Ton",
@@ -62,7 +88,13 @@ namespace FactoryManagementSystem
         // Automatically set unit when material changes
         private void cmbName_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selected = cmbName.SelectedItem?.ToString() ?? cmbName.Text ?? "";
+            if (cmbName.SelectedIndex <= 0)
+            {
+                txtUnit.Clear();
+                return;
+            }
+
+            string selected = cmbName.SelectedItem?.ToString() ?? "";
 
             txtUnit.Text = GetUnit(selected);
         }
@@ -145,7 +177,7 @@ namespace FactoryManagementSystem
                 LoadMaterials();
 
                 // Clear fields
-                cmbName.SelectedIndex = -1;
+                cmbName.SelectedIndex = 0;
                 txtQty.Clear();
                 txtUnitPrice.Clear();
                 txtUnit.Clear();

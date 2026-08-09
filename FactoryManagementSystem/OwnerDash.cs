@@ -23,7 +23,7 @@ namespace FactoryManagementSystem
             };
 
             // Load all dashboard KPIs and summaries
-            LoadWorkers();
+            LoadRawMaterialUsage();
             LoadRevenue();
             LoadProduction();
             LoadWorkerCategoryData();
@@ -31,15 +31,35 @@ namespace FactoryManagementSystem
         }
 
         // TOTAL WORKERS KPI
-        private void LoadWorkers()
+        private void LoadRawMaterialUsage()
         {
-            string query = "SELECT COUNT(*) FROM Workers";
+            string query = @"
+        SELECT
+            CASE
+                WHEN COALESCE(
+                    (SELECT SUM(Quantity) FROM RawMaterial), 0
+                ) = 0
+                THEN 0
+                ELSE
+                    (
+                        COALESCE(
+                            (SELECT SUM(QuantityUsed) FROM MaterialUsage), 0
+                        ) * 100.0
+                        /
+                        (SELECT SUM(Quantity) FROM RawMaterial)
+                    )
+            END";
 
-            int total = Convert.ToInt32(
-                DBHelper.ExecuteScalar(query, null)
-            );
+            object result = DBHelper.ExecuteScalar(query, null);
 
-            lblWorkers.Text = total.ToString();
+            decimal percentage = result == DBNull.Value || result == null
+                ? 0
+                : Convert.ToDecimal(result);
+
+            percentage = Math.Min(percentage, 100);
+
+            lblRawMaterialUsage.Text =
+                percentage.ToString("0.##") + "%";
         }
 
         // TOTAL REVENUE / EXPENSES KPI
@@ -54,11 +74,11 @@ namespace FactoryManagementSystem
             lblExpenses.Text = "Rs " + total.ToString("N0");
         }
 
-        // TOTAL RAW MATERIAL / PRODUCTION KPI
+        // TOTAL PRODUCTION KPI
         private void LoadProduction()
         {
             string query =
-                "SELECT ISNULL(SUM(Quantity), 0) AS TotalRawMaterial FROM RawMaterial;";
+                "SELECT ISNULL(SUM(Quantity), 0) AS TotalMaterial FROM Production;";
 
             int total = Convert.ToInt32(
                 DBHelper.ExecuteScalar(query, null)

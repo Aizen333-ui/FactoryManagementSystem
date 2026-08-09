@@ -12,10 +12,12 @@ namespace FactoryManagementSystem
             // Load dashboard summary cards
             // (sales count, revenue, orders, stock alerts)
             LoadDashboardData();
-
+            ClearRecentSalesSelection();
             // Load latest sales transactions
             // into dashboard grid
             LoadRecentSales();
+            
+
         }
 
         // ==================================================
@@ -104,6 +106,31 @@ namespace FactoryManagementSystem
                     MessageBoxIcon.Error);
             }
         }
+        // ==================================================
+        // CLEAR RECENT SALES SELECTION
+        // ==================================================
+        private void ClearRecentSalesSelection()
+        {
+            if (dgvRecentSales == null)
+                return;
+
+            dgvRecentSales.ReadOnly = true;
+            dgvRecentSales.MultiSelect = false;
+
+            dgvRecentSales.DataBindingComplete -=
+                dgvRecentSales_DataBindingComplete;
+
+            dgvRecentSales.DataBindingComplete +=
+                dgvRecentSales_DataBindingComplete;
+        }
+
+        private void dgvRecentSales_DataBindingComplete(
+            object? sender,
+            DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvRecentSales.ClearSelection();
+            dgvRecentSales.CurrentCell = null;
+        }
 
         // ==================================================
         // LOAD RECENT SALES
@@ -148,6 +175,13 @@ namespace FactoryManagementSystem
                 // Improve grid appearance
                 dgvRecentSales.AutoSizeColumnsMode =
                     DataGridViewAutoSizeColumnsMode.Fill;
+                dgvRecentSales.ReadOnly = true;
+                dgvRecentSales.MultiSelect = false;
+                // Ensure nothing is selected after binding (grid is read-only)
+                dgvRecentSales.ClearSelection();
+                dgvRecentSales.CurrentCell = null;
+                dgvRecentSales.TabStop = false;
+                
 
             }
             catch (Exception ex)
